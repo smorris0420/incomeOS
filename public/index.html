@@ -695,7 +695,7 @@ function updateSidebarUser() {
   const initials = name.slice(0,2).toUpperCase();
   const a=document.getElementById('sidebarAvatar'); if(a) a.textContent=initials;
   const u=document.getElementById('sidebarUsername'); if(u) u.textContent=name;
-  const r=document.getElementById('sidebarRole'); if(r) r.textContent=currentUser.role;
+  const r=document.getElementById('sidebarRole'); if(r) r.textContent=(currentUser.role||'').charAt(0).toUpperCase()+(currentUser.role||'').slice(1);
 }
 
 // ===== VIEW AS =====
