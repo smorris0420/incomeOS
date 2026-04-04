@@ -62,12 +62,15 @@ export default async function handler(req, res) {
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: 'Missing id' });
     const s = req.body;
+    const payRound = n => Math.round(n * 100) / 100;
+    const otRate = payRound(s.rate * 1.5);
+    const dtRate = payRound(s.rate * 2);
     const gross = parseFloat((
-      s.rate * s.reg +
-      s.rate * 1.5 * (s.ot || 0) +
-      s.rate * 2   * (s.dt || 0) +
-      s.rate * (s.hol || 0) +
-      (s.premHrs || 0) * (s.premRate || 0) +
+      payRound(s.rate * s.reg) +
+      payRound(otRate * (s.ot || 0)) +
+      payRound(dtRate * (s.dt || 0)) +
+      payRound(s.rate * (s.hol || 0)) +
+      payRound((s.premHrs || 0) * (s.premRate || 0)) +
       (s.addl || 0)
     ).toFixed(2));
     const { error } = await supabase.from('stubs').update({

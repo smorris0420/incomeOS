@@ -198,6 +198,20 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
+/* History spreadsheet view */
+.hist-table{width:100%;border-collapse:collapse;font-size:12px}
+.hist-table th{background:var(--bg3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);border-bottom:1.5px solid var(--border2);white-space:nowrap;position:sticky;top:0;z-index:2}
+.hist-table th.num{text-align:right}
+.hist-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+.hist-table tr:last-child td{border-bottom:none}
+.hist-table tr:hover td{background:var(--bg3);cursor:pointer}
+.hist-table td.num{text-align:right;font-family:var(--mono);font-size:12px}
+.hist-table td.green{color:var(--green);font-weight:600}
+.hist-table td.amber{color:var(--amber)}
+.hist-table td.red{color:var(--red)}
+.hist-table td.muted{color:var(--text3)}
+.hist-table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);box-shadow:var(--shadow)}
+.hist-yr-header td{background:var(--bg3);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px}
 .ytd-bottom-grid{grid-template-columns:1fr!important}
 @media(min-width:700px){.ytd-bottom-grid{grid-template-columns:1fr 1fr!important}}
 
@@ -380,10 +394,20 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
     <!-- HISTORY PAGE -->
     <div id="page-history" class="page">
-      <div class="page-inner">
+      <div class="page-inner-wide">
         <div class="page-header">
           <div class="page-title">History</div>
-          <button class="btn btn-secondary btn-sm" onclick="openLogModal()">+ Log paycheck</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="tab-row" style="margin:0;background:var(--bg4);border-radius:var(--radius-sm);padding:3px;display:flex;gap:3px">
+              <button id="histViewCards" class="tab-btn active" style="padding:5px 12px;font-size:12px;min-width:auto" onclick="setHistView('cards',this)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Cards
+              </button>
+              <button id="histViewSheet" class="tab-btn" style="padding:5px 12px;font-size:12px;min-width:auto" onclick="setHistView('sheet',this)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Spreadsheet
+              </button>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="openLogModal()">+ Log paycheck</button>
+          </div>
         </div>
         <div id="historyList"></div>
       </div>
@@ -785,7 +809,9 @@ function getSupabase() {
 // ===== FORMATTING =====
 const fmt = n => '$' + (Math.abs(n)||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const fmtS = n => { const a = Math.abs(n||0); return a >= 1000 ? '$' + (a/1000).toFixed(1) + 'k' : '$' + a.toFixed(2); };
-const fmtH = n => parseFloat(n||0).toFixed(2); // hours always 2 decimals
+const fmtH = n => parseFloat(n||0).toFixed(2);
+// Round each pay component individually (matches payroll rounding line-by-line)
+const payRound = n => Math.round(n * 100) / 100; // hours always 2 decimals
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 function setSyncDot(s, count=0) {
   const d = document.getElementById('syncDot');
@@ -1110,7 +1136,8 @@ function calc() {
   const den=parseFloat(document.getElementById('iDen').value)||0;
   const medI=parseFloat(document.getElementById('iMedI').value)||0;
   const vis=parseFloat(document.getElementById('iVis').value)||0;
-  const regPay=rate*reg, otPay=rate*1.5*ot, dtPay=rate*2*dt, holPay=rate*hol;
+  const otRate=payRound(rate*1.5), dtRate=payRound(rate*2);
+  const regPay=payRound(rate*reg), otPay=payRound(otRate*ot), dtPay=payRound(dtRate*dt), holPay=payRound(rate*hol);
   const premPay=premRate*premHrs;
   const gross=regPay+otPay+dtPay+holPay+premPay+addl;
   const fr=effFedRate(), fed=gross*fr, ss=gross*0.062, med=gross*0.0145;
@@ -1165,7 +1192,15 @@ function showPage(id, btn, source) {
 }
 
 // ===== HISTORY (live — always reads from stubs array) =====
+let histView = 'cards'; // 'cards' or 'sheet'
+function setHistView(v, btn) {
+  histView = v;
+  document.querySelectorAll('#histViewCards,#histViewSheet').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildHistory();
+}
 function buildHistory() {
+  if(histView === 'sheet') { buildHistorySheet(); return; }
   const list = document.getElementById('historyList');
   const sorted = [...stubs].sort((a,b)=>b.date.localeCompare(a.date));
   if(!sorted.length) { list.innerHTML='<div class="empty"><div style="font-size:32px;margin-bottom:8px">–</div><div>No paychecks logged yet</div></div>'; return; }
@@ -1177,7 +1212,7 @@ function buildHistory() {
     const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis, net=s.net||(s.gross-ded);
     const pct=(s.gross/maxG*100).toFixed(1);
     const d=new Date(s.date+'T12:00:00'), ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const totalHrs=s.reg+(s.ot||0)+(s.hol||0);
+    const totalHrs=s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0);
     let badges='';
     if(s.ot>0) badges+='<span class="badge badge-ot">OT</span> ';
     if((s.dt||0)>0) badges+='<span class="badge" style="background:rgba(220,38,38,0.1);color:var(--red)">DT</span> ';
@@ -1190,6 +1225,90 @@ function buildHistory() {
     </div>`;
   });
   list.innerHTML=html;
+}
+
+function buildHistorySheet() {
+  const list = document.getElementById('historyList');
+  const sorted = [...stubs].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sorted.length) { list.innerHTML='<div class="empty"><div style="font-size:32px;margin-bottom:8px">–</div><div>No paychecks logged yet</div></div>'; return; }
+
+  // Check if any stubs have DT / prem / addl so we only show those columns if needed
+  const hasDT   = sorted.some(s=>(s.dt||0)>0);
+  const hasPrem = sorted.some(s=>(s.premHrs||0)>0);
+  const hasAddl = sorted.some(s=>(s.addl||0)>0);
+  const hasHol  = sorted.some(s=>(s.hol||0)>0);
+
+  let thead = `<tr>
+    <th>Date</th>
+    <th class="num">Rate</th>
+    <th class="num">Reg Hrs</th>
+    <th class="num">OT Hrs</th>
+    ${hasDT   ? '<th class="num">DT Hrs</th>' : ''}
+    ${hasHol  ? '<th class="num">Hol Hrs</th>' : ''}
+    ${hasPrem ? '<th class="num">Prem $/hr</th><th class="num">Prem Hrs</th>' : ''}
+    ${hasAddl ? '<th class="num">Addl $</th>' : ''}
+    <th class="num">Gross</th>
+    <th class="num">Fed</th>
+    <th class="num">SS</th>
+    <th class="num">Medicare</th>
+    <th class="num">Benefits</th>
+    <th class="num">Net Pay</th>
+  </tr>`;
+
+  let lastYear = '';
+  let rows = '';
+  sorted.forEach(s => {
+    const yr = s.date.slice(0,4);
+    if(yr !== lastYear) {
+      const cols = 9 + (hasDT?1:0) + (hasHol?1:0) + (hasPrem?2:0) + (hasAddl?1:0);
+      rows += `<tr class="hist-yr-header"><td colspan="${cols}">${yr}</td></tr>`;
+      lastYear = yr;
+    }
+    const ded = s.fed+s.ss+s.med+s.den+s.medI+s.vis;
+    const net = s.net||(s.gross-ded);
+    const benefits = s.den+s.medI+s.vis;
+    const d = new Date(s.date+'T12:00:00');
+    const ds = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    rows += `<tr onclick="openDetail('${s.id}')">
+      <td>${ds}</td>
+      <td class="num muted">$${parseFloat(s.rate).toFixed(2)}</td>
+      <td class="num">${fmtH(s.reg)}</td>
+      <td class="num${(s.ot||0)>0?' amber':''}">${(s.ot||0)>0?fmtH(s.ot):'—'}</td>
+      ${hasDT   ? `<td class="num${(s.dt||0)>0?' red':''}">${(s.dt||0)>0?fmtH(s.dt):'—'}</td>` : ''}
+      ${hasHol  ? `<td class="num${(s.hol||0)>0?' blue':''}">${(s.hol||0)>0?fmtH(s.hol):'—'}</td>` : ''}
+      ${hasPrem ? `<td class="num${(s.premHrs||0)>0?' muted':''}">${(s.premHrs||0)>0?'$'+parseFloat(s.premRate||0).toFixed(2):'—'}</td><td class="num">${(s.premHrs||0)>0?fmtH(s.premHrs):'—'}</td>` : ''}
+      ${hasAddl ? `<td class="num">${(s.addl||0)>0?fmt(s.addl):'—'}</td>` : ''}
+      <td class="num">${fmt(s.gross)}</td>
+      <td class="num red">${fmt(s.fed)}</td>
+      <td class="num red">${fmt(s.ss)}</td>
+      <td class="num red">${fmt(s.med)}</td>
+      <td class="num red">${fmt(benefits)}</td>
+      <td class="num green">${fmt(net)}</td>
+    </tr>`;
+  });
+
+  // Totals row
+  const tGross = sorted.reduce((a,s)=>a+s.gross,0);
+  const tFed   = sorted.reduce((a,s)=>a+s.fed,0);
+  const tSS    = sorted.reduce((a,s)=>a+s.ss,0);
+  const tMed   = sorted.reduce((a,s)=>a+s.med,0);
+  const tBen   = sorted.reduce((a,s)=>a+s.den+s.medI+s.vis,0);
+  const tNets  = sorted.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis; return s.net||(s.gross-d); });
+  const tNet   = tNets.reduce((a,v)=>a+v,0);
+  const extraCols = (hasDT?1:0)+(hasHol?1:0)+(hasPrem?2:0)+(hasAddl?1:0);
+  rows += `<tr style="background:var(--green-dim);font-weight:700;border-top:2px solid var(--green-border)">
+    <td style="color:var(--text2)">Totals (${sorted.length})</td>
+    <td></td><td></td><td></td>
+    ${"<td></td>".repeat(extraCols)}
+    <td class="num">${fmt(tGross)}</td>
+    <td class="num red">${fmt(tFed)}</td>
+    <td class="num red">${fmt(tSS)}</td>
+    <td class="num red">${fmt(tMed)}</td>
+    <td class="num red">${fmt(tBen)}</td>
+    <td class="num green">${fmt(tNet)}</td>
+  </tr>`;
+
+  list.innerHTML = `<div class="hist-table-wrap"><table class="hist-table"><thead>${thead}</thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ===== YTD — dynamic year tabs =====
@@ -1598,7 +1717,8 @@ async function saveLog() {
   const premRate=parseFloat(document.getElementById('lPremRate').value)||0;
   const premHrs=parseFloat(document.getElementById('lPremHrs').value)||0;
   const addl=parseFloat(document.getElementById('lAddl').value)||0;
-  const gross=parseFloat((rate*reg+rate*1.5*ot+rate*2*dt+rate*hol+premRate*premHrs+addl).toFixed(2));
+  const _otR=payRound(rate*1.5),_dtR=payRound(rate*2);
+  const gross=parseFloat((payRound(rate*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(rate*hol)+payRound(premRate*premHrs)+addl).toFixed(2));
   const fedRaw=parseFloat(document.getElementById('lFed').value), fed=isNaN(fedRaw)?parseFloat((gross*effFedRate()).toFixed(2)):fedRaw;
   const ssRaw=parseFloat(document.getElementById('lSS').value), ss=isNaN(ssRaw)?parseFloat((gross*0.062).toFixed(2)):ssRaw;
   const medRaw=parseFloat(document.getElementById('lMed').value), med=isNaN(medRaw)?parseFloat((gross*0.0145).toFixed(2)):medRaw;
@@ -1718,10 +1838,11 @@ async function saveEdit() {
     net:parseFloat(document.getElementById('eNet').value)||null,
   };
   Object.assign(s,updated);
+  const _eOtRate=payRound(updated.rate*1.5),_eDtRate=payRound(updated.rate*2);
   s.gross=parseFloat((
-    updated.rate*updated.reg+updated.rate*1.5*updated.ot+
-    updated.rate*2*updated.dt+updated.rate*updated.hol+
-    (updated.premRate||0)*(updated.premHrs||0)+(updated.addl||0)
+    payRound(updated.rate*updated.reg)+payRound(_eOtRate*updated.ot)+
+    payRound(_eDtRate*updated.dt)+payRound(updated.rate*updated.hol)+
+    payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
   // Live update
   document.getElementById('dReadView').innerHTML=renderReadView(s);
@@ -1814,7 +1935,8 @@ async function bulkSave() {
     const premRate=parseFloat(document.getElementById('bpremr-'+i)?.value)||0;
     const premHrs=parseFloat(document.getElementById('bpremh-'+i)?.value)||0;
     const addl=parseFloat(document.getElementById('baddl-'+i)?.value)||0;
-    const gross=parseFloat((rate*reg+rate*1.5*ot+rate*2*dt+rate*hol+premRate*premHrs+addl).toFixed(2));
+    const _otR=payRound(rate*1.5),_dtR=payRound(rate*2);
+  const gross=parseFloat((payRound(rate*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(rate*hol)+payRound(premRate*premHrs)+addl).toFixed(2));
     const fedRaw=parseFloat(document.getElementById('bfed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bss-'+i)?.value);
     const medRaw=parseFloat(document.getElementById('bmed-'+i)?.value);
