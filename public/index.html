@@ -1198,10 +1198,10 @@ function buildYTD() {
 
   // ── Render metrics ────────────────────────────────────────────────────────
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
-  set('ytdGross',    fmtS(tG));
-  set('ytdTotalNet', fmtS(tNet));
+  set('ytdGross',    fmt(tG));
+  set('ytdTotalNet', fmt(tNet));
   set('ytdAvg',      fmt(avgNet));
-  set('ytdTax',      fmtS(tTax));
+  set('ytdTax',      fmt(tTax));
   set('ytdOT',       tOT>0 ? fmt(tOT) : '—');
   set('ytdCount',    filtered.length);
   set('ytdReg',      fmt(tReg));
