@@ -765,6 +765,15 @@ async function login() {
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appShell').classList.add('visible');
     updateSidebarUser();
+    // Always reset to calculator on every login — clears any leftover page state from previous user
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-calc').classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav-btn').forEach(b=>b.classList.remove('active'));
+    const firstSb=document.querySelector('.sidebar-nav-btn');
+    const firstMb=document.querySelector('.nav-btn');
+    if(firstSb) firstSb.classList.add('active');
+    if(firstMb) firstMb.classList.add('active');
     await loadAll();
   } catch { err.textContent='Connection error'; }
 }
