@@ -895,9 +895,9 @@ async function loadAllAsUser(userId, displayName) {
     // Populate calculator with the viewed user's defaults
     const rate = appSettings.defaultRate || mostRecentRate() || 21.90;
     document.getElementById('iRate').value=rate;
-    if(appSettings.den) document.getElementById('iDen').value=appSettings.den;
-    if(appSettings.medI) document.getElementById('iMedI').value=appSettings.medI;
-    if(appSettings.vis) document.getElementById('iVis').value=appSettings.vis;
+    if(appSettings.den) document.getElementById('iDen').value=parseFloat(appSettings.den).toFixed(2);
+    if(appSettings.medI) document.getElementById('iMedI').value=parseFloat(appSettings.medI).toFixed(2);
+    if(appSettings.vis) document.getElementById('iVis').value=parseFloat(appSettings.vis).toFixed(2);
     showViewAsBanner(displayName);
     showToast('Viewing as '+displayName);
     setSyncDot('ok');
@@ -936,9 +936,9 @@ async function loadAll() {
         throw new Error('No cached data available');
       }
     }
-    if(appSettings.den) document.getElementById('iDen').value=appSettings.den;
-    if(appSettings.medI) document.getElementById('iMedI').value=appSettings.medI;
-    if(appSettings.vis) document.getElementById('iVis').value=appSettings.vis;
+    if(appSettings.den) document.getElementById('iDen').value=parseFloat(appSettings.den).toFixed(2);
+    if(appSettings.medI) document.getElementById('iMedI').value=parseFloat(appSettings.medI).toFixed(2);
+    if(appSettings.vis) document.getElementById('iVis').value=parseFloat(appSettings.vis).toFixed(2);
     const defaultRate=appSettings.defaultRate||mostRecentRate()||21.90;
     document.getElementById('iRate').value=defaultRate;
     // Show pending outbox count
@@ -1263,10 +1263,10 @@ function buildYTD() {
 
 // ===== SETTINGS =====
 function buildSettingsUI() {
-  if(appSettings.defaultRate) document.getElementById('sRate').value=appSettings.defaultRate;
-  if(appSettings.den) document.getElementById('sDen').value=appSettings.den;
-  if(appSettings.medI) document.getElementById('sMedI').value=appSettings.medI;
-  if(appSettings.vis) document.getElementById('sVis').value=appSettings.vis;
+  if(appSettings.defaultRate) document.getElementById('sRate').value=parseFloat(appSettings.defaultRate).toFixed(2);
+  if(appSettings.den) document.getElementById('sDen').value=parseFloat(appSettings.den).toFixed(2);
+  if(appSettings.medI) document.getElementById('sMedI').value=parseFloat(appSettings.medI).toFixed(2);
+  if(appSettings.vis) document.getElementById('sVis').value=parseFloat(appSettings.vis).toFixed(2);
   if(appSettings.fedOverride) document.getElementById('sFedRate').value=appSettings.fedOverride;
   document.getElementById('sEffRate').textContent=(effFedRate()*100).toFixed(2)+'%';
   // Show admin nav item in sidebar
@@ -1353,10 +1353,10 @@ async function openEditUserModal(userId) {
   document.getElementById('euVis').value='';
   try {
     const settings = await apiFetch('/api/settings',{},userId);
-    if(settings.defaultRate) document.getElementById('euRate').value=settings.defaultRate;
-    if(settings.den) document.getElementById('euDen').value=settings.den;
-    if(settings.medI) document.getElementById('euMedI').value=settings.medI;
-    if(settings.vis) document.getElementById('euVis').value=settings.vis;
+    if(settings.defaultRate) document.getElementById('euRate').value=parseFloat(settings.defaultRate).toFixed(2);
+    if(settings.den) document.getElementById('euDen').value=parseFloat(settings.den).toFixed(2);
+    if(settings.medI) document.getElementById('euMedI').value=parseFloat(settings.medI).toFixed(2);
+    if(settings.vis) document.getElementById('euVis').value=parseFloat(settings.vis).toFixed(2);
   } catch {}
   document.getElementById('editUserModal').classList.add('open');
 }
@@ -1525,9 +1525,9 @@ function openLogModal() {
   document.getElementById('lFed').value='';
   document.getElementById('lSS').value='';
   document.getElementById('lMed').value='';
-  document.getElementById('lDen').value=appSettings.den||2;
-  document.getElementById('lMedI').value=appSettings.medI||17;
-  document.getElementById('lVis').value=appSettings.vis||0.5;
+  document.getElementById('lDen').value=parseFloat(appSettings.den||2).toFixed(2);
+  document.getElementById('lMedI').value=parseFloat(appSettings.medI||17).toFixed(2);
+  document.getElementById('lVis').value=parseFloat(appSettings.vis||0.5).toFixed(2);
   document.getElementById('logModal').classList.add('open');
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
