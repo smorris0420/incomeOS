@@ -294,14 +294,16 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
   <div class="main-content">
 
+    <!-- GLOBAL VIEW-AS BANNER — sticks to top, visible on every page -->
+    <div id="viewAsBanner" style="position:sticky;top:0;z-index:50;border-radius:0;margin:0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Viewing as <strong id="viewAsName" style="margin-left:4px"></strong>
+      <button onclick="exitViewAs()">Exit view</button>
+    </div>
+
     <!-- CALCULATOR PAGE -->
     <div id="page-calc" class="page active">
       <div class="page-inner">
-        <div id="viewAsBanner">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Viewing as <strong id="viewAsName" style="margin-left:4px"></strong>
-          <button onclick="exitViewAs()">Exit</button>
-        </div>
         <div class="page-header">
           <div>
             <div class="page-title">Calculator <span class="sync-dot" id="syncDot"></span></div>
@@ -671,7 +673,9 @@ function showToast(m='Saved', e=false) {
 const hdrs = () => ({'Content-Type':'application/json','Authorization':'Bearer '+token});
 async function apiFetch(path, opts={}, asUserId=null) {
   const h = {...hdrs(), ...(opts.headers||{})};
-  if(asUserId) h['X-View-As'] = asUserId;
+  // Auto-inject X-View-As whenever admin is viewing as a user
+  const effectiveViewAs = asUserId || viewAsUser?.id || null;
+  if(effectiveViewAs) h['X-View-As'] = effectiveViewAs;
   const r = await fetch(path, {...opts, headers:h});
   if(r.status===401) { logout(); throw new Error('Session expired'); }
   if(!r.ok) {
@@ -742,14 +746,27 @@ function applyViewAs() {
 async function loadAllAsUser(userId, displayName) {
   setSyncDot('syncing');
   try {
-    const [sd,st] = await Promise.all([apiFetch('/api/stubs',{},userId), apiFetch('/api/settings',{},userId)]);
+    // Pass userId explicitly — viewAsUser may not be set yet at this point
+    const [sd,st] = await Promise.all([
+      apiFetch('/api/stubs',{},userId),
+      apiFetch('/api/settings',{},userId)
+    ]);
     stubs=sd; appSettings=st;
+    // Populate calculator with the viewed user's defaults
+    const rate = appSettings.defaultRate || mostRecentRate() || 21.90;
+    document.getElementById('iRate').value=rate;
+    if(appSettings.den) document.getElementById('iDen').value=appSettings.den;
+    if(appSettings.medI) document.getElementById('iMedI').value=appSettings.medI;
+    if(appSettings.vis) document.getElementById('iVis').value=appSettings.vis;
     showViewAsBanner(displayName);
     showToast('Viewing as '+displayName);
-    setSyncDot('ok'); calc();
+    setSyncDot('ok');
+    calc();
     buildHistory(); buildYTDTabs(); buildYTD();
-    showPage('history',null,null);
-  } catch(e) { setSyncDot('err'); showToast('Could not load user data',true); }
+    // Navigate to history so admin sees the user's paychecks immediately
+    const histBtn = document.querySelectorAll('.sidebar-nav-btn')[1];
+    showPage('history', histBtn, 'sb');
+  } catch(e) { setSyncDot('err'); showToast('Could not load user data: '+e.message, true); }
 }
 function exitViewAs() { viewAsUser=null; hideViewAsBanner(); loadAll(); showToast('Back to your account'); }
 function viewAsFromList(userId, displayName) {
@@ -1135,6 +1152,7 @@ async function changePassword() {
 }
 
 async function saveSettings() {
+  if(viewAsUser){showToast('Exit View As to change settings',true);return;}
   const rateVal = parseFloat(document.getElementById('sRate').value);
   const s={
     den: parseFloat(document.getElementById('sDen').value)||2,
@@ -1198,6 +1216,7 @@ function openLogModal() {
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 async function saveLog() {
+  if(viewAsUser){showToast('Exit View As to log paychecks',true);closeModal('logModal');return;}
   const rate=parseFloat(document.getElementById('lRate').value)||appSettings.defaultRate||mostRecentRate()||21.90;
   const reg=parseFloat(document.getElementById('lReg').value)||0;
   const ot=parseFloat(document.getElementById('lOT').value)||0;

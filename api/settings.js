@@ -5,14 +5,15 @@ export default async function handler(req, res) {
   const payload = await requireAuth(req, res);
   if (!payload) return;
 
-  let userId = payload.userId;
-  const viewAs = req.headers['x-view-as'];
-  if (viewAs && payload.role === 'admin' && req.method === 'GET') userId = viewAs;
-
   const supabase = db();
+  const viewAs = req.headers['x-view-as'];
+  const isAdmin = payload.role === 'admin';
+
+  // Admins can read/write another user's settings via X-View-As
+  const targetUserId = (isAdmin && viewAs) ? viewAs : payload.userId;
 
   if (req.method === 'GET') {
-    const { data } = await supabase.from('settings').select('key, value').eq('user_id', userId);
+    const { data } = await supabase.from('settings').select('key, value').eq('user_id', targetUserId);
     const obj = {};
     (data || []).forEach(r => { try { obj[r.key] = JSON.parse(r.value); } catch { obj[r.key] = r.value; } });
     return res.status(200).json(obj);
@@ -23,10 +24,10 @@ export default async function handler(req, res) {
     if (!body) return res.status(400).json({ error: 'No body' });
     for (const [key, value] of Object.entries(body)) {
       if (value === null || value === undefined) {
-        await supabase.from('settings').delete().eq('user_id', payload.userId).eq('key', key);
+        await supabase.from('settings').delete().eq('user_id', targetUserId).eq('key', key);
       } else {
         await supabase.from('settings').upsert({
-          user_id: payload.userId, key, value: JSON.stringify(value)
+          user_id: targetUserId, key, value: JSON.stringify(value)
         }, { onConflict: 'user_id,key' });
       }
     }
