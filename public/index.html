@@ -225,6 +225,8 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block;margin-left:7px;vertical-align:middle;transition:background .3s}
 .sync-dot.syncing{background:var(--amber);animation:pulse .8s infinite}
 .sync-dot.ok{background:var(--green)}.sync-dot.err{background:var(--red)}
+.sync-dot.offline{background:var(--text3)}
+.sync-dot.pending{background:var(--amber);animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* USER MANAGEMENT */
@@ -697,6 +699,20 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+// ===== OFFLINE STATE =====
+let isOnline = navigator.onLine;
+window.addEventListener('online',  () => { isOnline=true;  updateOnlineStatus(); flushOutbox(); });
+window.addEventListener('offline', () => { isOnline=false; updateOnlineStatus(); });
+
+function updateOnlineStatus() {
+  if(!isOnline) {
+    setSyncDot('offline');
+    showToast('You are offline — changes will sync when reconnected', false);
+  } else {
+    showToast('Back online');
+  }
+}
+
 let token = sessionStorage.getItem('payday_token') || '';
 let currentUser = JSON.parse(sessionStorage.getItem('payday_user') || 'null');
 let stubs = [], appSettings = {}, ytdYear = new Date().getFullYear(), chartInst = null, activeDetailId = null;
@@ -719,7 +735,19 @@ const fmt = n => '$' + (Math.abs(n)||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))
 const fmtS = n => { const a = Math.abs(n||0); return a >= 1000 ? '$' + (a/1000).toFixed(1) + 'k' : '$' + a.toFixed(2); };
 const fmtH = n => parseFloat(n||0).toFixed(2); // hours always 2 decimals
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
-const setSyncDot = s => { const d = document.getElementById('syncDot'); if(d) d.className = 'sync-dot ' + s; };
+function setSyncDot(s, count=0) {
+  const d = document.getElementById('syncDot');
+  if(!d) return;
+  d.className = 'sync-dot ' + s;
+  // Show pending count badge on amber dot
+  if(s === 'pending' && count > 0) {
+    d.title = count + ' change' + (count>1?'s':'')+' pending sync';
+    d.style.background = 'var(--amber)';
+  } else {
+    d.title = '';
+    d.style.background = '';
+  }
+}
 
 function showToast(m='Saved', e=false) {
   const t = document.getElementById('toast');
@@ -729,6 +757,27 @@ function showToast(m='Saved', e=false) {
 
 // ===== API =====
 const hdrs = () => ({'Content-Type':'application/json','Authorization':'Bearer '+token});
+
+// Enqueue an operation for offline sync, or execute immediately if online
+async function syncOp(path, method, body=null) {
+  const viewAs = viewAsUser?.id || null;
+  if(isOnline) {
+    // Online — execute immediately via apiFetch (which handles X-View-As automatically)
+    return apiFetch(path, { method, ...(body?{body:JSON.stringify(body)}:{}) });
+  } else {
+    // Offline — queue for later
+    if(window._idb && currentUser) {
+      await window._idb.idbEnqueue({
+        path, method, body, userId: currentUser.id, viewAs, queuedAt: Date.now()
+      });
+      const count = await window._idb.idbOutboxCount(currentUser.id);
+      setSyncDot('pending', count);
+      // Ask SW to sync when back online
+      navigator.serviceWorker?.controller?.postMessage({ type: 'QUEUE_SYNC' });
+    }
+    return { ok: true, offline: true };
+  }
+}
 async function apiFetch(path, opts={}, asUserId=null) {
   const h = {...hdrs(), ...(opts.headers||{})};
   // Auto-inject X-View-As whenever admin is viewing as a user
@@ -847,22 +896,69 @@ function viewAsFromList(userId, displayName) {
 // ===== DATA LOADING =====
 async function loadAll() {
   setSyncDot('syncing');
+  const userId = currentUser?.id;
   try {
-    const [sd,st] = await Promise.all([apiFetch('/api/stubs'), apiFetch('/api/settings')]);
-    stubs=sd; appSettings=st;
+    if(isOnline) {
+      const [sd,st] = await Promise.all([apiFetch('/api/stubs'), apiFetch('/api/settings')]);
+      stubs=sd; appSettings=st;
+      // Persist to IndexedDB for offline use
+      if(window._idb && userId) {
+        window._idb.idbSaveStubs(stubs, userId).catch(()=>{});
+        window._idb.idbSaveSettings(appSettings, userId).catch(()=>{});
+      }
+    } else {
+      // Offline — load from IndexedDB
+      if(window._idb && userId) {
+        stubs = await window._idb.idbGetStubs(userId) || [];
+        appSettings = await window._idb.idbGetSettings(userId) || {};
+        showToast('Offline — showing cached data');
+      } else {
+        throw new Error('No cached data available');
+      }
+    }
     if(appSettings.den) document.getElementById('iDen').value=appSettings.den;
     if(appSettings.medI) document.getElementById('iMedI').value=appSettings.medI;
     if(appSettings.vis) document.getElementById('iVis').value=appSettings.vis;
     const defaultRate=appSettings.defaultRate||mostRecentRate()||21.90;
     document.getElementById('iRate').value=defaultRate;
-    setSyncDot('ok'); calc();
-    buildYTDTabs(); buildYTD();
-    if(currentUser?.role==='admin') {
+    // Show pending outbox count
+    const pending = window._idb && userId ? await window._idb.idbOutboxCount(userId) : 0;
+    if(pending > 0) setSyncDot('pending', pending);
+    else setSyncDot(isOnline?'ok':'offline');
+    calc(); buildYTDTabs(); buildYTD();
+    if(currentUser?.role==='admin' && isOnline) {
       try { allUsers=await apiFetch('/api/users'); } catch {}
     }
-    // Start realtime subscription for this user
-    subscribeRealtime(currentUser.id);
+    if(isOnline) subscribeRealtime(currentUser.id);
   } catch(e) { setSyncDot('err'); if(e.message!=='Session expired') showToast('Could not load data',true); }
+}
+
+// ===== OUTBOX FLUSH =====
+let _flushing = false;
+async function flushOutbox() {
+  if(!isOnline || _flushing || !window._idb || !currentUser) return;
+  _flushing = true;
+  const userId = currentUser.id;
+  const ops = await window._idb.idbGetOutbox(userId);
+  if(!ops.length) { _flushing=false; return; }
+  setSyncDot('syncing');
+  let failed = 0;
+  for(const op of ops) {
+    try {
+      await fetch(op.path, {
+        method: op.method,
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token, ...(op.viewAs?{'X-View-As':op.viewAs}:{}) },
+        body: op.body ? JSON.stringify(op.body) : undefined,
+      }).then(r => { if(!r.ok) throw new Error('HTTP '+r.status); });
+      await window._idb.idbDequeue(op.opId);
+    } catch { failed++; }
+  }
+  const remaining = await window._idb.idbOutboxCount(userId);
+  if(remaining > 0) { setSyncDot('pending', remaining); }
+  else { setSyncDot('ok'); if(failed===0 && ops.length>0) showToast('All changes synced'); }
+  _flushing = false;
+  // Tell SW we synced
+  navigator.serviceWorker?.controller?.postMessage({ type: 'QUEUE_SYNC' });
 }
 
 // ===== REALTIME =====
@@ -1330,8 +1426,13 @@ async function saveSettings() {
   document.getElementById('iVis').value=s.vis;
   if(rateVal > 0) document.getElementById('iRate').value=rateVal;
   calc();
-  try { setSyncDot('syncing'); await apiFetch('/api/settings',{method:'POST',body:JSON.stringify(s)}); setSyncDot('ok'); showToast('Defaults saved'); }
-  catch { setSyncDot('err'); showToast('Save failed',true); }
+  if(window._idb && currentUser) window._idb.idbSaveSettings({...appSettings}, currentUser.id).catch(()=>{});
+  try {
+    setSyncDot('syncing');
+    await syncOp('/api/settings','POST',s);
+    if(isOnline) { setSyncDot('ok'); showToast('Defaults saved'); }
+    else showToast('Saved offline — will sync when reconnected');
+  } catch { setSyncDot('err'); showToast('Save failed',true); }
 }
 async function saveFedRate() {
   const v=parseFloat(document.getElementById('sFedRate').value);
@@ -1406,15 +1507,21 @@ async function saveLog() {
   appSettings.defaultRate=rate;
   calc();
 
-  // Sync to server in background
+  // Persist to IndexedDB immediately
+  if(window._idb && currentUser) {
+    window._idb.idbPutStub(stub, currentUser.id).catch(()=>{});
+    window._idb.idbSaveSettings({...appSettings}, currentUser.id).catch(()=>{});
+  }
+  // Sync to server (or queue if offline)
   try {
     setSyncDot('syncing');
     await Promise.all([
-      apiFetch('/api/stubs',{method:'POST',body:JSON.stringify(stub)}),
-      apiFetch('/api/settings',{method:'POST',body:JSON.stringify({defaultRate:rate})})
+      syncOp('/api/stubs','POST',stub),
+      syncOp('/api/settings','POST',{defaultRate:rate})
     ]);
-    setSyncDot('ok'); showToast('Paycheck logged');
-  } catch { setSyncDot('err'); showToast('Saved locally — sync failed',true); }
+    if(isOnline) { setSyncDot('ok'); showToast('Paycheck logged'); }
+    else showToast('Saved offline — will sync when reconnected');
+  } catch { setSyncDot('err'); showToast('Sync failed',true); }
 }
 
 // ===== DETAIL MODAL =====
@@ -1496,10 +1603,13 @@ async function saveEdit() {
   const d=new Date(s.date+'T12:00:00');
   document.getElementById('dTitle').textContent=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   buildHistory(); buildYTDTabs(); buildYTD();
+  // Update IndexedDB
+  if(window._idb && currentUser) window._idb.idbPutStub(s, currentUser.id).catch(()=>{});
   try {
     setSyncDot('syncing');
-    await apiFetch('/api/stubs?id='+s.id,{method:'PATCH',body:JSON.stringify(updated)});
-    setSyncDot('ok'); showToast('Paycheck updated');
+    await syncOp('/api/stubs?id='+s.id,'PATCH',updated);
+    if(isOnline) { setSyncDot('ok'); showToast('Paycheck updated'); }
+    else showToast('Saved offline — will sync when reconnected');
   } catch { setSyncDot('err'); showToast('Sync failed',true); }
 }
 async function deleteStub() {
@@ -1508,8 +1618,14 @@ async function deleteStub() {
   stubs=stubs.filter(s=>s.id!==id);
   closeModal('detailModal');
   buildHistory(); buildYTDTabs(); buildYTD();
-  try { setSyncDot('syncing'); await apiFetch('/api/stubs?id='+id,{method:'DELETE'}); setSyncDot('ok'); showToast('Deleted'); }
-  catch { setSyncDot('err'); showToast('Delete sync failed',true); }
+  // Remove from IndexedDB
+  if(window._idb) window._idb.idbDeleteStub(id).catch(()=>{});
+  try {
+    setSyncDot('syncing');
+    await syncOp('/api/stubs?id='+id,'DELETE');
+    if(isOnline) { setSyncDot('ok'); showToast('Deleted'); }
+    else showToast('Deleted offline — will sync when reconnected');
+  } catch { setSyncDot('err'); showToast('Delete sync failed',true); }
 }
 
 // ===== BULK IMPORT =====
@@ -1581,16 +1697,21 @@ async function bulkSave() {
   let saved=0, failed=0;
   for(const stub of toSave) {
     try {
-      await apiFetch('/api/stubs',{method:'POST',body:JSON.stringify(stub)});
-      stubs.unshift(stub); saved++;
+      await syncOp('/api/stubs','POST',stub);
+      stubs.unshift(stub);
+      if(window._idb && currentUser) window._idb.idbPutStub(stub, currentUser.id).catch(()=>{});
+      saved++;
     } catch { failed++; }
   }
   // Live update history + YTD after bulk save
   stubs.sort((a,b)=>b.date.localeCompare(a.date));
   buildHistory(); buildYTDTabs(); buildYTD();
-  setSyncDot(failed?'err':'ok');
-  document.getElementById('bulkStatus').textContent=`✓ Saved ${saved} paychecks${failed?` (${failed} failed)`:''}`;
-  showToast('Saved '+saved+' paychecks'+(failed?', '+failed+' failed':''));
+  const msg = isOnline
+    ? `✓ Saved ${saved} paychecks${failed?` (${failed} failed)`:''}`
+    : `✓ Queued ${saved} paychecks for sync`;
+  setSyncDot(failed?'err':(isOnline?'ok':'pending'));
+  document.getElementById('bulkStatus').textContent=msg;
+  showToast('Saved '+saved+' paychecks'+(failed?', '+failed+' failed':'')+(isOnline?'':' (offline)'));
   if(saved>0) {
     // Reset sheet cleanly after successful save
     document.getElementById('bulkBody').innerHTML='';
@@ -1620,6 +1741,29 @@ if(token&&currentUser) {
   loadAll();
 }
 </script>
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
+<script type="module">
+// ===== OFFLINE DB IMPORTS =====
+import {
+  idbSaveStubs, idbGetStubs, idbPutStub, idbDeleteStub,
+  idbSaveSettings, idbGetSettings,
+  idbEnqueue, idbGetOutbox, idbDequeue, idbOutboxCount, idbClearOutbox
+} from './db.js';
+
+// Make these available globally (rest of script is non-module)
+window._idb = { idbSaveStubs, idbGetStubs, idbPutStub, idbDeleteStub,
+  idbSaveSettings, idbGetSettings,
+  idbEnqueue, idbGetOutbox, idbDequeue, idbOutboxCount, idbClearOutbox };
+</script>
+<script>
+// Register service worker
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    // Listen for SYNC_NOW messages from SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if(e.data?.type === 'SYNC_NOW') flushOutbox();
+    });
+  }).catch(()=>{});
+}
+</script>
 </body>
 </html>
