@@ -25,7 +25,7 @@
   --shadow-md:0 4px 12px rgba(0,0,0,0.10);
   --radius:12px;--radius-sm:8px;
   --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
-  --sidebar-w:220px;--content-max:900px;
+  --sidebar-w:220px;--content-max:960px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg)}
@@ -84,8 +84,12 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 .page{display:none;animation:fadeIn .18s ease}
 .page.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.page-inner{max-width:var(--content-max);margin:0 auto;padding:24px 20px}
-@media(min-width:768px){.page-inner{padding:32px 40px}}
+.page-inner{max-width:var(--content-max);margin:0 auto;padding:20px 16px}
+@media(min-width:768px){.page-inner{padding:28px 36px}}
+@media(min-width:1400px){.page-inner{max-width:1100px}}
+/* Full-width pages (bulk import, admin users, ytd) */
+.page-inner-wide{max-width:100%;margin:0 auto;padding:20px 16px}
+@media(min-width:768px){.page-inner-wide{padding:28px 36px}}
 .page-header{padding:0 0 20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .page-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text)}
 .page-sub{font-size:13px;color:var(--text3);margin-top:2px}
@@ -108,11 +112,19 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 .card-pad{padding:16px}
 
 /* METRICS */
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.metrics{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.metrics.metrics-6{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:900px){.metrics.metrics-4{grid-template-columns:repeat(4,1fr)}}
+.metrics-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(min-width:900px){.metrics-2col{grid-template-columns:repeat(4,1fr)}}
 .metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;box-shadow:var(--shadow)}
 .metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-weight:600}
 .metric-value{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--text);white-space:nowrap}
 .metric-value.green{color:var(--green)}
+.metric-value.red{color:var(--red)}
+.metric-value.amber{color:var(--amber)}
+.metric-value.blue{color:var(--blue)}
 
 /* INPUTS */
 .input-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -169,7 +181,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
 /* SPREADSHEET BULK IMPORT */
 .sheet-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius-sm);border:1.5px solid var(--border2);margin-bottom:12px}
-.sheet-table{border-collapse:collapse;table-layout:fixed;width:1260px;background:var(--bg2);font-size:13px}
+.sheet-table{border-collapse:collapse;table-layout:fixed;width:100%;min-width:900px;background:var(--bg2);font-size:13px}
 .sheet-table th{background:var(--bg3);padding:9px 8px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);border-bottom:1.5px solid var(--border2);white-space:nowrap;overflow:hidden}
 .sheet-table td{border-bottom:1px solid var(--border);padding:3px 2px}
 .sheet-table tr:last-child td{border-bottom:none}
@@ -186,9 +198,18 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.ytd-bottom-grid{grid-template-columns:1fr!important}
+@media(min-width:700px){.ytd-bottom-grid{grid-template-columns:1fr 1fr!important}}
 
 /* CHART */
-.chart-wrap{position:relative;width:100%;height:180px;margin-bottom:14px}
+.chart-wrap{position:relative;width:100%;height:200px;margin-bottom:14px}
+@media(min-width:768px){.chart-wrap{height:240px}}
+@media(min-width:1200px){.chart-wrap{height:280px}}
+.chart-wrap-sm{position:relative;width:100%;height:160px;margin-bottom:14px}
+@media(min-width:768px){.chart-wrap-sm{height:180px}}
+/* Two-column chart layout on large screens */
+.chart-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:14px}
+@media(min-width:1000px){.chart-grid{grid-template-columns:1fr 1fr}}
 
 /* TOAST */
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--bg2);border:1.5px solid var(--green-border);color:var(--green);padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:999;transition:transform .25s ease;white-space:nowrap;box-shadow:var(--shadow-md)}
@@ -361,35 +382,72 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
     <!-- YTD PAGE -->
     <div id="page-ytd" class="page">
-      <div class="page-inner">
+      <div class="page-inner-wide">
         <div class="page-header">
           <div class="page-title">Year to Date</div>
           <span id="ytdYearLabel" class="page-sub"></span>
         </div>
         <!-- Year tabs built dynamically -->
         <div class="tab-row" id="ytdTabs"></div>
-        <div class="metrics">
-          <div class="metric"><div class="metric-label">Gross</div><div class="metric-value" id="ytdGross">—</div></div>
-          <div class="metric"><div class="metric-label">Taxes</div><div class="metric-value" id="ytdTax">—</div></div>
-          <div class="metric"><div class="metric-label">Avg net</div><div class="metric-value green" id="ytdAvg">—</div></div>
+
+        <!-- TOP METRICS ROW: 6 key numbers -->
+        <div class="metrics metrics-6" style="margin-bottom:16px">
+          <div class="metric"><div class="metric-label">Total Gross</div><div class="metric-value" id="ytdGross">—</div></div>
+          <div class="metric"><div class="metric-label">Total Net</div><div class="metric-value green" id="ytdTotalNet">—</div></div>
+          <div class="metric"><div class="metric-label">Avg Paycheck</div><div class="metric-value green" id="ytdAvg">—</div></div>
+          <div class="metric"><div class="metric-label">Total Taxes</div><div class="metric-value red" id="ytdTax">—</div></div>
+          <div class="metric"><div class="metric-label">OT Earnings</div><div class="metric-value amber" id="ytdOT">—</div></div>
+          <div class="metric"><div class="metric-label">Paychecks</div><div class="metric-value" id="ytdCount">—</div></div>
         </div>
-        <div class="chart-wrap"><canvas id="ytdChart"></canvas></div>
-        <div class="card">
-          <div class="card-row"><span class="card-label">Paychecks logged</span><span class="card-value" id="ytdCount">—</span></div>
-          <div class="card-row"><span class="card-label">Regular earnings</span><span class="card-value" id="ytdReg">—</span></div>
-          <div class="card-row"><span class="card-label">Overtime earnings</span><span class="card-value amber" id="ytdOT">—</span></div>
-          <div class="card-row"><span class="card-label" style="color:var(--red)">– Fed withholding</span><span class="card-value red" id="ytdFed">—</span></div>
-          <div class="card-row"><span class="card-label" style="color:var(--red)">– Soc Security</span><span class="card-value red" id="ytdSS">—</span></div>
-          <div class="card-row"><span class="card-label" style="color:var(--red)">– Medicare</span><span class="card-value red" id="ytdMed">—</span></div>
-          <div class="card-row"><span class="card-label" style="color:var(--red)">– Benefits</span><span class="card-value red" id="ytdBen">—</span></div>
-          <div class="card-row card-total"><span class="card-label">Effective tax rate (fed + FICA)</span><span class="card-value green" id="ytdRate">—</span></div>
+
+        <!-- CHARTS ROW: net pay bars + earnings breakdown side by side on large screens -->
+        <div class="chart-grid">
+          <div class="card card-pad" style="margin-bottom:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Net Pay Per Paycheck</div>
+            <div class="chart-wrap-sm"><canvas id="ytdChart"></canvas></div>
+          </div>
+          <div class="card card-pad" style="margin-bottom:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Cumulative Net Pay</div>
+            <div class="chart-wrap-sm"><canvas id="ytdCumChart"></canvas></div>
+          </div>
         </div>
+
+        <!-- SECOND METRICS ROW -->
+        <div class="metrics metrics-4" style="margin-top:16px">
+          <div class="metric"><div class="metric-label">Regular Pay</div><div class="metric-value" id="ytdReg">—</div></div>
+          <div class="metric"><div class="metric-label">Holiday Pay</div><div class="metric-value blue" id="ytdHol">—</div></div>
+          <div class="metric"><div class="metric-label">Total Hours</div><div class="metric-value" id="ytdHrs">—</div></div>
+          <div class="metric"><div class="metric-label">OT Hours</div><div class="metric-value amber" id="ytdOTHrs">—</div></div>
+        </div>
+
+        <!-- DEDUCTION BREAKDOWN + TAX RATE side by side -->
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:4px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="ytd-bottom-grid">
+            <div class="card">
+              <div class="card-row"><span class="card-label" style="font-weight:700">Deductions Breakdown</span></div>
+              <div class="card-row"><span class="card-label" style="color:var(--red)">– Fed withholding</span><span class="card-value red" id="ytdFed">—</span></div>
+              <div class="card-row"><span class="card-label" style="color:var(--red)">– Soc Security (6.2%)</span><span class="card-value red" id="ytdSS">—</span></div>
+              <div class="card-row"><span class="card-label" style="color:var(--red)">– Medicare (1.45%)</span><span class="card-value red" id="ytdMed">—</span></div>
+              <div class="card-row"><span class="card-label" style="color:var(--red)">– Benefits</span><span class="card-value red" id="ytdBen">—</span></div>
+              <div class="card-row card-total"><span class="card-label">Total deducted</span><span class="card-value red" id="ytdTotalDed">—</span></div>
+            </div>
+            <div class="card">
+              <div class="card-row"><span class="card-label" style="font-weight:700">Tax Summary</span></div>
+              <div class="card-row"><span class="card-label">Effective fed rate</span><span class="card-value amber" id="ytdFedRate">—</span></div>
+              <div class="card-row"><span class="card-label">FICA rate (SS + Med)</span><span class="card-value" id="ytdFICA">7.65%</span></div>
+              <div class="card-row"><span class="card-label">Combined tax rate</span><span class="card-value amber" id="ytdRate">—</span></div>
+              <div class="card-row"><span class="card-label">Avg gross / paycheck</span><span class="card-value" id="ytdAvgGross">—</span></div>
+              <div class="card-row card-total"><span class="card-label">Keep rate (net/gross)</span><span class="card-value green" id="ytdKeep">—</span></div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <!-- BULK IMPORT PAGE -->
     <div id="page-bulk" class="page">
-      <div class="page-inner">
+      <div class="page-inner-wide">
         <div class="page-header">
           <div>
             <div class="page-title">Bulk Import</div>
@@ -404,20 +462,20 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
         <div class="sheet-wrap">
           <table class="sheet-table" id="bulkTable">
             <colgroup>
-              <col style="width:36px">
-              <col style="width:140px">
-              <col style="width:84px">
-              <col style="width:84px">
-              <col style="width:84px">
-              <col style="width:84px">
-              <col style="width:88px">
-              <col style="width:84px">
-              <col style="width:104px">
-              <col style="width:84px">
-              <col style="width:96px">
-              <col style="width:80px">
-              <col style="width:84px">
-              <col style="width:36px">
+              <col style="width:3%">
+              <col style="width:12%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:8%">
+              <col style="width:7%">
+              <col style="width:8%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:3%">
             </colgroup>
             <thead><tr>
               <th>#</th>
@@ -475,7 +533,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 
     <!-- ADMIN PAGE (injected into DOM only for admins) -->
     <div id="page-admin" class="page">
-      <div class="page-inner">
+      <div class="page-inner-wide">
         <div class="page-header">
           <div>
             <div class="page-title">User Management</div>
@@ -975,46 +1033,103 @@ function setYTDYear(yr, btn) {
   document.getElementById('ytdYearLabel').textContent=yr;
   buildYTD();
 }
+let chartInstCum = null;
 function buildYTD() {
   document.getElementById('ytdYearLabel').textContent=ytdYear;
   const filtered=stubs.filter(s=>s.date.startsWith(ytdYear+''));
+
+  const allIds=['ytdGross','ytdTotalNet','ytdAvg','ytdTax','ytdOT','ytdCount','ytdReg','ytdHol',
+    'ytdHrs','ytdOTHrs','ytdFed','ytdSS','ytdMed','ytdBen','ytdTotalDed','ytdFedRate','ytdRate','ytdKeep','ytdAvgGross'];
   if(!filtered.length) {
-    ['ytdGross','ytdTax','ytdAvg','ytdCount','ytdReg','ytdOT','ytdFed','ytdSS','ytdMed','ytdBen','ytdRate']
-      .forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='—'; });
-    if(chartInst) { chartInst.destroy(); chartInst=null; }
+    allIds.forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='—'; });
+    if(chartInst){chartInst.destroy();chartInst=null;}
+    if(chartInstCum){chartInstCum.destroy();chartInstCum=null;}
     return;
   }
-  const tG=filtered.reduce((a,s)=>a+s.gross,0);
-  const tFed=filtered.reduce((a,s)=>a+s.fed,0);
-  const tSS=filtered.reduce((a,s)=>a+s.ss,0);
-  const tMed=filtered.reduce((a,s)=>a+s.med,0);
-  const tBen=filtered.reduce((a,s)=>a+s.den+s.medI+s.vis,0);
-  const tTax=tFed+tSS+tMed;
-  const tReg=filtered.reduce((a,s)=>a+s.reg*s.rate,0);
-  const tOT=filtered.reduce((a,s)=>a+(s.ot||0)*s.rate*1.5,0);
-  const nets=filtered.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis; return s.net||(s.gross-d); });
-  const avgNet=nets.reduce((a,v)=>a+v,0)/nets.length;
-  document.getElementById('ytdGross').textContent=fmtS(tG);
-  document.getElementById('ytdTax').textContent=fmtS(tTax);
-  document.getElementById('ytdAvg').textContent=fmt(avgNet);
-  document.getElementById('ytdCount').textContent=filtered.length+' paychecks';
-  document.getElementById('ytdReg').textContent=fmt(tReg);
-  document.getElementById('ytdOT').textContent=fmt(tOT);
-  document.getElementById('ytdFed').textContent=fmt(tFed);
-  document.getElementById('ytdSS').textContent=fmt(tSS);
-  document.getElementById('ytdMed').textContent=fmt(tMed);
-  document.getElementById('ytdBen').textContent=fmt(tBen);
-  document.getElementById('ytdRate').textContent=tG>0?((tTax/tG)*100).toFixed(1)+'%':'—';
+
+  // ── Compute all aggregates ───────────────────────────────────────────────
+  const tG    = filtered.reduce((a,s)=>a+s.gross, 0);
+  const tFed  = filtered.reduce((a,s)=>a+s.fed, 0);
+  const tSS   = filtered.reduce((a,s)=>a+s.ss, 0);
+  const tMed  = filtered.reduce((a,s)=>a+s.med, 0);
+  const tBen  = filtered.reduce((a,s)=>a+s.den+s.medI+s.vis, 0);
+  const tTax  = tFed+tSS+tMed;
+  const tDed  = tTax+tBen;
+  const tReg  = filtered.reduce((a,s)=>a+s.reg*s.rate, 0);
+  const tOT   = filtered.reduce((a,s)=>a+(s.ot||0)*s.rate*1.5, 0);
+  const tHol  = filtered.reduce((a,s)=>a+(s.hol||0)*s.rate, 0);
+  const tHrs  = filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.hol||0), 0);
+  const tOTHrs= filtered.reduce((a,s)=>a+(s.ot||0), 0);
+  const nets  = filtered.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis; return s.net||(s.gross-d); });
+  const tNet  = nets.reduce((a,v)=>a+v, 0);
+  const avgNet= tNet/nets.length;
+  const avgG  = tG/filtered.length;
+  const fedRate = tG>0 ? (tFed/tG)*100 : 0;
+  const taxRate = tG>0 ? (tTax/tG)*100 : 0;
+  const keepRate= tG>0 ? (tNet/tG)*100 : 0;
+
+  // ── Render metrics ────────────────────────────────────────────────────────
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('ytdGross',    fmtS(tG));
+  set('ytdTotalNet', fmtS(tNet));
+  set('ytdAvg',      fmt(avgNet));
+  set('ytdTax',      fmtS(tTax));
+  set('ytdOT',       tOT>0 ? fmt(tOT) : '—');
+  set('ytdCount',    filtered.length);
+  set('ytdReg',      fmt(tReg));
+  set('ytdHol',      tHol>0 ? fmt(tHol) : '—');
+  set('ytdHrs',      fmtH(tHrs)+'h');
+  set('ytdOTHrs',    tOTHrs>0 ? fmtH(tOTHrs)+'h' : '—');
+  set('ytdFed',      fmt(tFed));
+  set('ytdSS',       fmt(tSS));
+  set('ytdMed',      fmt(tMed));
+  set('ytdBen',      fmt(tBen));
+  set('ytdTotalDed', fmt(tDed));
+  set('ytdFedRate',  fedRate.toFixed(1)+'%');
+  set('ytdRate',     taxRate.toFixed(1)+'%');
+  set('ytdKeep',     keepRate.toFixed(1)+'%');
+  set('ytdAvgGross', fmt(avgG));
+
+  // ── Charts ────────────────────────────────────────────────────────────────
   const sorted=[...filtered].sort((a,b)=>a.date.localeCompare(b.date));
   const labels=sorted.map(s=>{ const d=new Date(s.date+'T12:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); });
   const netData=sorted.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis; return parseFloat((s.net||(s.gross-d)).toFixed(2)); });
-  if(chartInst) { chartInst.destroy(); chartInst=null; }
+
+  const chartDefaults = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{font:{size:9},color:'#8a96a3',autoSkip:true,maxTicksLimit:14},grid:{display:false},border:{display:false}},
+      y:{ticks:{font:{size:9},color:'#8a96a3',callback:v=>'$'+v.toLocaleString()},grid:{color:'rgba(0,0,0,.05)'},border:{display:false}}
+    }
+  };
+
+  // Bar chart — net per paycheck
+  if(chartInst){chartInst.destroy();chartInst=null;}
   chartInst=new Chart(document.getElementById('ytdChart'),{
     type:'bar',
-    data:{labels,datasets:[{label:'Net pay',data:netData,backgroundColor:'rgba(22,163,74,0.6)',borderRadius:4,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{font:{size:9},color:'#8a96a3',autoSkip:true,maxTicksLimit:12},grid:{display:false},border:{display:false}},
-              y:{ticks:{font:{size:9},color:'#8a96a3',callback:v=>'$'+v},grid:{color:'rgba(0,0,0,.06)'},border:{display:false}}}}
+    data:{labels,datasets:[{
+      label:'Net pay',data:netData,
+      backgroundColor:'rgba(22,163,74,0.55)',
+      borderColor:'rgba(22,163,74,0.8)',
+      borderWidth:1,borderRadius:4,borderSkipped:false
+    }]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,tooltip:{callbacks:{label:c=>'Net: '+fmt(c.raw)}}}}
+  });
+
+  // Line chart — cumulative net pay
+  let running=0;
+  const cumData=netData.map(v=>{running+=v;return parseFloat(running.toFixed(2));});
+  if(chartInstCum){chartInstCum.destroy();chartInstCum=null;}
+  chartInstCum=new Chart(document.getElementById('ytdCumChart'),{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Cumulative net',data:cumData,
+      borderColor:'rgba(22,163,74,0.9)',
+      backgroundColor:'rgba(22,163,74,0.08)',
+      borderWidth:2,pointRadius:3,pointHoverRadius:5,fill:true,tension:0.3
+    }]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,tooltip:{callbacks:{label:c=>'Total: '+fmt(c.raw)}}}}
   });
 }
 
