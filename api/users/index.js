@@ -5,7 +5,7 @@ import { db } from '../_db.js';
 const DEFAULT_PASSWORD = 'Password1';
 
 function safeUser(u) {
-  return { id: u.id, username: u.username, displayName: u.display_name, role: u.role, active: u.active, createdAt: u.created_at };
+  return { id: u.id, username: u.username, email: u.email || null, displayName: u.display_name, role: u.role, active: u.active, createdAt: u.created_at };
 }
 
 export default async function handler(req, res) {
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const payload = await requireAdmin(req, res);
     if (!payload) return;
-    const { data: users } = await supabase.from('users').select('id,username,display_name,role,active,created_at').order('created_at');
+    const { data: users } = await supabase.from('users').select('id,username,email,display_name,role,active,created_at').order('created_at');
     // Fetch defaultRate from settings for each user
     const { data: rates } = await supabase.from('settings').select('user_id,value').eq('key','defaultRate');
     const rateMap = {};
@@ -26,13 +26,14 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const payload = await requireAdmin(req, res);
     if (!payload) return;
-    const { username, password, displayName, role = 'user' } = req.body || {};
+    const { username, password, displayName, email, role = 'user' } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'username and password required' });
     if (!['admin', 'user'].includes(role)) return res.status(400).json({ error: 'invalid role' });
     const hash = await bcrypt.hash(password, 12);
     const id = 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
     const { error } = await supabase.from('users').insert({
       id, username: username.toLowerCase().trim(),
+      email: email ? email.toLowerCase().trim() : null,
       password_hash: hash, display_name: displayName || username,
       role, created_by: payload.userId,
     });
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'Missing id' });
     if (payload.role !== 'admin' && id !== payload.userId) return res.status(403).json({ error: 'Forbidden' });
 
-    const { password, resetPassword, displayName, username, role, active } = req.body || {};
+    const { password, resetPassword, displayName, username, email, role, active } = req.body || {};
 
     if (resetPassword || password) {
       const pw = resetPassword ? DEFAULT_PASSWORD : password;
@@ -60,6 +61,7 @@ export default async function handler(req, res) {
     if (payload.role === 'admin') {
       const updates = {};
       if (username !== undefined) updates.username = username.toLowerCase().trim();
+      if (email !== undefined) updates.email = email ? email.toLowerCase().trim() : null;
       if (displayName !== undefined) updates.display_name = displayName;
       if (role !== undefined) updates.role = role;
       if (active !== undefined) updates.active = active;

@@ -644,8 +644,12 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
   <div class="modal">
     <div class="modal-title">Add user <button class="modal-close" onclick="closeModal('newUserModal')">Close</button></div>
     <div class="form-grid">
-      <div class="form-field"><label>Email / Username</label><input type="text" id="nuUsername" autocapitalize="none" placeholder="sam@disney.com"></div>
-      <div class="form-field"><label>Display name</label><input type="text" id="nuDisplay" placeholder="Sam Smith"></div>
+      <div class="form-field"><label>Username</label><input type="text" id="nuUsername" autocapitalize="none" placeholder="smorris"></div>
+      <div class="form-field"><label>Display name</label><input type="text" id="nuDisplay" placeholder="Sam Morris"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Email <span style="color:var(--text3);font-weight:400">(optional)</span></label><input type="email" id="nuEmail" autocapitalize="none" placeholder="sam@disney.com"></div>
+      <div class="form-field" style="visibility:hidden"></div>
     </div>
     <div class="form-grid">
       <div class="form-field"><label>Password</label><input type="password" id="nuPassword" placeholder="Temp password"></div>
@@ -662,9 +666,15 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
   <div class="modal">
     <div class="modal-title">Edit user <button class="modal-close" onclick="closeModal('editUserModal')">Close</button></div>
     <input type="hidden" id="euId">
+
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:0 0 8px">Account</div>
     <div class="form-grid">
-      <div class="form-field"><label>Email / Username</label><input type="text" id="euUsername" autocapitalize="none"></div>
-      <div class="form-field"><label>Display name</label><input type="text" id="euDisplay"></div>
+      <div class="form-field"><label>Display name</label><input type="text" id="euDisplay" placeholder="Sam Morris"></div>
+      <div class="form-field"><label>Username</label><input type="text" id="euUsername" autocapitalize="none" placeholder="smorris"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Email <span style="color:var(--text3);font-weight:400">(optional)</span></label><input type="email" id="euEmail" autocapitalize="none" placeholder="sam@disney.com"></div>
+      <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="euRate" step="0.01" min="0" placeholder="21.90"></div>
     </div>
     <div class="form-grid">
       <div class="form-field"><label>Role</label>
@@ -674,17 +684,27 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
         <select id="euActive"><option value="true">Active</option><option value="false">Inactive</option></select>
       </div>
     </div>
-    <div style="background:var(--amber-dim);border:1px solid rgba(180,83,9,.2);border-radius:var(--radius-sm);padding:12px 14px;margin:10px 0;font-size:13px;color:var(--amber)">
-      <strong>Reset password</strong> — Sets password to <span style="font-family:var(--mono)">Password1</span>. User should change it after signing in.
+
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:14px 0 8px">Default deductions</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Dental ($)</label><input type="number" id="euDen" step="0.01" min="0" placeholder="2.00"></div>
+      <div class="form-field"><label>Medical ($)</label><input type="number" id="euMedI" step="0.01" min="0" placeholder="17.00"></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-secondary" style="flex:1" onclick="resetUserPassword()">Reset to Password1</button>
-      <button class="btn btn-primary" style="flex:1" onclick="saveEditUser()">Save changes</button>
+    <div class="form-grid">
+      <div class="form-field"><label>Vision ($)</label><input type="number" id="euVis" step="0.01" min="0" placeholder="0.50"></div>
+      <div class="form-field"></div>
     </div>
-    <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:12px">
-      <button class="btn btn-danger" onclick="deleteUser()">
+
+    <button class="btn btn-primary" style="margin-top:4px" onclick="saveEditUser()">Save changes</button>
+
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="resetUserPassword()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Reset to Password1
+      </button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteUser()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        Permanently delete user &amp; all their data
+        Delete user
       </button>
     </div>
   </div>
@@ -1275,7 +1295,7 @@ async function buildAdminPage() {
         <div class="user-avatar">${initials}</div>
         <div class="user-info">
           <div class="user-name">${u.displayName||u.username} ${adminBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
-          <div class="user-meta">@${u.username}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
+          <div class="user-meta">@${u.username}${u.email?' &middot; '+u.email:''}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
         </div>
         <div class="user-actions">
           ${!isSelf?`<button class="icon-btn view-as" onclick="viewAsFromList('${u.id}','${u.displayName||u.username}')">View As</button>`:''}
@@ -1307,7 +1327,7 @@ async function buildUserList() {
       <div class="user-avatar">${initials}</div>
       <div class="user-info">
         <div class="user-name">${u.displayName||u.username} ${adminBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
-        <div class="user-meta">@${u.username}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
+        <div class="user-meta">@${u.username}${u.email?' &middot; '+u.email:''}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
       </div>
       <div class="user-actions">
         ${!isSelf?`<button class="icon-btn view-as" onclick="viewAsFromList('${u.id}','${u.displayName||u.username}')">View As</button>`:''}
@@ -1318,25 +1338,55 @@ async function buildUserList() {
 }
 
 // Open edit user modal
-function openEditUserModal(userId) {
+async function openEditUserModal(userId) {
   const u=allUsers.find(x=>x.id===userId); if(!u) return;
   document.getElementById('euId').value=u.id;
   document.getElementById('euUsername').value=u.username;
+  document.getElementById('euEmail').value=u.email||'';
   document.getElementById('euDisplay').value=u.displayName||'';
   document.getElementById('euRole').value=u.role;
   document.getElementById('euActive').value=String(u.active);
+  // Clear defaults then load from user's settings
+  document.getElementById('euRate').value='';
+  document.getElementById('euDen').value='';
+  document.getElementById('euMedI').value='';
+  document.getElementById('euVis').value='';
+  try {
+    const settings = await apiFetch('/api/settings',{},userId);
+    if(settings.defaultRate) document.getElementById('euRate').value=settings.defaultRate;
+    if(settings.den) document.getElementById('euDen').value=settings.den;
+    if(settings.medI) document.getElementById('euMedI').value=settings.medI;
+    if(settings.vis) document.getElementById('euVis').value=settings.vis;
+  } catch {}
   document.getElementById('editUserModal').classList.add('open');
 }
 async function saveEditUser() {
   const id=document.getElementById('euId').value;
   const username=document.getElementById('euUsername').value.trim();
+  const email=document.getElementById('euEmail').value.trim()||null;
   const displayName=document.getElementById('euDisplay').value.trim();
   const role=document.getElementById('euRole').value;
   const active=document.getElementById('euActive').value==='true';
   if(!username) { showToast('Username is required',true); return; }
+  // Collect default settings
+  const rateVal=parseFloat(document.getElementById('euRate').value);
+  const denVal=parseFloat(document.getElementById('euDen').value);
+  const medIVal=parseFloat(document.getElementById('euMedI').value);
+  const visVal=parseFloat(document.getElementById('euVis').value);
+  const settingsUpdate={};
+  if(!isNaN(rateVal)&&rateVal>0) settingsUpdate.defaultRate=rateVal;
+  if(!isNaN(denVal)&&denVal>=0) settingsUpdate.den=denVal;
+  if(!isNaN(medIVal)&&medIVal>=0) settingsUpdate.medI=medIVal;
+  if(!isNaN(visVal)&&visVal>=0) settingsUpdate.vis=visVal;
   try {
     setSyncDot('syncing');
-    await apiFetch('/api/users?id='+id,{method:'PATCH',body:JSON.stringify({username,displayName,role,active})});
+    // Save account info and settings in parallel
+    const ops=[apiFetch('/api/users?id='+id,{method:'PATCH',body:JSON.stringify({username,email,displayName,role,active})})];
+    if(Object.keys(settingsUpdate).length) {
+      // Use X-View-As to write settings as this user
+      ops.push(fetch('/api/settings',{method:'POST',headers:{...({'Content-Type':'application/json','Authorization':'Bearer '+token}),'X-View-As':id},body:JSON.stringify(settingsUpdate)}).then(r=>r.json()));
+    }
+    await Promise.all(ops);
     setSyncDot('ok');
     closeModal('editUserModal');
     await buildUserList();
@@ -1375,6 +1425,7 @@ This will delete their account AND all their paycheck history. This cannot be un
 
 function openNewUserModal() {
   document.getElementById('nuUsername').value='';
+  document.getElementById('nuEmail').value='';
   document.getElementById('nuDisplay').value='';
   document.getElementById('nuPassword').value='';
   document.getElementById('nuRole').value='user';
@@ -1382,6 +1433,7 @@ function openNewUserModal() {
 }
 async function createUser() {
   const username=document.getElementById('nuUsername').value.trim();
+  const email=document.getElementById('nuEmail').value.trim()||null;
   const displayName=document.getElementById('nuDisplay').value.trim();
   const password=document.getElementById('nuPassword').value;
   const role=document.getElementById('nuRole').value;
@@ -1390,7 +1442,7 @@ async function createUser() {
   if(password.length<6) { showToast('Password must be at least 6 characters',true); return; }
   try {
     setSyncDot('syncing');
-    await apiFetch('/api/users',{method:'POST',body:JSON.stringify({username,displayName,password,role})});
+    await apiFetch('/api/users',{method:'POST',body:JSON.stringify({username,email,displayName,password,role})});
     setSyncDot('ok'); closeModal('newUserModal');
     await buildUserList(); showToast('User @'+username+' created');
   } catch(e) { setSyncDot('err'); showToast(e.message||'Error creating user',true); }

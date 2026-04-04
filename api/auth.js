@@ -11,11 +11,14 @@ export default async function handler(req, res) {
 
   await new Promise(r => setTimeout(r, 400)); // brute-force delay
 
+  const login = username.toLowerCase().trim();
+
   try {
+    // Match against username OR email
     const { data: rows } = await db()
       .from('users')
-      .select('id, username, display_name, password_hash, role')
-      .eq('username', username.toLowerCase().trim())
+      .select('id, username, email, display_name, password_hash, role')
+      .or(`username.eq.${login},email.eq.${login}`)
       .eq('active', true)
       .limit(1);
 
@@ -25,7 +28,13 @@ export default async function handler(req, res) {
     if (!valid) return res.status(401).json({ error: 'Invalid username or password' });
 
     const token = await signToken(user.id, user.username, user.role);
-    return res.status(200).json({ token, username: user.username, displayName: user.display_name || user.username, role: user.role, userId: user.id });
+    return res.status(200).json({
+      token,
+      username: user.username,
+      displayName: user.display_name || user.username,
+      role: user.role,
+      userId: user.id,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
