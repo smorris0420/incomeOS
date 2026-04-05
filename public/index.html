@@ -1578,22 +1578,34 @@ function buildYTD() {
   const tTax  = tFed+tSS+tMed;
   const tDed  = tTax+tBen;
   // Use stored gross for accuracy — derive OT/DT as remainder after reg/hol/ben/prem/addl
-  const tReg  = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*s.reg), 0);
+  const tReg  = filtered.reduce((a,s)=>a+((s.regPay!=null&&s.regPay>0)?s.regPay:payRound(rateRound(s.rate)*s.reg)), 0);
   const tHol  = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*(s.hol||0)), 0);
   const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0))), 0);
   const tPrem = filtered.reduce((a,s)=>a+payRound((s.premHrs||0)*(s.premRate||0)), 0);
   const tAddl = filtered.reduce((a,s)=>a+(s.addl||0), 0);
-  // OT+DT derived from stored gross so penny rounding matches paystub exactly
+  // OT+DT: use stored otPay when available, otherwise derive from gross
   const tOTDT = filtered.reduce((a,s)=>{
-    const regPay  = payRound(rateRound(s.rate)*s.reg);
+    // If otPay was stored directly (entered from paystub), use it
+    if(s.otPay != null && s.otPay > 0) {
+      // Also add DT if present (derived from gross minus everything else minus stored OT)
+      const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(rateRound(s.rate)*s.reg);
+      const holPay  = payRound(rateRound(s.rate)*(s.hol||0));
+      const benPay  = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
+      const premPay = payRound((s.premHrs||0)*(s.premRate||0));
+      const addl    = s.addl||0;
+      const remaining = Math.max(0, s.gross - regPay - holPay - benPay - premPay - addl);
+      return a + remaining; // includes both OT and DT
+    }
+    // Otherwise derive from gross
+    const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(rateRound(s.rate)*s.reg);
     const holPay  = payRound(rateRound(s.rate)*(s.hol||0));
     const benPay  = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
     const premPay = payRound((s.premHrs||0)*(s.premRate||0));
     const addl    = s.addl||0;
     return a + Math.max(0, s.gross - regPay - holPay - benPay - premPay - addl);
   }, 0);
-  const tOT = tOTDT; // combined OT+DT from gross, no recalculation
-  const tDT = 0;     // folded into tOT above
+  const tOT = tOTDT;
+  const tDT = 0;
   const tHrs  = filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0), 0);
   const tOTHrs= filtered.reduce((a,s)=>a+(s.ot||0), 0);
   const nets  = filtered.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0); return s.net||(s.gross-d); });
