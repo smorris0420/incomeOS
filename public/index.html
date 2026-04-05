@@ -2148,8 +2148,10 @@ async function saveLog() {
 // ===== DETAIL MODAL =====
 function renderReadView(s) {
   const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0), net=s.net||(s.gross-ded);
-  // Derive OT/DT from stored gross so display always matches paystub exactly
   const _rr=rateRound(s.rate);
+  const _otR=rateRound(s.rate*1.5), _dtR=rateRound(s.rate*2);
+
+  // Use stored override values directly when available — most accurate
   const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(_rr*s.reg);
   const holPay  = payRound(_rr*(s.hol||0));
   const sickPay = payRound(_rr*(s.sick||0));
@@ -2157,17 +2159,26 @@ function renderReadView(s) {
   const fltPay  = payRound(_rr*(s.fltHol||0));
   const premPay = payRound((s.premRate||0)*(s.premHrs||0));
   const addlPay = s.addl||0;
-  // OT+DT is whatever is left in gross after all other components
-  const otdtPay = Math.max(0, parseFloat((s.gross - regPay - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)));
-  // Split OT vs DT proportionally if both exist, otherwise assign all to whichever is present
-  const _otR=rateRound(s.rate*1.5), _dtR=rateRound(s.rate*2);
-  const calcOT = payRound(_otR*(s.ot||0)), calcDT = payRound(_dtR*(s.dt||0));
-  const calcOTDT = calcOT + calcDT;
-  const otPay = calcOTDT > 0 ? payRound(otdtPay * (calcOT / calcOTDT)) : 0;
-  const dtPay = calcOTDT > 0 ? payRound(otdtPay * (calcDT / calcOTDT)) : 0;
-  // Use derived values when gross was manually entered, else use calculated
-  const showOT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? otPay : calcOT) : 0;
-  const showDT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? dtPay : calcDT) : 0;
+
+  // OT: use stored value if present, otherwise derive from gross remainder
+  let showOT, showDT;
+  if(s.otPay!=null && s.otPay>0) {
+    // Stored OT — use directly
+    showOT = s.otPay;
+    // DT is remainder of gross after reg + OT + everything else
+    showDT = (s.dt||0)>0
+      ? Math.max(0, parseFloat((s.gross - regPay - showOT - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)))
+      : 0;
+  } else {
+    // No stored OT — derive both from gross remainder
+    const otdtPay = Math.max(0, parseFloat((s.gross - regPay - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)));
+    const calcOT = payRound(_otR*(s.ot||0)), calcDT = payRound(_dtR*(s.dt||0));
+    const calcOTDT = calcOT + calcDT;
+    const otPay = calcOTDT > 0 ? payRound(otdtPay * (calcOT / calcOTDT)) : 0;
+    const dtPay = calcOTDT > 0 ? payRound(otdtPay * (calcDT / calcOTDT)) : 0;
+    showOT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? otPay : calcOT) : 0;
+    showDT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? dtPay : calcDT) : 0;
+  }
   return `<div class="card">
     <div class="card-row"><span class="card-label">Hourly rate</span><span class="card-value">$${parseFloat(s.rate).toFixed(2)}/hr</span></div>
     <div class="card-row"><span class="card-label">Regular (${fmtH(s.reg)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(regPay)}</span></div>
