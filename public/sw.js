@@ -1,4 +1,4 @@
-const CACHE = 'payday-v2';
+const CACHE = 'payday-v3';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/db.js'];
 
 // Install — cache all shell assets

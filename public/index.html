@@ -551,7 +551,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
               <th>Pay Date</th><th>Rate $</th><th>Reg Hrs</th><th>OT Hrs</th><th>DT Hrs</th><th>Hol Hrs</th><th>Sick Hrs</th><th>Vac Hrs</th><th>FltHol Hrs</th>
               <th>Prem $/hr</th><th>Prem Hrs</th><th>Addl $</th>
               <th>Fed $</th><th>SS $</th><th>Medicare $</th>
-              <th>Dental $</th><th>Medical $</th><th>Vision $</th><th>Net $</th>
+              <th>Dental $</th><th>Medical $</th><th>Vision $</th><th>Gross $</th><th>Net $</th>
               <th></th>
             </tr></thead>
             <tbody id="bulkBody"></tbody>
@@ -670,6 +670,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
       <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="lPremRate" value="0" step="0.01" min="0"></div>
       <div class="form-field"><label>Premium hrs</label><input type="number" id="lPremHrs" value="0" step="0.25" min="0"></div>
       <div class="form-field"><label>Additional pay ($)</label><input type="number" id="lAddl" value="0" step="0.01" min="0"></div>
+      <div class="form-field"><label>Actual gross ($)</label><input type="number" id="lGross" step="0.01" min="0" placeholder="optional"></div>
       <div class="form-field"><label>Actual net ($)</label><input type="number" id="lNet" step="0.01" min="0" placeholder="optional"></div>
     </div>
     <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 6px;font-weight:700">Actual deductions from paystub</div>
@@ -716,6 +717,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
         <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="ePremRate" step="0.01" min="0"></div>
         <div class="form-field"><label>Premium hrs</label><input type="number" id="ePremHrs" step="0.25" min="0"></div>
         <div class="form-field"><label>Additional pay ($)</label><input type="number" id="eAddl" step="0.01" min="0"></div>
+        <div class="form-field"><label>Actual gross ($)</label><input type="number" id="eGross" step="0.01" min="0" placeholder="optional"></div>
         <div class="form-field"><label>Actual net ($)</label><input type="number" id="eNet" step="0.01" min="0" placeholder="optional"></div>
       </div>
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 6px;font-weight:700">Deductions</div>
@@ -852,8 +854,6 @@ const fmtH = n => parseFloat(n||0).toFixed(2);
 const payRound = n => Math.round((n + Number.EPSILON) * 100) / 100;
 // Round rate to 4 decimal places like payroll systems display (17.1000, 25.6500)
 const rateRound = n => Math.round(n * 10000) / 10000;
-// Disney payroll uses ceiling for OT/DT components (32.0625 → 32.07)
-const payCeil = n => Math.ceil(Math.round(n * 1000000) / 1000000 * 100) / 100; // hours always 2 decimals
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 function setSyncDot(s, count=0) {
   const d = document.getElementById('syncDot');
@@ -1191,7 +1191,7 @@ function calc() {
   const medI=parseFloat(document.getElementById('iMedI').value)||0;
   const vis=parseFloat(document.getElementById('iVis').value)||0;
   const regRate=rateRound(rate), otRate=rateRound(rate*1.5), dtRate=rateRound(rate*2);
-  const regPay=payRound(regRate*reg), otPay=payCeil(otRate*ot), dtPay=payCeil(dtRate*dt);
+  const regPay=payRound(regRate*reg), otPay=payRound(otRate*ot), dtPay=payRound(dtRate*dt);
   const holPay=payRound(regRate*hol), sickPay=payRound(regRate*sick), vacPay=payRound(regRate*vac), fltHolPay=payRound(regRate*fltHol);
   const premPay=premRate*premHrs;
   const gross=regPay+otPay+dtPay+holPay+sickPay+vacPay+fltHolPay+premPay+addl;
@@ -1491,13 +1491,23 @@ function buildYTD() {
   const tBen  = filtered.reduce((a,s)=>a+s.den+s.medI+s.vis, 0);
   const tTax  = tFed+tSS+tMed;
   const tDed  = tTax+tBen;
+  // Use stored gross for accuracy — derive OT/DT as remainder after reg/hol/ben/prem/addl
   const tReg  = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*s.reg), 0);
-  const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0))), 0);
-  const tOT   = filtered.reduce((a,s)=>a+payCeil(rateRound(s.rate*1.5)*(s.ot||0)), 0);
-  const tDT   = filtered.reduce((a,s)=>a+payCeil(rateRound(s.rate*2)*(s.dt||0)), 0);
   const tHol  = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*(s.hol||0)), 0);
-  const tPrem = filtered.reduce((a,s)=>a+(s.premHrs||0)*(s.premRate||0), 0);
+  const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0))), 0);
+  const tPrem = filtered.reduce((a,s)=>a+payRound((s.premHrs||0)*(s.premRate||0)), 0);
   const tAddl = filtered.reduce((a,s)=>a+(s.addl||0), 0);
+  // OT+DT derived from stored gross so penny rounding matches paystub exactly
+  const tOTDT = filtered.reduce((a,s)=>{
+    const regPay  = payRound(rateRound(s.rate)*s.reg);
+    const holPay  = payRound(rateRound(s.rate)*(s.hol||0));
+    const benPay  = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
+    const premPay = payRound((s.premHrs||0)*(s.premRate||0));
+    const addl    = s.addl||0;
+    return a + Math.max(0, s.gross - regPay - holPay - benPay - premPay - addl);
+  }, 0);
+  const tOT = tOTDT; // combined OT+DT from gross, no recalculation
+  const tDT = 0;     // folded into tOT above
   const tHrs  = filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0), 0);
   const tOTHrs= filtered.reduce((a,s)=>a+(s.ot||0), 0);
   const nets  = filtered.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis; return s.net||(s.gross-d); });
@@ -1840,6 +1850,7 @@ function openLogModal() {
   document.getElementById('lPremRate').value=0;
   document.getElementById('lPremHrs').value=0;
   document.getElementById('lAddl').value=0;
+  document.getElementById('lGross').value='';
   document.getElementById('lNet').value='';
   document.getElementById('lFed').value='';
   document.getElementById('lSS').value='';
@@ -1864,15 +1875,17 @@ async function saveLog() {
   const premHrs=parseFloat(document.getElementById('lPremHrs').value)||0;
   const addl=parseFloat(document.getElementById('lAddl').value)||0;
   const _regR=rateRound(rate),_otR=rateRound(rate*1.5),_dtR=rateRound(rate*2);
-  const gross=parseFloat((payRound(_regR*reg)+payCeil(_otR*ot)+payCeil(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
+  const gross=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
   const fedRaw=parseFloat(document.getElementById('lFed').value), fed=isNaN(fedRaw)?parseFloat((gross*effFedRate()).toFixed(2)):fedRaw;
   const ssRaw=parseFloat(document.getElementById('lSS').value), ss=isNaN(ssRaw)?parseFloat((gross*0.062).toFixed(2)):ssRaw;
   const medRaw=parseFloat(document.getElementById('lMed').value), med=isNaN(medRaw)?parseFloat((gross*0.0145).toFixed(2)):medRaw;
   const den=parseFloat(document.getElementById('lDen').value)||0;
   const medI=parseFloat(document.getElementById('lMedI').value)||0;
   const vis=parseFloat(document.getElementById('lVis').value)||0;
+  const grossRaw=parseFloat(document.getElementById('lGross').value);
+  const finalGross = !isNaN(grossRaw) && grossRaw > 0 ? grossRaw : gross;
   const netRaw=parseFloat(document.getElementById('lNet').value);
-  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross,fed,ss,med,den,medI,vis,net:isNaN(netRaw)?null:netRaw,seeded:false};
+  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,fed,ss,med,den,medI,vis,net:isNaN(netRaw)?null:netRaw,seeded:false};
 
   // === LIVE UPDATE: add to local state immediately ===
   stubs.unshift(stub);
@@ -1909,7 +1922,7 @@ function renderReadView(s) {
   return `<div class="card">
     <div class="card-row"><span class="card-label">Hourly rate</span><span class="card-value">$${parseFloat(s.rate).toFixed(2)}/hr</span></div>
     <div class="card-row"><span class="card-label">Regular (${fmtH(s.reg)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.reg))}</span></div>
-    ${(s.ot||0)>0?`<div class="card-row"><span class="card-label">Overtime (${fmtH(s.ot)}h × 1.5 @ $${rateRound(s.rate*1.5).toFixed(4)}/hr)</span><span class="card-value amber">${fmt(payCeil(rateRound(s.rate*1.5)*(s.ot||0)))}</span></div>`:''}
+    ${(s.ot||0)>0?`<div class="card-row"><span class="card-label">Overtime (${fmtH(s.ot)}h × 1.5 @ $${rateRound(s.rate*1.5).toFixed(4)}/hr)</span><span class="card-value amber">${fmt(payRound(rateRound(s.rate*1.5)*(s.ot||0)))}</span></div>`:''}
     ${(s.dt||0)>0?`<div class="card-row"><span class="card-label">Double time (${fmtH(s.dt)}h × 2.0)</span><span class="card-value amber">${fmt(s.dt*s.rate*2)}</span></div>`:''}
     ${(s.hol||0)>0?`<div class="card-row"><span class="card-label">Holiday (${fmtH(s.hol)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.hol))}</span></div>`:''}
     ${(s.sick||0)>0?`<div class="card-row"><span class="card-label">Sick / Care (${fmtH(s.sick)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.sick))}</span></div>`:''}
@@ -1963,6 +1976,7 @@ function toggleEditMode() {
     document.getElementById('eDen').value=s.den;
     document.getElementById('eMedI').value=s.medI;
     document.getElementById('eVis').value=s.vis;
+    document.getElementById('eGross').value=s.gross||'';
     document.getElementById('eNet').value=s.net||'';
     document.getElementById('dReadView').style.display='none';
     ev.style.display='block';
@@ -1990,13 +2004,14 @@ async function saveEdit() {
     den:parseFloat(document.getElementById('eDen').value)||0,
     medI:parseFloat(document.getElementById('eMedI').value)||0,
     vis:parseFloat(document.getElementById('eVis').value)||0,
+    gross:parseFloat(document.getElementById('eGross').value)||s.gross,
     net:parseFloat(document.getElementById('eNet').value)||null,
   };
   Object.assign(s,updated);
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
   s.gross=parseFloat((
-    payRound(_eRegR*updated.reg)+payCeil(_eOtRate*updated.ot)+
-    payCeil(_eDtRate*updated.dt)+payRound(_eRegR*updated.hol)+
+    payRound(_eRegR*updated.reg)+payRound(_eOtRate*updated.ot)+
+    payRound(_eDtRate*updated.dt)+payRound(_eRegR*updated.hol)+
     payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+
     payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
@@ -2063,6 +2078,7 @@ function bulkRowHTML(i) {
     <td><input type="number" id="bden-${i}" placeholder="auto" step="0.01" min="0"></td>
     <td><input type="number" id="bmedI-${i}" placeholder="auto" step="0.01" min="0"></td>
     <td><input type="number" id="bvis-${i}" placeholder="auto" step="0.01" min="0"></td>
+    <td><input type="number" id="bgross-${i}" placeholder="opt." step="0.01" min="0"></td>
     <td><input type="number" id="bnet-${i}" placeholder="opt." step="0.01" min="0"></td>
     <td class="row-actions"><button onclick="bulkDeleteRow(${i})" title="Remove">✕</button></td>
   </tr>`;
@@ -2098,7 +2114,7 @@ async function bulkSave() {
     const premHrs=parseFloat(document.getElementById('bpremh-'+i)?.value)||0;
     const addl=parseFloat(document.getElementById('baddl-'+i)?.value)||0;
     const _regR=rateRound(rate),_otR=rateRound(rate*1.5),_dtR=rateRound(rate*2);
-    const gross=parseFloat((payRound(_regR*reg)+payCeil(_otR*ot)+payCeil(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
+    const gross=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
     const fedRaw=parseFloat(document.getElementById('bfed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bss-'+i)?.value);
     const medRaw=parseFloat(document.getElementById('bmed-'+i)?.value);
@@ -2112,8 +2128,10 @@ async function bulkSave() {
     const den=(_denRaw!==''&&_denRaw!==null&&_denRaw!==undefined)?parseFloat(_denRaw):parseFloat(appSettings.den)||2;
     const medI=(_medIRaw!==''&&_medIRaw!==null&&_medIRaw!==undefined)?parseFloat(_medIRaw):parseFloat(appSettings.medI)||17;
     const vis=(_visRaw!==''&&_visRaw!==null&&_visRaw!==undefined)?parseFloat(_visRaw):parseFloat(appSettings.vis)||0.5;
+    const grossRaw=parseFloat(document.getElementById('bgross-'+i)?.value);
+    const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bnet-'+i)?.value);
-    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross,fed,ss,med,den,medI,vis,net:isNaN(netRaw)?null:netRaw,seeded:false});
+    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,fed,ss,med,den,medI,vis,net:isNaN(netRaw)?null:netRaw,seeded:false});
   }
   if(!toSave.length) { showToast('No valid rows to save',true); return; }
   document.getElementById('bulkStatus').textContent='Saving '+toSave.length+' paychecks…';

@@ -64,15 +64,14 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'Missing id' });
     const s = req.body;
     const payRound = n => Math.round((n + Number.EPSILON) * 100) / 100;
-    const payCeil  = n => Math.ceil(Math.round(n * 1000000) / 1000000 * 100) / 100;
     const rateRound = n => Math.round(n * 10000) / 10000;
     const regRate = rateRound(s.rate);
     const otRate  = rateRound(s.rate * 1.5);
     const dtRate  = rateRound(s.rate * 2);
     const gross = parseFloat((
       payRound(regRate * s.reg) +
-      payCeil(otRate * (s.ot || 0)) +
-      payCeil(dtRate * (s.dt || 0)) +
+      payRound(otRate * (s.ot || 0)) +
+      payRound(dtRate * (s.dt || 0)) +
       payRound(regRate * (s.hol || 0)) +
       payRound(regRate * (s.sick || 0)) +
       payRound(regRate * (s.vac || 0)) +
