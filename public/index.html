@@ -483,10 +483,18 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
           <div class="page-title">Year to Date</div>
           <span id="ytdYearLabel" class="page-sub"></span>
         </div>
-        <!-- Year tabs built dynamically -->
-        <div class="tab-row" id="ytdTabs"></div>
 
-        <!-- TOP METRICS ROW: 6 key numbers -->
+        <!-- Year tabs + date filter -->
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div class="tab-row" id="ytdTabs" style="margin-bottom:0;flex:1"></div>
+          <div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:5px 10px">
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">Through</label>
+            <input type="date" id="ytdCutoff" style="border:none;background:transparent;font-family:var(--mono);font-size:12px;color:var(--text);outline:none" onchange="buildYTD()">
+            <button onclick="document.getElementById('ytdCutoff').value='';buildYTD()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 2px" title="Clear filter">✕</button>
+          </div>
+        </div>
+
+        <!-- TOP METRICS ROW -->
         <div class="metrics metrics-6" style="margin-bottom:16px">
           <div class="metric"><div class="metric-label">Total Gross</div><div class="metric-value" id="ytdGross">—</div></div>
           <div class="metric"><div class="metric-label">Total Net</div><div class="metric-value green" id="ytdTotalNet">—</div></div>
@@ -496,7 +504,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
           <div class="metric"><div class="metric-label">Paychecks</div><div class="metric-value" id="ytdCount">—</div></div>
         </div>
 
-        <!-- CHARTS ROW: net pay bars + earnings breakdown side by side on large screens -->
+        <!-- CHARTS ROW -->
         <div class="chart-grid">
           <div class="card card-pad" style="margin-bottom:0">
             <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Net Pay Per Paycheck</div>
@@ -508,33 +516,52 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
           </div>
         </div>
 
-        <!-- SECOND METRICS ROW -->
-        <div class="metrics metrics-4" style="margin-top:16px">
-          <div class="metric"><div class="metric-label">Regular Pay</div><div class="metric-value" id="ytdReg">—</div></div>
-          <div class="metric"><div class="metric-label">Holiday Pay</div><div class="metric-value blue" id="ytdHol">—</div></div>
-          <div class="metric"><div class="metric-label">Total Hours</div><div class="metric-value" id="ytdHrs">—</div></div>
-          <div class="metric"><div class="metric-label">OT Hours</div><div class="metric-value amber" id="ytdOTHrs">—</div></div>
+        <!-- GROSS TREND CHART -->
+        <div class="card card-pad" style="margin-top:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Gross Pay Trend</div>
+          <div class="chart-wrap-sm"><canvas id="ytdGrossChart"></canvas></div>
         </div>
 
-        <!-- DEDUCTION BREAKDOWN + TAX RATE side by side -->
-        <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:4px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="ytd-bottom-grid">
-            <div class="card">
-              <div class="card-row"><span class="card-label" style="font-weight:700">Deductions Breakdown</span></div>
-              <div class="card-row"><span class="card-label" style="color:var(--red)">– Fed withholding</span><span class="card-value red" id="ytdFed">—</span></div>
-              <div class="card-row"><span class="card-label" style="color:var(--red)">– Soc Security (6.2%)</span><span class="card-value red" id="ytdSS">—</span></div>
-              <div class="card-row"><span class="card-label" style="color:var(--red)">– Medicare (1.45%)</span><span class="card-value red" id="ytdMed">—</span></div>
-              <div class="card-row"><span class="card-label" style="color:var(--red)">– Benefits</span><span class="card-value red" id="ytdBen">—</span></div>
-              <div class="card-row card-total"><span class="card-label">Total deducted</span><span class="card-value red" id="ytdTotalDed">—</span></div>
-            </div>
-            <div class="card">
-              <div class="card-row"><span class="card-label" style="font-weight:700">Tax Summary</span></div>
-              <div class="card-row"><span class="card-label">Effective fed rate</span><span class="card-value amber" id="ytdFedRate">—</span></div>
-              <div class="card-row"><span class="card-label">FICA rate (SS + Med)</span><span class="card-value" id="ytdFICA">7.65%</span></div>
-              <div class="card-row"><span class="card-label">Combined tax rate</span><span class="card-value amber" id="ytdRate">—</span></div>
-              <div class="card-row"><span class="card-label">Avg gross / paycheck</span><span class="card-value" id="ytdAvgGross">—</span></div>
-              <div class="card-row card-total"><span class="card-label">Keep rate (net/gross)</span><span class="card-value green" id="ytdKeep">—</span></div>
-            </div>
+        <!-- EARNINGS BREAKDOWN ROW -->
+        <div class="metrics metrics-6" style="margin-top:16px">
+          <div class="metric"><div class="metric-label">Regular Pay</div><div class="metric-value" id="ytdReg">—</div></div>
+          <div class="metric"><div class="metric-label">OT Earnings</div><div class="metric-value amber" id="ytdOT2">—</div></div>
+          <div class="metric"><div class="metric-label">Double Time</div><div class="metric-value red" id="ytdDT">—</div></div>
+          <div class="metric"><div class="metric-label">Holiday Pay</div><div class="metric-value blue" id="ytdHol">—</div></div>
+          <div class="metric"><div class="metric-label">Additional Pay</div><div class="metric-value" id="ytdAddl">—</div></div>
+          <div class="metric"><div class="metric-label">Total Hours</div><div class="metric-value" id="ytdHrs">—</div></div>
+        </div>
+        <div class="metrics metrics-4" style="margin-top:8px">
+          <div class="metric"><div class="metric-label">OT Hours</div><div class="metric-value amber" id="ytdOTHrs">—</div></div>
+          <div class="metric"><div class="metric-label">DT Hours</div><div class="metric-value red" id="ytdDTHrs">—</div></div>
+          <div class="metric"><div class="metric-label">Benefit Time Pay</div><div class="metric-value" id="ytdBenTime">—</div></div>
+          <div class="metric"><div class="metric-label">Premium Pay</div><div class="metric-value" id="ytdPrem">—</div></div>
+        </div>
+
+        <!-- DEDUCTIONS + BENEFITS + TAX -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px" class="ytd-bottom-grid">
+          <div class="card">
+            <div class="card-row"><span class="card-label" style="font-weight:700">Tax Deductions</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Fed withholding</span><span class="card-value red" id="ytdFed">—</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Soc Security (6.2%)</span><span class="card-value red" id="ytdSS">—</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Medicare (1.45%)</span><span class="card-value red" id="ytdMed">—</span></div>
+            <div class="card-row card-total"><span class="card-label">Total taxes</span><span class="card-value red" id="ytdTotalDed">—</span></div>
+          </div>
+          <div class="card">
+            <div class="card-row"><span class="card-label" style="font-weight:700">Benefits &amp; Retirement</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Dental</span><span class="card-value red" id="ytdDental">—</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Medical</span><span class="card-value red" id="ytdMedical">—</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– Vision</span><span class="card-value red" id="ytdVision">—</span></div>
+            <div class="card-row"><span class="card-label" style="color:var(--red)">– 401k / Retirement</span><span class="card-value red" id="ytdRetire">—</span></div>
+            <div class="card-row card-total"><span class="card-label">Total benefits</span><span class="card-value red" id="ytdBen">—</span></div>
+          </div>
+          <div class="card">
+            <div class="card-row"><span class="card-label" style="font-weight:700">Tax Summary</span></div>
+            <div class="card-row"><span class="card-label">Effective fed rate</span><span class="card-value amber" id="ytdFedRate">—</span></div>
+            <div class="card-row"><span class="card-label">FICA rate (SS + Med)</span><span class="card-value" id="ytdFICA">7.65%</span></div>
+            <div class="card-row"><span class="card-label">Combined tax rate</span><span class="card-value amber" id="ytdRate">—</span></div>
+            <div class="card-row"><span class="card-label">Avg gross / paycheck</span><span class="card-value" id="ytdAvgGross">—</span></div>
+            <div class="card-row card-total"><span class="card-label">Keep rate (net/gross)</span><span class="card-value green" id="ytdKeep">—</span></div>
           </div>
         </div>
 
@@ -1558,14 +1585,23 @@ function setYTDYear(yr, btn) {
 let chartInstCum = null;
 function buildYTD() {
   document.getElementById('ytdYearLabel').textContent=ytdYear;
-  const filtered=stubs.filter(s=>s.date.startsWith(ytdYear+''));
+  // Apply date cutoff filter if set
+  const cutoffEl = document.getElementById('ytdCutoff');
+  const cutoff = cutoffEl?.value || '';
+  const filtered=stubs.filter(s=>{
+    if(!s.date.startsWith(ytdYear+'')) return false;
+    if(cutoff && s.date > cutoff) return false;
+    return true;
+  });
 
-  const allIds=['ytdGross','ytdTotalNet','ytdAvg','ytdTax','ytdOT','ytdCount','ytdReg','ytdHol',
-    'ytdHrs','ytdOTHrs','ytdFed','ytdSS','ytdMed','ytdBen','ytdTotalDed','ytdFedRate','ytdRate','ytdKeep','ytdAvgGross'];
+  const allIds=['ytdGross','ytdTotalNet','ytdAvg','ytdTax','ytdOT','ytdOT2','ytdDT','ytdCount','ytdReg','ytdHol',
+    'ytdHrs','ytdOTHrs','ytdDTHrs','ytdFed','ytdSS','ytdMed','ytdBen','ytdTotalDed','ytdFedRate','ytdRate',
+    'ytdKeep','ytdAvgGross','ytdDental','ytdMedical','ytdVision','ytdRetire','ytdAddl','ytdBenTime','ytdPrem'];
   if(!filtered.length) {
     allIds.forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='—'; });
     if(chartInst){chartInst.destroy();chartInst=null;}
     if(chartInstCum){chartInstCum.destroy();chartInstCum=null;}
+    if(window.chartInstGross){window.chartInstGross.destroy();window.chartInstGross=null;}
     return;
   }
 
@@ -1583,6 +1619,25 @@ function buildYTD() {
   const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0))), 0);
   const tPrem = filtered.reduce((a,s)=>a+payRound((s.premHrs||0)*(s.premRate||0)), 0);
   const tAddl = filtered.reduce((a,s)=>a+(s.addl||0), 0);
+  const tDTEarnings = filtered.reduce((a,s)=>{
+    // DT: derive as portion of OTDT using ratio of DT to OT+DT hours
+    if((s.dt||0)===0) return a;
+    const _rr=rateRound(s.rate);
+    const regP=(s.regPay!=null&&s.regPay>0)?s.regPay:payRound(_rr*s.reg);
+    const holP=payRound(_rr*(s.hol||0));
+    const benP=payRound(_rr*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
+    const premP=payRound((s.premHrs||0)*(s.premRate||0));
+    const otdt=Math.max(0,s.gross-regP-holP-benP-premP-(s.addl||0));
+    const calcOT=payRound(rateRound(s.rate*1.5)*(s.ot||0));
+    const calcDT=payRound(rateRound(s.rate*2)*(s.dt||0));
+    const total=calcOT+calcDT;
+    return a+(total>0?payRound(otdt*(calcDT/total)):0);
+  }, 0);
+  const tDTHrs = filtered.reduce((a,s)=>a+(s.dt||0), 0);
+  const tDental  = filtered.reduce((a,s)=>a+s.den, 0);
+  const tMedical = filtered.reduce((a,s)=>a+s.medI, 0);
+  const tVision  = filtered.reduce((a,s)=>a+s.vis, 0);
+  const tRetire  = filtered.reduce((a,s)=>a+(s.retire||0), 0);
   // OT+DT: use stored otPay when available, otherwise derive from gross
   const tOTDT = filtered.reduce((a,s)=>{
     // If otPay was stored directly (entered from paystub), use it
@@ -1622,21 +1677,31 @@ function buildYTD() {
   set('ytdTotalNet', fmt(tNet));
   set('ytdAvg',      fmt(avgNet));
   set('ytdTax',      fmt(tTax));
-  set('ytdOT',       (tOT+tDT)>0 ? fmt(tOT+tDT) : '—');
+  set('ytdOT',       tOT>0 ? fmt(tOT) : '—');
+  set('ytdOT2',      tOT>0 ? fmt(tOT) : '—');
+  set('ytdDT',       tDTEarnings>0 ? fmt(tDTEarnings) : '—');
   set('ytdCount',    filtered.length);
   set('ytdReg',      fmt(tReg));
   set('ytdHol',      tHol>0 ? fmt(tHol) : '—');
   set('ytdHrs',      fmtH(tHrs)+'h');
   set('ytdOTHrs',    tOTHrs>0 ? fmtH(tOTHrs)+'h' : '—');
+  set('ytdDTHrs',    tDTHrs>0 ? fmtH(tDTHrs)+'h' : '—');
   set('ytdFed',      fmt(tFed));
   set('ytdSS',       fmt(tSS));
   set('ytdMed',      fmt(tMed));
+  set('ytdDental',   fmt(tDental));
+  set('ytdMedical',  fmt(tMedical));
+  set('ytdVision',   fmt(tVision));
+  set('ytdRetire',   tRetire>0 ? fmt(tRetire) : '—');
   set('ytdBen',      fmt(tBen));
   set('ytdTotalDed', fmt(tDed));
   set('ytdFedRate',  fedRate.toFixed(1)+'%');
   set('ytdRate',     taxRate.toFixed(1)+'%');
   set('ytdKeep',     keepRate.toFixed(1)+'%');
   set('ytdAvgGross', fmt(avgG));
+  set('ytdAddl',     tAddl>0 ? fmt(tAddl) : '—');
+  set('ytdBenTime',  tBenTime>0 ? fmt(tBenTime) : '—');
+  set('ytdPrem',     tPrem>0 ? fmt(tPrem) : '—');
 
   // ── Charts ────────────────────────────────────────────────────────────────
   const sorted=[...filtered].sort((a,b)=>a.date.localeCompare(b.date));
@@ -1678,6 +1743,30 @@ function buildYTD() {
       borderWidth:2,pointRadius:3,pointHoverRadius:5,fill:true,tension:0.3
     }]},
     options:{...chartDefaults,plugins:{...chartDefaults.plugins,tooltip:{callbacks:{label:c=>'Total: '+fmt(c.raw)}}}}
+  });
+
+  // Line chart — gross pay trend
+  const grossData=sorted.map(s=>s.gross);
+  const avgGrossLine=Array(sorted.length).fill(parseFloat(avgG.toFixed(2)));
+  if(window.chartInstGross){window.chartInstGross.destroy();window.chartInstGross=null;}
+  window.chartInstGross=new Chart(document.getElementById('ytdGrossChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {
+        label:'Gross pay',data:grossData,
+        borderColor:'rgba(251,191,36,0.9)',
+        backgroundColor:'rgba(251,191,36,0.08)',
+        borderWidth:2,pointRadius:3,pointHoverRadius:5,fill:true,tension:0.3
+      },
+      {
+        label:'Average',data:avgGrossLine,
+        borderColor:'rgba(107,114,128,0.5)',
+        borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:0
+      }
+    ]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,
+      legend:{display:true,labels:{font:{size:10},color:'#8a96a3',boxWidth:12}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.raw)}}}}
   });
 }
 
@@ -2169,7 +2258,7 @@ async function saveEdit() {
     gross:parseFloat(document.getElementById('eGross').value)||s.gross,
     net:parseFloat(document.getElementById('eNet').value)||null,
   };
-  Object.assign(s,updated);
+  // Don't assign updated to s yet — need to compute correct gross first
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
   const _eRegPay = (updated.regPay&&updated.regPay>0) ? updated.regPay : payRound(_eRegR*updated.reg);
   const _eOTPay  = (updated.otPay&&updated.otPay>0)   ? updated.otPay  : payRound(_eOtRate*updated.ot);
@@ -2179,6 +2268,9 @@ async function saveEdit() {
     payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+
     payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
+  s.gross = (updated.gross && updated.gross > 0) ? updated.gross : _calcGross;
+  // Now assign all updated fields including corrected gross
+  Object.assign(s, updated);
   s.gross = (updated.gross && updated.gross > 0) ? updated.gross : _calcGross;
   // Live update
   document.getElementById('dReadView').innerHTML=renderReadView(s);
@@ -2444,8 +2536,10 @@ async function bulkSave() {
     const regPayOvr=parseFloat(document.getElementById('bc-regpay-'+i)?.value);
     const otPayOvr=parseFloat(document.getElementById('bc-otpay-'+i)?.value);
     const _regR=rateRound(rate),_otR=rateRound(rate*1.5),_dtR=rateRound(rate*2);
-    const _regPay = (!isNaN(regPayOvr)&&regPayOvr>0) ? regPayOvr : payRound(_regR*reg);
-    const _otPay  = (!isNaN(otPayOvr)&&otPayOvr>0)   ? otPayOvr  : payRound(_otR*ot);
+    const _hasRegOvr = !isNaN(regPayOvr) && regPayOvr > 0;
+    const _hasOTOvr  = !isNaN(otPayOvr)  && otPayOvr  > 0;
+    const _regPay = _hasRegOvr ? regPayOvr : payRound(_regR*reg);
+    const _otPay  = _hasOTOvr  ? otPayOvr  : payRound(_otR*ot);
     const gross=parseFloat((_regPay+_otPay+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
     const fedRaw=parseFloat(document.getElementById('bc-fed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bc-ss-'+i)?.value);
@@ -2465,8 +2559,8 @@ async function bulkSave() {
     const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bc-net-'+i)?.value);
     toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
-      regPay:(!isNaN(regPayOvr)&&regPayOvr>0)?regPayOvr:null,
-      otPay:(!isNaN(otPayOvr)&&otPayOvr>0)?otPayOvr:null,
+      regPay:_hasRegOvr?regPayOvr:null,
+      otPay:_hasOTOvr?otPayOvr:null,
       fed,ss,med,den,medI,vis,retire:retireVal,net:isNaN(netRaw)?null:netRaw,seeded:false});
   }
   if(!toSave.length) { showToast('No valid paychecks to save — check dates and rates',true); return; }
