@@ -1184,6 +1184,8 @@ function fromRealtimeRow(r) {
     ss: parseFloat(r.ss), med: parseFloat(r.med),
     den: parseFloat(r.den), medI: parseFloat(r.med_i),
     vis: parseFloat(r.vis), retire: parseFloat(r.retire||0),
+    regPay: r.reg_pay != null ? parseFloat(r.reg_pay) : null,
+    otPay:  r.ot_pay  != null ? parseFloat(r.ot_pay)  : null,
     net: r.net != null ? parseFloat(r.net) : null,
     seeded: r.seeded,
   };
@@ -1988,7 +1990,10 @@ async function saveLog() {
     finalGross = parseFloat((fReg+fOT+payRound(rateRound(rate*2)*dt)+payRound(_r*hol)+payRound(_r*sick)+payRound(_r*vac)+payRound(_r*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
   }
   const netRaw=parseFloat(document.getElementById('lNet').value);
-  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,fed,ss,med,den,medI,vis,retire,net:isNaN(netRaw)?null:netRaw,seeded:false};
+  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
+    regPay:(!isNaN(regPayRaw)&&regPayRaw>0)?regPayRaw:null,
+    otPay:(!isNaN(otPayRaw)&&otPayRaw>0)?otPayRaw:null,
+    fed,ss,med,den,medI,vis,retire,net:isNaN(netRaw)?null:netRaw,seeded:false};
 
   // === LIVE UPDATE: add to local state immediately ===
   stubs.unshift(stub);
@@ -2024,7 +2029,7 @@ function renderReadView(s) {
   const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0), net=s.net||(s.gross-ded);
   // Derive OT/DT from stored gross so display always matches paystub exactly
   const _rr=rateRound(s.rate);
-  const regPay  = payRound(_rr*s.reg);
+  const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(_rr*s.reg);
   const holPay  = payRound(_rr*(s.hol||0));
   const sickPay = payRound(_rr*(s.sick||0));
   const vacPay  = payRound(_rr*(s.vac||0));
@@ -2115,8 +2120,9 @@ function toggleEditMode() {
     const _eCalcDT=payRound(rateRound(s.rate*2)*(s.dt||0));
     const _eOtDtTotal=_eCalcOT+_eCalcDT;
     const _eShowOT=_eOtDtTotal>0?payRound(_eOtdtRaw*(_eCalcOT/_eOtDtTotal)):0;
-    document.getElementById('eRegPay').value=_eRegP||'';
-    document.getElementById('eOTPay').value=(s.ot||0)>0?(_eShowOT||''):'';
+    // Use stored override values if present, otherwise show derived values
+    document.getElementById('eRegPay').value=s.regPay!=null?s.regPay:(_eRegP||'');
+    document.getElementById('eOTPay').value=s.otPay!=null?s.otPay:((s.ot||0)>0?(_eShowOT||''):'');
     document.getElementById('eGross').value=s.gross||'';
     document.getElementById('eNet').value=s.net||'';
     document.getElementById('dReadView').style.display='none';
@@ -2146,15 +2152,15 @@ async function saveEdit() {
     medI:parseFloat(document.getElementById('eMedI').value)||0,
     vis:parseFloat(document.getElementById('eVis').value)||0,
     retire:parseFloat(document.getElementById('eRetire').value)||0,
-    regPay:parseFloat(document.getElementById('eRegPay').value)||0,
-    otPay:parseFloat(document.getElementById('eOTPay').value)||0,
+    regPay:parseFloat(document.getElementById('eRegPay').value)||null,
+    otPay:parseFloat(document.getElementById('eOTPay').value)||null,
     gross:parseFloat(document.getElementById('eGross').value)||s.gross,
     net:parseFloat(document.getElementById('eNet').value)||null,
   };
   Object.assign(s,updated);
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
-  const _eRegPay = updated.regPay>0 ? updated.regPay : payRound(_eRegR*updated.reg);
-  const _eOTPay  = updated.otPay>0  ? updated.otPay  : payRound(_eOtRate*updated.ot);
+  const _eRegPay = (updated.regPay&&updated.regPay>0) ? updated.regPay : payRound(_eRegR*updated.reg);
+  const _eOTPay  = (updated.otPay&&updated.otPay>0)   ? updated.otPay  : payRound(_eOtRate*updated.ot);
   const _calcGross=parseFloat((
     _eRegPay+_eOTPay+
     payRound(_eDtRate*updated.dt)+payRound(_eRegR*updated.hol)+
@@ -2446,7 +2452,10 @@ async function bulkSave() {
     const grossRaw=parseFloat(document.getElementById('bc-gross-'+i)?.value);
     const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bc-net-'+i)?.value);
-    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,fed,ss,med,den,medI,vis,retire:retireVal,net:isNaN(netRaw)?null:netRaw,seeded:false});
+    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
+      regPay:(!isNaN(regPayOvr)&&regPayOvr>0)?regPayOvr:null,
+      otPay:(!isNaN(otPayOvr)&&otPayOvr>0)?otPayOvr:null,
+      fed,ss,med,den,medI,vis,retire:retireVal,net:isNaN(netRaw)?null:netRaw,seeded:false});
   }
   if(!toSave.length) { showToast('No valid paychecks to save — check dates and rates',true); return; }
   document.getElementById('bulkStatus').textContent='Saving '+toSave.length+' paychecks…';

@@ -56,6 +56,7 @@ export default async function handler(req, res) {
       rate: s.rate, reg: s.reg, ot: s.ot || 0, dt: s.dt || 0, hol: s.hol || 0,
       prem_hrs: s.premHrs || 0, prem_rate: s.premRate || 0, addl: s.addl || 0,
       sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0, retire: s.retire || 0,
+      reg_pay: s.regPay || null, ot_pay: s.otPay || null,
       gross: s.gross, fed: s.fed, ss: s.ss, med: s.med,
       den: s.den, med_i: s.medI, vis: s.vis, net: s.net || null, seeded: false,
     });
@@ -73,6 +74,8 @@ export default async function handler(req, res) {
     const otRate  = rateRound(s.rate * 1.5);
     const dtRate  = rateRound(s.rate * 2);
     // Use gross from client if provided (handles pay overrides), otherwise calculate
+    const _regPayOvr = s.regPay || null;
+    const _otPayOvr  = s.otPay  || null;
     const gross = (s.gross && s.gross > 0) ? parseFloat(s.gross) : parseFloat((
       payRound(regRate * s.reg) +
       payRound(otRate * (s.ot || 0)) +
@@ -89,6 +92,7 @@ export default async function handler(req, res) {
       ot: s.ot || 0, dt: s.dt || 0, hol: s.hol || 0,
       prem_hrs: s.premHrs || 0, prem_rate: s.premRate || 0, addl: s.addl || 0,
       sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0, retire: s.retire || 0,
+      reg_pay: s.regPay || null, ot_pay: s.otPay || null,
       gross, fed: s.fed, ss: s.ss, med: s.med,
       den: s.den, med_i: s.medI, vis: s.vis, net: s.net || null,
     }).eq('id', id).eq('user_id', targetUserId);
