@@ -1664,20 +1664,13 @@ function buildYTD() {
   const tMedical = filtered.reduce((a,s)=>a+s.medI, 0);
   const tVision  = filtered.reduce((a,s)=>a+s.vis, 0);
   const tRetire  = filtered.reduce((a,s)=>a+(s.retire||0), 0);
-  // OT+DT: use stored otPay when available, otherwise derive from gross
+  // OT+DT: use stored otPay directly when available, derive from gross otherwise
   const tOTDT = filtered.reduce((a,s)=>{
-    // If otPay was stored directly (entered from paystub), use it
+    // Use stored otPay directly — most accurate
     if(s.otPay != null && s.otPay > 0) {
-      // Also add DT if present (derived from gross minus everything else minus stored OT)
-      const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(rateRound(s.rate)*s.reg);
-      const holPay  = payRound(rateRound(s.rate)*(s.hol||0));
-      const benPay  = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
-      const premPay = payRound((s.premHrs||0)*(s.premRate||0));
-      const addl    = s.addl||0;
-      const remaining = Math.max(0, s.gross - regPay - holPay - benPay - premPay - addl);
-      return a + remaining; // includes both OT and DT
+      return a + s.otPay;
     }
-    // Otherwise derive from gross
+    // No stored value — derive from gross minus all non-OT components
     const regPay  = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(rateRound(s.rate)*s.reg);
     const holPay  = payRound(rateRound(s.rate)*(s.hol||0));
     const benPay  = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
