@@ -204,15 +204,29 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
 .sheet-table td.row-actions button:hover{color:var(--red);background:var(--red-dim)}
 .sheet-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 /* Bulk import cards */
-.bulk-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);position:relative}
-.bulk-card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.bulk-card-num{width:24px;height:24px;border-radius:50%;background:var(--bg4);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text3);flex-shrink:0}
-.bulk-card-date{font-size:14px;font-weight:600;color:var(--text);flex:1}
-.bulk-card-gross{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--green)}
-.bulk-card-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1;border-radius:4px;transition:color .15s}
-.bulk-card-remove:hover{color:var(--red)}
-.bulk-section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:12px 0 8px}
-.bulk-card .form-grid{gap:10px}
+.bulk-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;overflow:hidden}
+.bulk-card:hover{border-color:var(--border2)}
+.bulk-row{display:flex;align-items:stretch;border-bottom:1px solid var(--border)}
+.bulk-row:last-child{border-bottom:none}
+.bulk-row.row-a{background:var(--bg3)}
+.bulk-row.row-b{background:var(--bg2)}
+.bulk-row.row-x{background:var(--bg4)}
+.bulk-cell{display:flex;flex-direction:column;justify-content:center;padding:6px 8px;border-right:1px solid var(--border);min-width:0}
+.bulk-cell:last-child{border-right:none}
+.bulk-cell.cell-num{flex:0 0 28px;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);background:var(--bg4);border-right:1px solid var(--border2)}
+.bulk-cell.cell-del{flex:0 0 28px;align-items:center;justify-content:center;padding:0}
+.bulk-cell label{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:2px;white-space:nowrap}
+.bulk-cell input{width:100%;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:12px;color:var(--text);padding:0;-moz-appearance:textfield}
+.bulk-cell input::-webkit-outer-spin-button,.bulk-cell input::-webkit-inner-spin-button{-webkit-appearance:none}
+.bulk-cell input[type=date]{font-family:var(--sans);font-size:11px}
+.bulk-cell input::placeholder{color:var(--text3);opacity:.45}
+.bulk-cell input:focus{color:var(--green)}
+.bulk-cell.cell-money input{color:var(--amber)}
+.bulk-cell.cell-totals input{color:var(--green);font-weight:600}
+.bulk-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:color .15s}
+.bulk-del-btn:hover{color:var(--red);background:var(--red-dim)}
+.bulk-expand-btn{width:100%;background:none;border:none;color:var(--text3);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;padding:4px 8px;text-align:left;display:flex;align-items:center;gap:4px;transition:color .15s}
+.bulk-expand-btn:hover{color:var(--blue)}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
@@ -539,7 +553,7 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
             <button class="btn btn-secondary btn-sm" onclick="bulkClear()">Clear all</button>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Leave deduction fields blank to auto-calculate. Gross and Net are optional overrides.</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Date and Rate required per paycheck. Deductions auto-calculate if blank. Gross and Net are optional. Click ▾ for extra hour types.</div>
         <div id="bulkCards"></div>
         <div style="display:flex;gap:10px;align-items:center;margin-top:4px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="bulkSave()">
@@ -1975,17 +1989,37 @@ async function saveLog() {
 // ===== DETAIL MODAL =====
 function renderReadView(s) {
   const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis, net=s.net||(s.gross-ded);
+  // Derive OT/DT from stored gross so display always matches paystub exactly
+  const _rr=rateRound(s.rate);
+  const regPay  = payRound(_rr*s.reg);
+  const holPay  = payRound(_rr*(s.hol||0));
+  const sickPay = payRound(_rr*(s.sick||0));
+  const vacPay  = payRound(_rr*(s.vac||0));
+  const fltPay  = payRound(_rr*(s.fltHol||0));
+  const premPay = payRound((s.premRate||0)*(s.premHrs||0));
+  const addlPay = s.addl||0;
+  // OT+DT is whatever is left in gross after all other components
+  const otdtPay = Math.max(0, parseFloat((s.gross - regPay - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)));
+  // Split OT vs DT proportionally if both exist, otherwise assign all to whichever is present
+  const _otR=rateRound(s.rate*1.5), _dtR=rateRound(s.rate*2);
+  const calcOT = payRound(_otR*(s.ot||0)), calcDT = payRound(_dtR*(s.dt||0));
+  const calcOTDT = calcOT + calcDT;
+  const otPay = calcOTDT > 0 ? payRound(otdtPay * (calcOT / calcOTDT)) : 0;
+  const dtPay = calcOTDT > 0 ? payRound(otdtPay * (calcDT / calcOTDT)) : 0;
+  // Use derived values when gross was manually entered, else use calculated
+  const showOT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? otPay : calcOT) : 0;
+  const showDT = calcOTDT > 0 ? (Math.abs(otdtPay - calcOTDT) > 0.005 ? dtPay : calcDT) : 0;
   return `<div class="card">
     <div class="card-row"><span class="card-label">Hourly rate</span><span class="card-value">$${parseFloat(s.rate).toFixed(2)}/hr</span></div>
-    <div class="card-row"><span class="card-label">Regular (${fmtH(s.reg)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.reg))}</span></div>
-    ${(s.ot||0)>0?`<div class="card-row"><span class="card-label">Overtime (${fmtH(s.ot)}h × 1.5 @ $${rateRound(s.rate*1.5).toFixed(4)}/hr)</span><span class="card-value amber">${fmt(payRound(rateRound(s.rate*1.5)*(s.ot||0)))}</span></div>`:''}
-    ${(s.dt||0)>0?`<div class="card-row"><span class="card-label">Double time (${fmtH(s.dt)}h × 2.0)</span><span class="card-value amber">${fmt(s.dt*s.rate*2)}</span></div>`:''}
-    ${(s.hol||0)>0?`<div class="card-row"><span class="card-label">Holiday (${fmtH(s.hol)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.hol))}</span></div>`:''}
-    ${(s.sick||0)>0?`<div class="card-row"><span class="card-label">Sick / Care (${fmtH(s.sick)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.sick))}</span></div>`:''}
-    ${(s.vac||0)>0?`<div class="card-row"><span class="card-label">Vacation (${fmtH(s.vac)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.vac))}</span></div>`:''}
-    ${(s.fltHol||0)>0?`<div class="card-row"><span class="card-label">Float Holiday (${fmtH(s.fltHol)}h @ $${rateRound(s.rate).toFixed(4)}/hr)</span><span class="card-value">${fmt(payRound(rateRound(s.rate)*s.fltHol))}</span></div>`:''}
-    ${(s.premHrs||0)>0?`<div class="card-row"><span class="card-label">Shift premium ($${parseFloat(s.premRate||0).toFixed(2)}/hr × ${fmtH(s.premHrs)}h)</span><span class="card-value">${fmt((s.premRate||0)*(s.premHrs||0))}</span></div>`:''}
-    ${(s.addl||0)>0?`<div class="card-row"><span class="card-label">Additional pay</span><span class="card-value">${fmt(s.addl)}</span></div>`:''}
+    <div class="card-row"><span class="card-label">Regular (${fmtH(s.reg)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(regPay)}</span></div>
+    ${(s.ot||0)>0?`<div class="card-row"><span class="card-label">Overtime (${fmtH(s.ot)}h × 1.5 @ $${_otR.toFixed(4)}/hr)</span><span class="card-value amber">${fmt(showOT)}</span></div>`:''}
+    ${(s.dt||0)>0?`<div class="card-row"><span class="card-label">Double time (${fmtH(s.dt)}h × 2.0 @ $${_dtR.toFixed(4)}/hr)</span><span class="card-value amber">${fmt(showDT)}</span></div>`:''}
+    ${(s.hol||0)>0?`<div class="card-row"><span class="card-label">Holiday (${fmtH(s.hol)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(holPay)}</span></div>`:''}
+    ${(s.sick||0)>0?`<div class="card-row"><span class="card-label">Sick / Care (${fmtH(s.sick)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(sickPay)}</span></div>`:''}
+    ${(s.vac||0)>0?`<div class="card-row"><span class="card-label">Vacation (${fmtH(s.vac)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(vacPay)}</span></div>`:''}
+    ${(s.fltHol||0)>0?`<div class="card-row"><span class="card-label">Float Holiday (${fmtH(s.fltHol)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(fltPay)}</span></div>`:''}
+    ${(s.premHrs||0)>0?`<div class="card-row"><span class="card-label">Shift premium ($${parseFloat(s.premRate||0).toFixed(2)}/hr × ${fmtH(s.premHrs)}h)</span><span class="card-value">${fmt(premPay)}</span></div>`:''}
+    ${(s.addl||0)>0?`<div class="card-row"><span class="card-label">Additional pay</span><span class="card-value">${fmt(addlPay)}</span></div>`:''}
     <div class="card-row"><span class="card-label">Gross pay</span><span class="card-value">${fmt(s.gross)}</span></div>
     <div class="card-row"><span class="card-label" style="color:var(--red)">&#x2212; Fed withholding</span><span class="card-value red">${fmt(s.fed)}</span></div>
     <div class="card-row"><span class="card-label" style="color:var(--red)">&#x2212; Soc Security</span><span class="card-value red">${fmt(s.ss)}</span></div>
@@ -2147,59 +2181,127 @@ function bulkCardPreview(i) {
 }
 
 function bulkCardHTML(i) {
-  const today = new Date().toISOString().slice(0,10);
-  const rate = appSettings.defaultRate||mostRecentRate()||'';
-  const den = appSettings.den ? parseFloat(appSettings.den).toFixed(2) : '';
-  const medI = appSettings.medI ? parseFloat(appSettings.medI).toFixed(2) : '';
-  const vis = appSettings.vis ? parseFloat(appSettings.vis).toFixed(2) : '';
   return `<div class="bulk-card" id="bcard-${i}">
-    <div class="bulk-card-header">
-      <div class="bulk-card-num">${i+1}</div>
-      <div class="bulk-card-date" id="bc-datelabel-${i}">New paycheck</div>
-      <div class="bulk-card-gross" id="bc-preview-${i}">—</div>
-      <button class="bulk-card-remove" onclick="bulkRemoveCard(${i})" title="Remove">✕</button>
+
+    <!-- Row A: Date, Rate, Hours -->
+    <div class="bulk-row row-a">
+      <div class="bulk-cell cell-num">${i+1}</div>
+      <div class="bulk-cell" style="flex:1.6;min-width:100px">
+        <label>Pay Date</label>
+        <input type="date" id="bc-date-${i}" oninput="bulkCardPreview(${i})">
+      </div>
+      <div class="bulk-cell" style="flex:1">
+        <label>Rate $/hr</label>
+        <input type="number" id="bc-rate-${i}" step="0.01" min="0" placeholder="21.90" oninput="bulkCardPreview(${i})">
+      </div>
+      <div class="bulk-cell" style="flex:1">
+        <label>Reg Hrs</label>
+        <input type="number" id="bc-reg-${i}" step="0.25" min="0" placeholder="40" oninput="bulkCardPreview(${i})">
+      </div>
+      <div class="bulk-cell" style="flex:1">
+        <label>OT Hrs (1.5×)</label>
+        <input type="number" id="bc-ot-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+      </div>
+      <div class="bulk-cell cell-del">
+        <button class="bulk-del-btn" onclick="bulkRemoveCard(${i})" title="Remove">✕</button>
+      </div>
     </div>
 
-    <div class="bulk-section-label">Pay info</div>
-    <div class="form-grid">
-      <div class="form-field"><label>Pay date</label><input type="date" id="bc-date-${i}" value="${today}" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="bc-rate-${i}" value="${rate}" step="0.01" min="0" placeholder="21.90" oninput="bulkCardPreview(${i})"></div>
+    <!-- Row B: Deductions + Totals -->
+    <div class="bulk-row row-b">
+      <div class="bulk-cell cell-num"></div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>Fed ($)</label>
+        <input type="number" id="bc-fed-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>SS ($)</label>
+        <input type="number" id="bc-ss-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>Medicare ($)</label>
+        <input type="number" id="bc-med-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>Dental ($)</label>
+        <input type="number" id="bc-den-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>Medical ($)</label>
+        <input type="number" id="bc-medi-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-money" style="flex:1">
+        <label>Vision ($)</label>
+        <input type="number" id="bc-vis-${i}" step="0.01" min="0" placeholder="auto">
+      </div>
+      <div class="bulk-cell cell-totals" style="flex:1">
+        <label>Gross ($)</label>
+        <input type="number" id="bc-gross-${i}" step="0.01" min="0" placeholder="opt." oninput="bulkCardPreview(${i})">
+      </div>
+      <div class="bulk-cell cell-totals" style="flex:1">
+        <label>Net ($)</label>
+        <input type="number" id="bc-net-${i}" step="0.01" min="0" placeholder="opt.">
+      </div>
     </div>
 
-    <div class="bulk-section-label">Hours</div>
-    <div class="form-grid">
-      <div class="form-field"><label>Regular hrs</label><input type="number" id="bc-reg-${i}" value="40" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="bc-ot-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="bc-dt-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Holiday hrs</label><input type="number" id="bc-hol-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Sick / Care hrs</label><input type="number" id="bc-sick-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Vacation hrs</label><input type="number" id="bc-vac-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Float Holiday hrs</label><input type="number" id="bc-flthol-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
+    <!-- Expandable row X: Extra hour types -->
+    <div class="bulk-row" style="background:var(--bg3);padding:0">
+      <button class="bulk-expand-btn" onclick="bulkToggleMore(${i})">
+        <svg id="bc-morechev-${i}" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition:transform .15s"><polyline points="6 9 12 15 18 9"/></svg>
+        <span id="bc-morelabel-${i}">DT · Holiday · Sick · Vac · Float Hol · Premium · Additional</span>
+      </button>
+    </div>
+    <div id="bc-morehrs-${i}" style="display:none">
+      <div class="bulk-row row-x">
+        <div class="bulk-cell cell-num"></div>
+        <div class="bulk-cell" style="flex:1">
+          <label>DT Hrs (2×)</label>
+          <input type="number" id="bc-dt-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Holiday Hrs</label>
+          <input type="number" id="bc-hol-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Sick/Care Hrs</label>
+          <input type="number" id="bc-sick-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Vacation Hrs</label>
+          <input type="number" id="bc-vac-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Float Hol Hrs</label>
+          <input type="number" id="bc-flthol-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Prem $/hr</label>
+          <input type="number" id="bc-premr-${i}" step="0.01" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Prem Hrs</label>
+          <input type="number" id="bc-premh-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
+          <label>Additional ($)</label>
+          <input type="number" id="bc-addl-${i}" step="0.01" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+      </div>
     </div>
 
-    <div class="bulk-section-label">Premiums &amp; additional</div>
-    <div class="form-grid">
-      <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="bc-premr-${i}" value="0" step="0.01" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Premium hrs</label><input type="number" id="bc-premh-${i}" value="0" step="0.25" min="0" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Additional pay ($)</label><input type="number" id="bc-addl-${i}" value="0" step="0.01" min="0" oninput="bulkCardPreview(${i})"></div>
-    </div>
-
-    <div class="bulk-section-label">Deductions <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(leave blank to auto-calculate)</span></div>
-    <div class="form-grid">
-      <div class="form-field"><label>Fed withholding ($)</label><input type="number" id="bc-fed-${i}" step="0.01" min="0" placeholder="auto"></div>
-      <div class="form-field"><label>Soc Security ($)</label><input type="number" id="bc-ss-${i}" step="0.01" min="0" placeholder="auto"></div>
-      <div class="form-field"><label>Medicare ($)</label><input type="number" id="bc-med-${i}" step="0.01" min="0" placeholder="auto"></div>
-      <div class="form-field"><label>Dental ($)</label><input type="number" id="bc-den-${i}" step="0.01" min="0" value="${den}" placeholder="auto"></div>
-      <div class="form-field"><label>Medical ($)</label><input type="number" id="bc-medi-${i}" step="0.01" min="0" value="${medI}" placeholder="auto"></div>
-      <div class="form-field"><label>Vision ($)</label><input type="number" id="bc-vis-${i}" step="0.01" min="0" value="${vis}" placeholder="auto"></div>
-    </div>
-
-    <div class="bulk-section-label">Overrides <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(optional — enter exact paystub values)</span></div>
-    <div class="form-grid">
-      <div class="form-field"><label>Actual gross ($)</label><input type="number" id="bc-gross-${i}" step="0.01" min="0" placeholder="optional" oninput="bulkCardPreview(${i})"></div>
-      <div class="form-field"><label>Actual net ($)</label><input type="number" id="bc-net-${i}" step="0.01" min="0" placeholder="optional"></div>
-    </div>
   </div>`;
+}
+function bulkToggleMore(i) {
+  const panel = document.getElementById('bc-morehrs-'+i);
+  const chev  = document.getElementById('bc-morechev-'+i);
+  const label = document.getElementById('bc-morelabel-'+i);
+  if(!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  chev.style.transform = open ? '' : 'rotate(180deg)';
+  label.textContent = open
+    ? 'DT · Holiday · Sick · Vac · Float Hol · Premium · Additional'
+    : 'Hide extra fields';
 }
 
 function initBulk() {
@@ -2262,9 +2364,10 @@ async function bulkSave() {
     const _denRaw=document.getElementById('bc-den-'+i)?.value;
     const _medIRaw=document.getElementById('bc-medi-'+i)?.value;
     const _visRaw=document.getElementById('bc-vis-'+i)?.value;
-    const den=(_denRaw!==''&&_denRaw!=null)?parseFloat(_denRaw):parseFloat(appSettings.den)||2;
-    const medI=(_medIRaw!==''&&_medIRaw!=null)?parseFloat(_medIRaw):parseFloat(appSettings.medI)||17;
-    const vis=(_visRaw!==''&&_visRaw!=null)?parseFloat(_visRaw):parseFloat(appSettings.vis)||0.5;
+    // Blank = use saved default; explicit value (including 0) overrides
+    const den=(_denRaw!==''&&_denRaw!==null&&_denRaw!==undefined)?parseFloat(_denRaw):(parseFloat(appSettings.den)||0);
+    const medI=(_medIRaw!==''&&_medIRaw!==null&&_medIRaw!==undefined)?parseFloat(_medIRaw):(parseFloat(appSettings.medI)||0);
+    const vis=(_visRaw!==''&&_visRaw!==null&&_visRaw!==undefined)?parseFloat(_visRaw):(parseFloat(appSettings.vis)||0);
     const grossRaw=parseFloat(document.getElementById('bc-gross-'+i)?.value);
     const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bc-net-'+i)?.value);
