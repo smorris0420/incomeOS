@@ -1489,18 +1489,23 @@ function buildHistorySheet() {
   const sorted = [...stubs].sort((a,b)=>b.date.localeCompare(a.date));
   if(!sorted.length) { list.innerHTML='<div class="empty"><div style="font-size:32px;margin-bottom:8px">–</div><div>No paychecks logged yet</div></div>'; return; }
 
-  // Check if any stubs have DT / prem / addl so we only show those columns if needed
+  // Check which optional columns are needed
   const hasDT   = sorted.some(s=>(s.dt||0)>0);
   const hasPrem = sorted.some(s=>(s.premHrs||0)>0);
   const hasAddl = sorted.some(s=>(s.addl||0)>0);
   const hasHol  = sorted.some(s=>(s.hol||0)>0);
+  // Show Reg $ / OT $ columns only when at least one stub has stored override values
+  const hasRegPay = sorted.some(s=>s.regPay!=null&&s.regPay>0);
+  const hasOTPay  = sorted.some(s=>s.otPay!=null&&s.otPay>0);
 
   let thead = `<tr>
     ${bulkMode?'<th class=\"cb-col\"><input type=\"checkbox\" id=\"sheetSelAll\" style=\"accent-color:var(--green);cursor:pointer\" onclick=\"sheetToggleAll(this)\">':'' }
     <th>Date</th>
     <th class="num">Rate</th>
     <th class="num">Reg Hrs</th>
+    ${hasRegPay ? '<th class="num" style="color:var(--green)">Reg $</th>' : ''}
     <th class="num">OT Hrs</th>
+    ${hasOTPay  ? '<th class="num" style="color:var(--amber)">OT $</th>' : ''}
     ${hasDT   ? '<th class="num">DT Hrs</th>' : ''}
     ${hasHol  ? '<th class="num">Hol Hrs</th>' : ''}
     ${hasPrem ? '<th class="num">Prem $/hr</th><th class="num">Prem Hrs</th>' : ''}
@@ -1518,7 +1523,7 @@ function buildHistorySheet() {
   sorted.forEach(s => {
     const yr = s.date.slice(0,4);
     if(yr !== lastYear) {
-      const cols = 9 + (hasDT?1:0) + (hasHol?1:0) + (hasPrem?2:0) + (hasAddl?1:0) + (bulkMode?1:0);
+      const cols = 9 + (hasRegPay?1:0) + (hasOTPay?1:0) + (hasDT?1:0) + (hasHol?1:0) + (hasPrem?2:0) + (hasAddl?1:0) + (bulkMode?1:0);
       rows += `<tr class="hist-yr-header"><td colspan="${cols}">${yr}</td></tr>`;
       lastYear = yr;
     }
@@ -1527,12 +1532,18 @@ function buildHistorySheet() {
     const benefits = s.den+s.medI+s.vis+(s.retire||0);
     const d = new Date(s.date+'T12:00:00');
     const ds = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    // Derive display values using stored overrides when available
+    const _rr = rateRound(s.rate);
+    const dispReg = (s.regPay!=null&&s.regPay>0) ? s.regPay : payRound(_rr*s.reg);
+    const dispOT  = (s.otPay!=null&&s.otPay>0)   ? s.otPay  : ((s.ot||0)>0 ? payRound(rateRound(s.rate*1.5)*(s.ot||0)) : null);
     rows += `<tr onclick="${bulkMode?`toggleSelect('${s.id}',event)`:`openDetail('${s.id}')`}">
       ${bulkMode?`<td class="cb-col" onclick="toggleSelect('${s.id}',event)"><input type="checkbox" id="cb-${s.id}" ${selectedIds.has(s.id)?'checked':''} style="accent-color:var(--green);cursor:pointer" onclick="toggleSelect('${s.id}',event)"></td>`:''}
       <td>${ds}</td>
       <td class="num muted">$${parseFloat(s.rate).toFixed(2)}</td>
       <td class="num">${fmtH(s.reg)}</td>
+      ${hasRegPay ? `<td class="num">${fmt(dispReg)}</td>` : ''}
       <td class="num${(s.ot||0)>0?' amber':''}">${(s.ot||0)>0?fmtH(s.ot):'—'}</td>
+      ${hasOTPay  ? `<td class="num amber">${dispOT!=null?fmt(dispOT):'—'}</td>` : ''}
       ${hasDT   ? `<td class="num${(s.dt||0)>0?' red':''}">${(s.dt||0)>0?fmtH(s.dt):'—'}</td>` : ''}
       ${hasHol  ? `<td class="num${(s.hol||0)>0?' blue':''}">${(s.hol||0)>0?fmtH(s.hol):'—'}</td>` : ''}
       ${hasPrem ? `<td class="num${(s.premHrs||0)>0?' muted':''}">${(s.premHrs||0)>0?'$'+parseFloat(s.premRate||0).toFixed(2):'—'}</td><td class="num">${(s.premHrs||0)>0?fmtH(s.premHrs):'—'}</td>` : ''}
@@ -1548,18 +1559,24 @@ function buildHistorySheet() {
 
   // Totals row
   const tGross = sorted.reduce((a,s)=>a+s.gross,0);
+  const tReg   = sorted.reduce((a,s)=>a+((s.regPay!=null&&s.regPay>0)?s.regPay:payRound(rateRound(s.rate)*s.reg)),0);
+  const tOT    = sorted.reduce((a,s)=>{ const r=rateRound(s.rate*1.5); return a+((s.otPay!=null&&s.otPay>0)?s.otPay:payRound(r*(s.ot||0))); },0);
   const tFed   = sorted.reduce((a,s)=>a+s.fed,0);
   const tSS    = sorted.reduce((a,s)=>a+s.ss,0);
   const tMed   = sorted.reduce((a,s)=>a+s.med,0);
   const tBen   = sorted.reduce((a,s)=>a+s.den+s.medI+s.vis+(s.retire||0),0);
   const tNets  = sorted.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0); return s.net||(s.gross-d); });
   const tNet   = tNets.reduce((a,v)=>a+v,0);
-  const extraCols = (hasDT?1:0)+(hasHol?1:0)+(hasPrem?2:0)+(hasAddl?1:0);
+  const extraCols = (hasRegPay?1:0)+(hasOTPay?1:0)+(hasDT?1:0)+(hasHol?1:0)+(hasPrem?2:0)+(hasAddl?1:0);
   rows += `<tr style="background:var(--green-dim);font-weight:700;border-top:2px solid var(--green-border)">
     ${bulkMode?"<td></td>":""}
     <td style="color:var(--text2)">Totals (${sorted.length})</td>
-    <td></td><td></td><td></td>
-    ${"<td></td>".repeat(extraCols)}
+    <td></td>
+    <td></td>
+    ${hasRegPay ? `<td class="num">${fmt(tReg)}</td>` : ''}
+    <td></td>
+    ${hasOTPay  ? `<td class="num amber">${fmt(tOT)}</td>` : ''}
+    ${"<td></td>".repeat((hasDT?1:0)+(hasHol?1:0)+(hasPrem?2:0)+(hasAddl?1:0))}
     <td class="num">${fmt(tGross)}</td>
     <td class="num red">${fmt(tFed)}</td>
     <td class="num red">${fmt(tSS)}</td>
@@ -2243,6 +2260,7 @@ function toggleEditMode() {
 }
 async function saveEdit() {
   const s=stubs.find(x=>x.id===activeDetailId); if(!s) return;
+  const eGrossVal = parseFloat(document.getElementById('eGross').value);
   const updated={
     date:document.getElementById('eDate').value,
     rate:parseFloat(document.getElementById('eRate').value)||s.rate,
@@ -2265,10 +2283,11 @@ async function saveEdit() {
     retire:parseFloat(document.getElementById('eRetire').value)||0,
     regPay:parseFloat(document.getElementById('eRegPay').value)||null,
     otPay:parseFloat(document.getElementById('eOTPay').value)||null,
-    gross:parseFloat(document.getElementById('eGross').value)||s.gross,
+    // Only treat Gross as a manual override if user changed it from the stored value
+    grossOverride: (!isNaN(eGrossVal) && eGrossVal > 0 && Math.abs(eGrossVal - s.gross) > 0.001) ? eGrossVal : null,
     net:parseFloat(document.getElementById('eNet').value)||null,
   };
-  // Don't assign updated to s yet — need to compute correct gross first
+  // Compute correct gross from pay overrides or hours
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
   const _eRegPay = (updated.regPay&&updated.regPay>0) ? updated.regPay : payRound(_eRegR*updated.reg);
   const _eOTPay  = (updated.otPay&&updated.otPay>0)   ? updated.otPay  : payRound(_eOtRate*updated.ot);
@@ -2278,10 +2297,11 @@ async function saveEdit() {
     payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+
     payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
-  s.gross = (updated.gross && updated.gross > 0) ? updated.gross : _calcGross;
-  // Now assign all updated fields including corrected gross
+  // Priority: explicit gross change > pay overrides calc > stored gross
+  const finalGross = updated.grossOverride || _calcGross;
+  // Apply everything to the stub
   Object.assign(s, updated);
-  s.gross = (updated.gross && updated.gross > 0) ? updated.gross : _calcGross;
+  s.gross = finalGross;
   // Live update
   document.getElementById('dReadView').innerHTML=renderReadView(s);
   document.getElementById('dReadView').style.display='block';
@@ -2294,9 +2314,9 @@ async function saveEdit() {
   if(window._idb && currentUser) window._idb.idbPutStub(s, currentUser.id).catch(()=>{});
   try {
     setSyncDot('syncing');
-    // Send the computed gross so API doesn't recalculate from hours
+    // Send finalGross so API stores exactly what we computed
     markRecentlySaved(s.id);
-    await syncOp('/api/stubs?id='+s.id,'PATCH',{...updated, gross: s.gross});
+    await syncOp('/api/stubs?id='+s.id,'PATCH',{...updated, gross: finalGross});
     if(isOnline) { setSyncDot('ok'); showToast('Paycheck updated'); }
     else showToast('Saved offline — will sync when reconnected');
   } catch { setSyncDot('err'); showToast('Sync failed',true); }
