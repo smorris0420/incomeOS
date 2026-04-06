@@ -3069,27 +3069,32 @@ function renderDashTracker(w) {
       const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);
       const net=parseFloat((s.net||(s.gross-ded)).toFixed(2));
       const dt=new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-      const otBadge=(s.ot||0)>0?`<span style="font-size:9px;background:rgba(251,191,36,.15);color:#92400e;padding:1px 5px;border-radius:10px;font-weight:600">OT ${fmtH(s.ot||0)}h</span>`:'';
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-size:11px;font-weight:600;color:var(--text2)">${dt}</div><div style="display:flex;gap:4px;margin-top:2px">${otBadge}</div></div>
-        <div style="text-align:right"><div style="font-family:var(--mono);font-size:13px;font-weight:700">${fmt(s.gross)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--green)">${fmt(net)} net</div></div>
-      </div>`;
+      const otBadge=(s.ot||0)>0?'<span style="font-size:9px;background:rgba(251,191,36,.15);color:#92400e;padding:1px 5px;border-radius:10px;font-weight:600">OT '+fmtH(s.ot||0)+'h</span>':'';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">'
+        +'<div><div style="font-size:11px;font-weight:600;color:var(--text2)">'+dt+'</div><div style="display:flex;gap:4px;margin-top:2px">'+otBadge+'</div></div>'
+        +'<div style="text-align:right"><div style="font-family:var(--mono);font-size:13px;font-weight:700">'+fmt(s.gross)+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--green)">'+fmt(net)+' net</div></div>'
+        +'</div>';
     }).join('')+'<div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center">Last 3 paychecks</div>';
-  }
-    // Re-use goal tracker logic
+  } else if(w.widgetId==='track-goal'){
     const goal=parseFloat(localStorage.getItem('dash-goal-'+d.yr)||0);
     const projNet=d.tNet/d.daysPassed*d.daysInYear;
-    const remain=Math.max(0,goal-d.tNet);
     const pct=goal>0?Math.min(100,d.tNet/goal*100):0;
     const onTrack=goal>0?projNet>=goal:true;
-    el.innerHTML=`
-      ${goal>0?`<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>${fmt(d.tNet)} of ${fmt(goal)}</span><span style="color:${onTrack?'var(--green)':'var(--amber)'}">${pct.toFixed(0)}%</span></div>
-      <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:${pct.toFixed(1)}%;background:${onTrack?'var(--green)':'var(--amber)'};border-radius:4px;transition:width .4s"></div></div>`:''}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Earned</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${fmt(d.tNet)}</div></div>
-        <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Projected</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${onTrack?'var(--green)':'var(--amber)'}">${fmt(projNet)}</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px"><label style="font-size:11px;color:var(--text3);white-space:nowrap">Goal $</label><input type="number" step="500" value="${goal||''}" placeholder="Set annual target" style="flex:1;padding:5px 8px;font-family:var(--mono);font-size:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:6px;color:var(--text);outline:none" oninput="setDashGoal('${w.id}',this.value,'${d.yr}')"></div>`;
+    const barColor=onTrack?'var(--green)':'var(--amber)';
+    const progressBar=goal>0
+      ?'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>'+fmt(d.tNet)+' of '+fmt(goal)+'</span><span style="color:'+barColor+'">'+pct.toFixed(0)+'%</span></div>'
+       +'<div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+barColor+';border-radius:4px;transition:width .4s"></div></div>'
+      :'';
+    const wid=w.id, yr=d.yr;
+    el.innerHTML=progressBar
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
+        +'<div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Earned</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">'+fmt(d.tNet)+'</div></div>'
+        +'<div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Projected</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+barColor+'">'+fmt(projNet)+'</div></div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px"><label style="font-size:11px;color:var(--text3);white-space:nowrap">Goal $</label>'
+      +'<input type="number" step="500" value="'+(goal||'')+'" placeholder="Set annual target" '
+      +'style="flex:1;padding:5px 8px;font-family:var(--mono);font-size:12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:6px;color:var(--text);outline:none" '
+      +'oninput="setDashGoal(\''+wid+'\',this.value,\''+yr+'\')"></div>';
   }
 }
 
