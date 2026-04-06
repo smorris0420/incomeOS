@@ -1846,7 +1846,7 @@ function showPage(id, btn, source) {
   if(id==='history') buildHistory();
   if(id!=='history' && bulkMode) { bulkMode=false; selectedIds.clear(); const btn=document.getElementById('histBulkToggle'); if(btn) btn.textContent='Select'; updateBulkBar(); }
   if(id==='dash') {
-    computeDashData(); renderDashboard();
+    computeDashData(); renderDashboard(); buildDashPanel();
     requestAnimationFrame(()=>{ initCanvasDrop(); initDashResizeObserver(); });
   }
   if(id==='ytd') { buildYTDTabs(); buildYTD();
@@ -2812,7 +2812,7 @@ async function loadDashboard() {
     dashConfig = (r.config && r.config.length) ? r.config : getDefaultDashConfig();
   } catch(e) { dashConfig = getDefaultDashConfig(); }
   computeDashData();
-  renderDashboard();
+  renderDashboard(); buildDashPanel();
   // Always populate panel — it's a constant catalog, needs no data
   buildDashPanel();
   requestAnimationFrame(()=>{ initCanvasDrop(); initDashResizeObserver(); });
@@ -2844,7 +2844,7 @@ function renderDashboard() {
   const canvas = document.getElementById('dashCanvas');
   const container = document.getElementById('dashWidgets');
   const emptyEl = document.getElementById('dashEmpty');
-  if(!canvas||!container) return;
+  if(!canvas||!container) { buildDashPanel(); return; }
 
   // Destroy old charts
   Object.values(dashCharts).forEach(c=>{try{c.destroy();}catch(e){}});
@@ -2876,7 +2876,6 @@ function renderDashboard() {
       else if(w.widgetId.startsWith('track-')) renderDashTracker(w);
       else renderStatWidget(w);
     });
-    buildDashPanel();
   });
 }
 
@@ -3162,7 +3161,7 @@ function addDashWidget(widgetId){
   const w={id:dashUID(),widgetId,x:px,y:py,w:def.defW||4,h:def.defH||2,chartType:def.chartType||def.defChartType||null};
   dashConfig.push(w);
   saveDashConfig();
-  renderDashboard();
+  renderDashboard(); buildDashPanel();
   showToast(def.name+' added');
 }
 
@@ -3205,7 +3204,7 @@ function clearDashboard(){
   dashCharts={};
   dashConfig=[];
   saveDashConfig();
-  renderDashboard();
+  renderDashboard(); buildDashPanel();
 }
 
 // ── Event delegation for dashboard ───────────────────────────────────────────
