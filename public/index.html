@@ -418,6 +418,8 @@ body{font-family:var(--sans);color:var(--text);line-height:1.5}
         </div>
         <div class="section-title">Hours &amp; Pay</div>
         <div class="card card-pad">
+          <div class="input-row"><label>Pay date</label><div class="input-wrap"><input type="date" id="iDate" class="no-prefix" style="font-size:13px"></div></div>
+          <div class="input-row"><label>Pay date</label><div class="input-wrap"><input type="date" id="iDate" class="no-prefix" style="font-size:13px"></div></div>
           <div class="input-row"><label>Hourly rate</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iRate" value="21.90" step="0.01" min="0"></div></div>
           <div class="input-row"><label>Regular hours</label><div class="input-wrap"><input type="number" id="iReg" value="40" step="0.25" min="0" class="no-prefix"></div></div>
           <div class="input-row"><label>Overtime hours (1.5×)</label><div class="input-wrap"><input type="number" id="iOT" value="0" step="0.25" class="no-prefix"></div></div>
@@ -1299,30 +1301,53 @@ function effFedRate() {
   return u.reduce((a,s)=>a+s.fed,0)/u.reduce((a,s)=>a+s.gross,0);
 }
 
-// Federal withholding using IRS Publication 15-T 2026
-// Percentage Method, Weekly payroll, Single filer, Step 2 checkbox checked
-// Annualizes weekly taxable wage, looks up annual tax, divides by 52
-function irsWithholding(taxableGross) {
+// Federal withholding — Disney payroll, Single filer, Step 2 ("two similar jobs") checked
+// Brackets reverse-engineered from 224 actual paychecks 2022-2026.
+// Uses week's pay date to select correct year's brackets (Disney often uses prior-year
+// brackets for the first few weeks of January until new tables are loaded).
+function irsWithholding(taxableGross, payDate) {
   // Flat % override (Settings > Fed rate override)
   if(appSettings.fedOverride) {
     const extra = parseFloat(appSettings.fedExtra)||0;
     return parseFloat(Math.max(0, (taxableGross * appSettings.fedOverride / 100) + extra).toFixed(2));
   }
-  // IRS Pub 15-T 2026, Single/MFS, Step 2 checkbox checked, annual brackets
-  const annual = Math.max(0, taxableGross * 52);
+
+  // Bracket sets (f1..f7 = annual taxable wage floors, optimized from real paychecks)
+  const BR = {
+    2022: [4470, 21640, 26820, 56650, 101200, 127200, 314950],
+    2023: [5440, 14430, 27540, 57400, 104200, 130750, 313500],
+    2024: [6340, 12410, 29230, 58325, 106225, 133200, 319800],
+    2025: [5545, 22280, 31140, 57400, 104350, 130750, 313600],
+    2026: [7254, 18234, 33247, 58175, 107142, 132650, 317650],
+  };
+
+  // Pick bracket year — January uses prior year (Disney table loading delay)
+  let yr = payDate ? parseInt(payDate.slice(0,4)) : new Date().getFullYear();
+  const mo = payDate ? parseInt(payDate.slice(5,7)) : new Date().getMonth()+1;
+  if(mo === 1 && yr > 2022) yr = yr - 1;  // Jan uses prior year
+  const b = BR[yr] || BR[2026];
+  const [f1,f2,f3,f4,f5,f6,f7] = b;
+
+  // Annualize and compute tax
+  const w = Math.max(0, taxableGross * 52);
+  const bf2 = (f2-f1)*0.10;
+  const bf3 = (f3-f2)*0.12 + bf2;
+  const bf4 = (f4-f3)*0.22 + bf3;
+  const bf5 = (f5-f4)*0.24 + bf4;
+  const bf6 = (f6-f5)*0.32 + bf5;
+  const bf7 = (f7-f6)*0.35 + bf6;
   let annualTax;
-  if      (annual <= 6300)    annualTax = 0;
-  else if (annual <= 17800)   annualTax = (annual - 6300)   * 0.10;
-  else if (annual <= 33475)   annualTax = (annual - 17800)  * 0.12 + 1150;
-  else if (annual <= 58175)   annualTax = (annual - 33475)  * 0.22 + 3031;
-  else if (annual <= 105650)  annualTax = (annual - 58175)  * 0.24 + 8465;
-  else if (annual <= 132650)  annualTax = (annual - 105650) * 0.32 + 19859;
-  else if (annual <= 317650)  annualTax = (annual - 132650) * 0.35 + 28499;
-  else                        annualTax = (annual - 317650) * 0.37 + 93249;
-  const weekly = annualTax / 52;
-  // Optional fixed extra per paycheck (Settings > Extra withholding $)
+  if      (w <= f1) annualTax = 0;
+  else if (w <= f2) annualTax = (w-f1)*0.10;
+  else if (w <= f3) annualTax = (w-f2)*0.12 + bf2;
+  else if (w <= f4) annualTax = (w-f3)*0.22 + bf3;
+  else if (w <= f5) annualTax = (w-f4)*0.24 + bf4;
+  else if (w <= f6) annualTax = (w-f5)*0.32 + bf5;
+  else if (w <= f7) annualTax = (w-f6)*0.35 + bf6;
+  else              annualTax = (w-f7)*0.37 + bf7;
+
   const extra = parseFloat(appSettings.fedExtra)||0;
-  return parseFloat(Math.max(0, weekly + extra).toFixed(2));
+  return parseFloat(Math.max(0, annualTax/52 + extra).toFixed(2));
 }
 
 // ===== CALCULATOR =====
@@ -1350,7 +1375,10 @@ function calc() {
   // Pre-tax deductions (dental, medical, vision, 401k) reduce FICA taxable base
   const preTax=den+medI+vis+retire;
   const taxableGross=Math.max(0, gross-preTax);
-  const fed=irsWithholding(taxableGross), ss=parseFloat((taxableGross*0.062).toFixed(2)), med=parseFloat((taxableGross*0.0145).toFixed(2));
+  const _calcDate=document.getElementById('iDate')?.value||new Date().toISOString().slice(0,10);
+  // SS/Medicare: computed on gross minus benefits ONLY (401k/retire does NOT reduce SS wages)
+  const ficaBase = Math.max(0, gross - den - medI - vis);
+  const fed=irsWithholding(taxableGross,_calcDate), ss=parseFloat((ficaBase*0.062).toFixed(2)), med=parseFloat((ficaBase*0.0145).toFixed(2));
   const totalDed=fed+ss+med+den+medI+vis+retire, net=gross-totalDed;
   document.getElementById('mGross').textContent=fmt(gross);
   document.getElementById('mDeduct').textContent=fmt(totalDed);
@@ -1365,8 +1393,8 @@ function calc() {
   document.getElementById('bPremPay').textContent=fmt(premPay)+' ($'+premRate.toFixed(2)+'/hr × '+fmtH(premHrs)+'h)';
   document.getElementById('bAddlPay').textContent=fmt(addl);
   document.getElementById('bFed').textContent=fmt(fed)+(taxableGross>0?' ('+(fed/taxableGross*100).toFixed(1)+'%)':'');
-  document.getElementById('bSS').textContent=fmt(ss)+(preTax>0?' (on '+fmt(taxableGross)+')':'');
-  document.getElementById('bMed').textContent=fmt(med)+(preTax>0?' (on '+fmt(taxableGross)+')':'');
+  document.getElementById('bSS').textContent=fmt(ss)+(ficaBase!==gross?' (on '+fmt(ficaBase)+')':'');
+  document.getElementById('bMed').textContent=fmt(med)+(ficaBase!==gross?' (on '+fmt(ficaBase)+')':'');
   document.getElementById('bDen').textContent=fmt(den);
   document.getElementById('bMedI').textContent=fmt(medI);
   document.getElementById('bVis').textContent=fmt(vis);
@@ -1383,7 +1411,8 @@ function calc() {
   document.getElementById('rowPrem').style.display=premPay>0?'flex':'none';
   document.getElementById('rowAddl').style.display=addl>0?'flex':'none';
 }
-['iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetire'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+document.getElementById('iDate').value=new Date().toISOString().slice(0,10);
+['iDate','iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetire'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
 
 // ===== NAVIGATION =====
 const pageOrder = ['calc','history','ytd','bulk','settings','admin'];
@@ -2132,7 +2161,7 @@ async function saveLog() {
   // Pre-tax deductions reduce FICA and fed taxable base
   const _lPreTax=den+medI+vis+retire;
   const _lTaxable=Math.max(0,gross-_lPreTax);
-  const fedRaw=parseFloat(document.getElementById('lFed').value), fed=isNaN(fedRaw)?irsWithholding(_lTaxable):fedRaw;
+  const fedRaw=parseFloat(document.getElementById('lFed').value), fed=isNaN(fedRaw)?irsWithholding(_lTaxable,document.getElementById('lDate').value):fedRaw;
   const ssRaw=parseFloat(document.getElementById('lSS').value);
   const medRaw=parseFloat(document.getElementById('lMed').value);
   const ss=isNaN(ssRaw)?parseFloat((_lTaxable*0.062).toFixed(2)):ssRaw;
@@ -2623,11 +2652,11 @@ async function bulkSave() {
     const fedRaw=parseFloat(document.getElementById('bc-fed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bc-ss-'+i)?.value);
     const medRaw=parseFloat(document.getElementById('bc-med-'+i)?.value);
-    const fed=isNaN(fedRaw)?irsWithholding(taxableG):fedRaw;
-    const _bPreTax=den+medI+vis+(retireVal||0);
-    const _bTaxable=Math.max(0,gross-_bPreTax);
-    const ss=isNaN(ssRaw)?parseFloat((_bTaxable*0.062).toFixed(2)):ssRaw;
-    const med=isNaN(medRaw)?parseFloat((_bTaxable*0.0145).toFixed(2)):medRaw;
+    const fed=isNaN(fedRaw)?irsWithholding(_bTaxable,date):fedRaw;
+    const _bFicaBase=Math.max(0,gross-den-medI-vis);         // SS/Med base: retire NOT pre-tax for SS
+    const _bTaxable=Math.max(0,gross-den-medI-vis-retireVal); // Fed base: retire IS pre-tax for fed
+    const ss=isNaN(ssRaw)?parseFloat((_bFicaBase*0.062).toFixed(2)):ssRaw;
+    const med=isNaN(medRaw)?parseFloat((_bFicaBase*0.0145).toFixed(2)):medRaw;
     const retireVal=parseFloat(document.getElementById('bc-retire-'+i)?.value)||0;
     const _denRaw=document.getElementById('bc-den-'+i)?.value;
     const _medIRaw=document.getElementById('bc-medi-'+i)?.value;
