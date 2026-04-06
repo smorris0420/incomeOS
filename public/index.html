@@ -2813,6 +2813,7 @@ async function loadDashboard() {
   } catch(e) { dashConfig = getDefaultDashConfig(); }
   computeDashData();
   renderDashboard();
+  // Always populate panel — it's a constant catalog, needs no data
   buildDashPanel();
   requestAnimationFrame(()=>{ initCanvasDrop(); initDashResizeObserver(); });
 }
@@ -3122,14 +3123,13 @@ function buildDashPanel(){
     const items = DASH_CATALOG[key].map(def=>{
       const isOn = onCanvas.has(def.id);
       return '<div class="dash-lib-item'+(isOn?' on-canvas':'')+'" '
-        +'draggable="true" '
         +'draggable="true" data-lib-id="'+def.id+'" '
         +'id="dlib-'+def.id+'">'
         +'<div style="flex:1;min-width:0">'
           +'<div class="dash-lib-name">'+def.icon+' '+def.name+'</div>'
           +'<div class="dash-lib-desc">'+def.desc+'</div>'
         +'</div>'
-        +'<button class="dash-lib-add" data-action="add-widget" data-lib-id="'+def.id+'">'+(isOn?'✓':'+')+'</button>'
+        +'<button class="dash-lib-add" data-action="add-widget" data-lib-id="'+def.id+'" title="Add to canvas">'+(isOn?'✓':'+')+'</button>'
         +'</div>';
     }).join('');
     return '<div class="dash-panel-section">'+label+'</div>'+items;
