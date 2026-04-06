@@ -106,15 +106,41 @@ html{transition:background .2s,color .2s}
 }
 
 /* PAGES */
-.page{display:none;animation:fadeIn .18s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.page{display:none}
+.page.active{display:block;animation:pageEnter .22s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes pageEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .page-inner{max-width:var(--content-max);margin:0 auto;padding:20px 16px}
 @media(min-width:768px){.page-inner{padding:28px 36px}}
 @media(min-width:1400px){.page-inner{max-width:1100px}}
 /* Full-width pages (bulk import, admin users, ytd) */
 .page-inner-wide{max-width:100%;margin:0 auto;padding:20px 16px}
 @media(min-width:768px){.page-inner-wide{padding:28px 36px}}
+
+/* ── MICRO-INTERACTIONS ── */
+.btn{transition:all .15s cubic-bezier(.25,.46,.45,.94)}
+.btn:active{transform:scale(.97)}
+.btn-primary:hover{filter:brightness(1.08)}
+.stub-item{transition:border-color .15s,box-shadow .15s,transform .12s}
+.stub-item:active{transform:scale(.99)}
+.metric,.card{transition:box-shadow .15s,border-color .15s}
+.sidebar-nav-btn{transition:background .12s,color .12s,transform .1s}
+.sidebar-nav-btn:active{transform:translateX(2px)}
+.nav-btn{transition:color .12s,transform .1s}
+.nav-btn:active{transform:scale(.92)}
+/* Stagger list animations */
+.stub-item,.ytd-card,.user-row{animation:listItemIn .18s ease both}
+@keyframes listItemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+/* Modal */
+.modal-overlay.open .modal{animation:modalUp .2s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes modalUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Toast */
+.toast{transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s}
+/* Dashboard widget entrance */
+.dash-widget{animation:widgetIn .2s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes widgetIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+/* Skeleton loader */
+.skel{background:linear-gradient(90deg,var(--bg4) 25%,var(--bg3) 50%,var(--bg4) 75%);background-size:200% 100%;animation:skelShimmer 1.4s infinite}
+@keyframes skelShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .page-header{padding:0 0 20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .page-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text)}
 .page-sub{font-size:13px;color:var(--text3);margin-top:2px}
@@ -504,18 +530,40 @@ html{transition:background .2s,color .2s}
   <div class="login-mark">$</div>
   <div>
     <div class="login-title">Payday</div>
-    <div class="login-sub" style="margin-top:4px">DCL Terminal Ops - Airport/Resort Ops</div>
+    <div class="login-sub" style="margin-top:4px">DCL Terminal Ops · Airport/Resort Ops</div>
   </div>
-  <div class="login-form">
-    <input type="text" id="unInput" placeholder="Username or Email" autocomplete="username" autocapitalize="none"
+
+  <!-- Biometric button (shown when passkey available) -->
+  <div id="loginBioWrap" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+    <button class="login-biometric-btn" id="loginBioBtn" onclick="loginWithPasskey()">
+      <svg class="login-biometric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C9.5 2 7.5 3.5 7.5 5.5c0 2 1.5 3.5 4.5 5.5 3-2 4.5-3.5 4.5-5.5C16.5 3.5 14.5 2 12 2z"/>
+        <path d="M7 10.5C5 11.5 3.5 13.5 3.5 16c0 3.5 3 6.5 8.5 6.5S20.5 19.5 20.5 16c0-2.5-1.5-4.5-3.5-5.5"/>
+        <path d="M12 22v-4M8.5 19.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5"/>
+        <circle cx="12" cy="13" r="1.5" fill="currentColor"/>
+      </svg>
+      <div class="login-biometric-label" id="loginBioLabel">Sign in with Face ID / Touch ID</div>
+      <div class="login-biometric-sub">Use your saved passkey for this device</div>
+    </button>
+    <div class="login-divider">or</div>
+    <button class="login-pw-toggle" onclick="toggleLoginForm()">Sign in with password instead</button>
+  </div>
+
+  <!-- Password form -->
+  <div id="loginFormWrap" class="login-form" style="width:100%;max-width:340px">
+    <input type="text" id="unInput" placeholder="Username or email" autocomplete="username" autocapitalize="none"
       onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()">
     <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password"
       onkeydown="if(event.key==='Enter')login()">
-    <button class="btn btn-primary" onclick="login()">Sign in</button>
-    <div class="login-err" id="loginErr"></div>
+    <button class="btn btn-primary" onclick="login()" id="loginBtn">Sign in</button>
+    <div id="loginErr" class="login-err"></div>
+  </div>
+
+  <!-- Show bio option link when form visible but passkey available -->
+  <div id="loginShowBioLink" style="display:none">
+    <button class="login-pw-toggle" onclick="toggleLoginForm()">Use Face ID / Touch ID instead</button>
   </div>
 </div>
-
 <div id="appShell">
   <div id="toast" class="toast">Saved</div>
 
@@ -1051,6 +1099,27 @@ html{transition:background .2s,color .2s}
           </div>
         </div>
 
+        <div class="section-title">Devices &amp; Security</div>
+        <div class="card card-pad" style="margin-bottom:8px">
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Register this device for Face ID / Touch ID sign-in. Your email is used as your passkey identifier.</p>
+          <div id="passkeyList" style="margin-bottom:12px"></div>
+          <button class="btn btn-secondary" onclick="registerPasskey()" id="addPasskeyBtn" style="gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add this device
+          </button>
+          <div id="passkeyMsg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+        </div>
+
+        <div class="section-title">Devices &amp; Security</div>
+        <div class="card card-pad" style="margin-bottom:8px">
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Register this device for Face ID / Touch ID sign-in. Your passkey is tied to your account — no password needed on registered devices.</p>
+          <div id="passkeyList" style="margin-bottom:12px"></div>
+          <button class="btn btn-secondary" onclick="registerPasskey()" style="gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add this device
+          </button>
+          <div id="passkeyMsg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+        </div>
         <div class="section-title">Data</div>
         <button class="btn btn-secondary" style="margin-bottom:8px" onclick="exportData()">Export paychecks (JSON)</button>
         <button class="btn btn-danger" onclick="confirmClear()">Delete all paycheck history</button>
@@ -1470,23 +1539,7 @@ async function login() {
     const res = await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:un,password:pw})});
     const data = await res.json();
     if(!res.ok) { err.textContent=data.error||'Invalid credentials'; return; }
-    token=data.token;
-    currentUser={username:data.username,displayName:data.displayName||data.username,role:data.role,id:data.userId};
-    sessionStorage.setItem('payday_token',token);
-    sessionStorage.setItem('payday_user',JSON.stringify(currentUser));
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('appShell').classList.add('visible');
-    updateSidebarUser();
-    // Always reset to calculator on every login — clears any leftover page state from previous user
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-dash').classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.sidebar-nav-btn').forEach(b=>b.classList.remove('active'));
-    const firstSb=document.querySelector('.sidebar-nav-btn');
-    const firstMb=document.querySelector('.nav-btn');
-    if(firstSb) firstSb.classList.add('active');
-    if(firstMb) firstMb.classList.add('active');
-    await loadAll();
+    await _onLoginSuccess(data);
   } catch { err.textContent='Connection error'; }
 }
 function logout() {
@@ -1868,7 +1921,7 @@ function showPage(id, btn, source) {
     const srch=document.getElementById('ytdSearch');
     if(srch && !srch._wired){ srch._wired=true; srch.addEventListener('input',buildYTD); }
   }
-  if(id==='settings') { buildSettingsUI(); const el=document.getElementById('settingsWho'); if(el) el.textContent=currentUser?.username||''; }
+  if(id==='settings') { buildSettingsUI(); const el=document.getElementById('settingsWho'); if(el) el.textContent=currentUser?.username||''; loadPasskeyList(); }
   if(id==='admin') { if(currentUser?.role!=='admin'){showPage('calc',null,null);return;} buildAdminPage(); }
   if(id==='bulk') initBulk();
 }
@@ -3598,6 +3651,286 @@ function applyServerTheme(settings) {
   if(settings.theme) { applyTheme(settings.theme); localStorage.setItem('payday-theme-pref', settings.theme); }
 }
 
+// ===== PASSKEYS / WEBAUTHN =====
+// Detect if WebAuthn is supported
+const _webAuthnSupported = () => window.PublicKeyCredential !== undefined;
+
+// Check if a passkey is available for this device (for login screen)
+async function checkPasskeyAvailable() {
+  if(!_webAuthnSupported()) return false;
+  try {
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch { return false; }
+}
+
+// b64url helpers
+function b64urlToUint8(b64) {
+  const b64std = b64.replace(/-/g,'+').replace(/_/g,'/');
+  const bin = atob(b64std);
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+function uint8ToB64url(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+// ── Login screen logic ────────────────────────────────────────────────────────
+let _loginShowBio = false;
+
+async function initLoginScreen() {
+  const hasPlatform = await checkPasskeyAvailable();
+  // Check if we have a stored credential hint for this browser
+  const storedHint = localStorage.getItem('payday-passkey-hint');
+  if(hasPlatform && storedHint) {
+    _loginShowBio = true;
+    document.getElementById('loginBioWrap').style.display = 'flex';
+    document.getElementById('loginFormWrap').style.display = 'none';
+    document.getElementById('loginShowBioLink').style.display = 'none';
+    // Customize label based on platform
+    const ua = navigator.userAgent;
+    const label = /iPhone|iPad|Mac/.test(ua) ? 'Sign in with Face ID / Touch ID'
+      : /Android/.test(ua) ? 'Sign in with fingerprint / face unlock'
+      : 'Sign in with Windows Hello or passkey';
+    document.getElementById('loginBioLabel').textContent = label;
+  } else {
+    document.getElementById('loginBioWrap').style.display = 'none';
+    document.getElementById('loginFormWrap').style.display = 'flex';
+    document.getElementById('loginShowBioLink').style.display = 'none';
+  }
+}
+
+function toggleLoginForm() {
+  const bioWrap  = document.getElementById('loginBioWrap');
+  const formWrap = document.getElementById('loginFormWrap');
+  const bioLink  = document.getElementById('loginShowBioLink');
+  const showingBio = bioWrap.style.display !== 'none';
+  if(showingBio) {
+    bioWrap.style.display  = 'none';
+    formWrap.style.display = 'flex';
+    bioLink.style.display  = _loginShowBio ? 'block' : 'none';
+  } else {
+    bioWrap.style.display  = 'flex';
+    formWrap.style.display = 'none';
+    bioLink.style.display  = 'none';
+  }
+}
+
+async function loginWithPasskey() {
+  const btn = document.getElementById('loginBioBtn');
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  btn.classList.add('scanning');
+
+  try {
+    // Get challenge from server (no username — discoverable credential)
+    const challengeRes = await fetch('/api/passkeys/challenge', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'authentication' })
+    });
+    const challengeData = await challengeRes.json();
+    if(!challengeRes.ok) throw new Error(challengeData.error || 'Could not get challenge');
+
+    // Build PublicKeyCredentialRequestOptions
+    const options = {
+      challenge: b64urlToUint8(challengeData.challenge),
+      rpId: challengeData.rpId || location.hostname,
+      userVerification: 'preferred',
+      timeout: 60000,
+    };
+    if(challengeData.allowCredentials?.length) {
+      options.allowCredentials = challengeData.allowCredentials.map(c => ({
+        type: 'public-key',
+        id: b64urlToUint8(c.id),
+      }));
+    }
+
+    const assertion = await navigator.credentials.get({ publicKey: options });
+
+    // Send assertion to server
+    const authRes = await fetch('/api/passkeys/authenticate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        credential: {
+          id: assertion.id,
+          rawId: uint8ToB64url(assertion.rawId),
+          type: assertion.type,
+          response: {
+            authenticatorData: uint8ToB64url(assertion.response.authenticatorData),
+            clientDataJSON:    uint8ToB64url(assertion.response.clientDataJSON),
+            signature:         uint8ToB64url(assertion.response.signature),
+            userHandle: assertion.response.userHandle ? uint8ToB64url(assertion.response.userHandle) : null,
+          },
+        }
+      })
+    });
+    const authData = await authRes.json();
+    if(!authRes.ok) throw new Error(authData.error || 'Authentication failed');
+
+    // Success — same as password login
+    btn.classList.remove('scanning');
+    await _onLoginSuccess(authData);
+
+  } catch(e) {
+    btn.classList.remove('scanning');
+    if(e.name === 'NotAllowedError') {
+      err.textContent = 'Biometric cancelled or not available';
+    } else {
+      err.textContent = e.message || 'Passkey sign-in failed';
+    }
+  }
+}
+
+// Shared post-login handler (used by both password and passkey login)
+async function _onLoginSuccess(data) {
+  token = data.token;
+  currentUser = { username:data.username, displayName:data.displayName||data.username, role:data.role, id:data.userId };
+  sessionStorage.setItem('payday_token', token);
+  sessionStorage.setItem('payday_user', JSON.stringify(currentUser));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').classList.add('visible');
+  updateSidebarUser();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-dash').classList.add('active');
+  document.querySelectorAll('.nav-btn,.sidebar-nav-btn').forEach(b=>b.classList.remove('active'));
+  const firstSb=document.querySelector('.sidebar-nav-btn');
+  const firstMb=document.querySelector('.nav-btn');
+  if(firstSb) firstSb.classList.add('active');
+  if(firstMb) firstMb.classList.add('active');
+  await loadAll();
+}
+
+// ── Registration (from Settings) ──────────────────────────────────────────────
+async function registerPasskey() {
+  if(!_webAuthnSupported()) { showToast('WebAuthn not supported in this browser', true); return; }
+  const msg = document.getElementById('passkeyMsg');
+  msg.textContent = 'Requesting biometric…';
+  msg.style.color = 'var(--text3)';
+
+  try {
+    // Get registration options from server
+    const challengeRes = await apiFetch('/api/passkeys/challenge', {
+      method:'POST', body: JSON.stringify({ type:'registration' })
+    });
+    if(!challengeRes || challengeRes.error) throw new Error(challengeRes?.error || 'No challenge');
+
+    const options = {
+      challenge: b64urlToUint8(challengeRes.challenge),
+      rp: { name: challengeRes.rp.name, id: challengeRes.rp.id },
+      user: {
+        id: b64urlToUint8(challengeRes.user.id),
+        name: challengeRes.user.name,
+        displayName: challengeRes.user.displayName,
+      },
+      pubKeyCredParams: challengeRes.pubKeyCredParams,
+      authenticatorSelection: challengeRes.authenticatorSelection || { userVerification:'preferred' },
+      timeout: challengeRes.timeout || 60000,
+      attestation: challengeRes.attestation || 'none',
+      excludeCredentials: (challengeRes.excludeCredentials||[]).map(c=>({
+        type:'public-key', id: b64urlToUint8(c.id)
+      })),
+    };
+
+    const credential = await navigator.credentials.create({ publicKey: options });
+
+    // Prompt for device name
+    const deviceName = prompt('Name this device (e.g. "iPhone 15", "Work MacBook"):', _guessDeviceName()) || 'My device';
+
+    // Send to server
+    const regRes = await apiFetch('/api/passkeys/register', {
+      method:'POST',
+      body: JSON.stringify({
+        deviceName,
+        credential: {
+          id: credential.id,
+          rawId: uint8ToB64url(credential.rawId),
+          type: credential.type,
+          response: {
+            attestationObject: uint8ToB64url(credential.response.attestationObject),
+            clientDataJSON:    uint8ToB64url(credential.response.clientDataJSON),
+          },
+        }
+      })
+    });
+    if(!regRes || regRes.error) throw new Error(regRes?.error || 'Registration failed');
+
+    // Store hint so login screen shows biometric option next time
+    localStorage.setItem('payday-passkey-hint', '1');
+
+    msg.textContent = '✓ Device registered — you can now sign in with Face ID / Touch ID';
+    msg.style.color = 'var(--green)';
+    loadPasskeyList();
+    showToast(deviceName + ' registered');
+
+  } catch(e) {
+    if(e.name === 'NotAllowedError') {
+      msg.textContent = 'Cancelled — biometric not completed';
+    } else {
+      msg.textContent = e.message || 'Registration failed';
+    }
+    msg.style.color = 'var(--red)';
+  }
+}
+
+function _guessDeviceName() {
+  const ua = navigator.userAgent;
+  if(/iPhone/.test(ua)) return 'iPhone';
+  if(/iPad/.test(ua)) return 'iPad';
+  if(/Mac/.test(ua)) return 'MacBook';
+  if(/Android/.test(ua)) return 'Android device';
+  if(/Windows/.test(ua)) return 'Windows PC';
+  return 'My device';
+}
+
+async function loadPasskeyList() {
+  const el = document.getElementById('passkeyList');
+  if(!el) return;
+  try {
+    const passkeys = await apiFetch('/api/passkeys');
+    if(!passkeys || !passkeys.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:4px 0">No devices registered yet.</div>';
+      return;
+    }
+    el.innerHTML = passkeys.map(p => {
+      const dt = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return '<div class="passkey-item" id="pk-'+p.id+'">'
+        +'<div class="passkey-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M12 3C9.8 3 8 4.8 8 7v4h8V7c0-2.2-1.8-4-4-4z"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></div>'
+        +'<div><div class="passkey-name">'+p.device_name+'</div><div class="passkey-date">Added '+dt+'</div></div>'
+        +'<div class="passkey-actions">'
+          +'<button class="icon-btn" onclick="renamePasskey(\''+p.id+'\',\''+p.device_name.replace(/'/g,"\\'")+'\')" title="Rename">✎</button>'
+          +'<button class="icon-btn danger" onclick="deletePasskey(\''+p.id+'\')" title="Remove">✕</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--red)">Could not load devices</div>';
+  }
+}
+
+async function renamePasskey(id, currentName) {
+  const name = prompt('Rename device:', currentName);
+  if(!name || name === currentName) return;
+  try {
+    await apiFetch('/api/passkeys', { method:'PATCH', body: JSON.stringify({ id, device_name: name }) });
+    loadPasskeyList();
+    showToast('Device renamed');
+  } catch { showToast('Rename failed', true); }
+}
+
+async function deletePasskey(id) {
+  if(!confirm('Remove this device? You will no longer be able to use it for biometric sign-in.')) return;
+  try {
+    await apiFetch('/api/passkeys?id='+id, { method:'DELETE' });
+    const el = document.getElementById('pk-'+id);
+    if(el) { el.style.opacity='0'; el.style.transform='translateX(8px)'; el.style.transition='all .2s'; setTimeout(()=>el.remove(),200); }
+    // If no passkeys left, remove hint
+    const remaining = document.querySelectorAll('.passkey-item');
+    if(remaining.length <= 1) localStorage.removeItem('payday-passkey-hint');
+    showToast('Device removed');
+  } catch { showToast('Could not remove device', true); }
+}
+
 // ===== SETTINGS =====
 function buildSettingsUI() {
   if(appSettings.defaultRate) document.getElementById('sRate').value=parseFloat(appSettings.defaultRate).toFixed(2);
@@ -4458,6 +4791,9 @@ async function bulkSave() {
 }
 
 // ===== INIT =====
+// Init login screen biometric check
+initLoginScreen();
+
 if(token&&currentUser) {
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appShell').classList.add('visible');
