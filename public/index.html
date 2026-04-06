@@ -456,7 +456,8 @@ html{transition:background .2s,color .2s}
 .dash-wbtn:hover{background:var(--bg3);color:var(--text)}
 .dash-wbtn.active{background:var(--blue-dim);color:var(--blue);border-color:rgba(29,78,216,.3)}
 .dash-wbtn.danger:hover{color:var(--red);background:var(--red-dim)}
-.dash-widget-body{padding:10px 12px 24px;flex:1;overflow:hidden;position:relative}
+.dash-widget-body{padding:8px 12px 20px;flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column;min-height:0}
+.dash-widget-body canvas{flex:1;min-height:0}
 
 /* Resize handle */
 .dash-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:0;transition:opacity .2s}
@@ -475,7 +476,7 @@ html{transition:background .2s,color .2s}
 .dash-grid-overlay.show{display:block}
 
 /* Drop zone highlight */
-.dash-drop-hint{position:absolute;background:var(--blue-dim);border:2px dashed var(--blue);border-radius:var(--radius);pointer-events:none;display:none;z-index:5;opacity:.6}
+.dash-drop-hint{position:absolute;background:var(--blue-dim);border:2px dashed var(--blue);border-radius:var(--radius);pointer-events:none;display:none;z-index:5;transition:left .1s,top .1s,width .1s,height .1s}
 
 /* Empty state */
 .dash-empty-canvas{display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;gap:12px;color:var(--text3);pointer-events:none}
@@ -2876,6 +2877,10 @@ function renderDashboard() {
       else if(w.widgetId.startsWith('track-')) renderDashTracker(w);
       else renderStatWidget(w);
     });
+    // Second pass for charts — ensure they fill after layout is stable
+    requestAnimationFrame(()=>{
+      Object.values(dashCharts).forEach(c=>{ try{c.resize();}catch(e){} });
+    });
   });
 }
 
@@ -2929,7 +2934,16 @@ function renderStatWidget(w) {
   const d = dashData;
   const val = d.n>0 ? def.fn(d) : '—';
   const sub = d.n>0 && def.sub ? def.sub(d) : 'No data yet';
-  el.innerHTML = '<div class="dash-stat-val '+(def.color||'')+'">'+val+'</div><div class="dash-stat-sub">'+sub+'</div>';
+  // Scale font based on widget height (h grid units)
+  const cfg = dashConfig.find(x=>x.id===w.id)||w;
+  const h = cfg.h||2, ww = cfg.w||3;
+  const valSize = h<=1 ? 18 : h===2 ? 24 : h===3 ? 30 : 36;
+  const subSize = h<=1 ? 10 : 11;
+  const showSub = h>=2;
+  el.innerHTML = '<div style="font-family:var(--mono);font-size:'+valSize+'px;font-weight:700;line-height:1;color:'
+    +(def.color==='green'?'var(--green)':def.color==='red'?'var(--red)':def.color==='amber'?'var(--amber)':'var(--text)')
+    +';margin-bottom:4px;word-break:break-all">'+val+'</div>'
+    +(showSub?'<div style="font-size:'+subSize+'px;color:var(--text3)">'+sub+'</div>':'');
 }
 
 function renderDashChart(w) {
@@ -2940,9 +2954,9 @@ function renderDashChart(w) {
     bodyEl.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:12px;color:var(--text3)">No data</div>';
     return;
   }
-  // Ensure canvas
+  // Canvas fills the body — body has padding-bottom:24px for resize handle
   if(!bodyEl.querySelector('canvas')){
-    bodyEl.innerHTML='<canvas id="dc-'+w.id+'" style="display:block;width:100%;height:100%"></canvas>';
+    bodyEl.innerHTML='<canvas style="display:block;width:100%;height:100%;min-height:80px"></canvas>';
   }
   const canvas = bodyEl.querySelector('canvas');
   if(!canvas) return;
@@ -3309,51 +3323,132 @@ function _dashMouseMove(e){
   if(!el) return;
 
   if(type==='move'){
-    el.style.left = (_dashDragState.origLeft + dx)+'px';
-    el.style.top  = (_dashDragState.origTop  + dy)+'px';
+    // Constrain to canvas bounds
+    const canvas = document.getElementById('dashCanvas');
+    const canvasW = canvas ? canvas.offsetWidth : 9999;
+    const maxLeft = canvasW - el.offsetWidth;
+    el.style.left = Math.max(0, Math.min(maxLeft, _dashDragState.origLeft + dx))+'px';
+    el.style.top  = Math.max(0, _dashDragState.origTop + dy)+'px';
+    // Show snap preview
+    _dashShowSnapPreview(el, id);
   } else {
-    const nw = Math.max(180, _dashDragState.origW + dx);
-    const nh = Math.max(100, _dashDragState.origH + dy);
+    const colW = getCanvasColWidth();
+    const minW = colW + GRID_GAP;     // minimum 1 col
+    const minH = GRID_ROW_H + GRID_GAP; // minimum 1 row
+    const nw = Math.max(minW, _dashDragState.origW + dx);
+    const nh = Math.max(minH, _dashDragState.origH + dy);
     el.style.width  = nw+'px';
     el.style.height = nh+'px';
-    // Update chart
-    if(dashCharts[id]) dashCharts[id].resize();
+    if(dashCharts[id]) try{dashCharts[id].resize();}catch(e){}
   }
 }
+
+function _dashShowSnapPreview(el, id){
+  const hint = document.getElementById('dashDropHint');
+  if(!hint) return;
+  const colW = getCanvasColWidth();
+  const snapX = Math.max(0, Math.round(el.offsetLeft / (colW+GRID_GAP)));
+  const snapY = Math.max(0, Math.round(el.offsetTop  / (GRID_ROW_H+GRID_GAP)));
+  const w = dashConfig.find(x=>x.id===id);
+  if(!w) return;
+  const cols = w.w, rows = w.h;
+  hint.style.display = 'block';
+  hint.style.left    = (snapX*(colW+GRID_GAP))+'px';
+  hint.style.top     = (snapY*(GRID_ROW_H+GRID_GAP))+'px';
+  hint.style.width   = (cols*colW+(cols-1)*GRID_GAP)+'px';
+  hint.style.height  = (rows*GRID_ROW_H+(rows-1)*GRID_GAP)+'px';
+  // Red tint if overlapping another widget
+  const hasConflict = _dashHasConflict(snapX, snapY, cols, rows, id);
+  hint.style.background = hasConflict ? 'rgba(239,68,68,.15)' : 'var(--blue-dim)';
+  hint.style.borderColor = hasConflict ? 'var(--red)' : 'var(--blue)';
+}
+
 function _dashTouchMove(e){
   if(!_dashDragState) return;
   e.preventDefault();
   _dashMouseMove(e.touches[0]);
 }
 
+// Check if a grid region (cx,cy,cw,ch) conflicts with any other widget
+function _dashHasConflict(cx, cy, cw, ch, excludeId){
+  for(const w of dashConfig){
+    if(w.id===excludeId) continue;
+    // AABB overlap check
+    if(cx < w.x+w.w && cx+cw > w.x && cy < w.y+w.h && cy+ch > w.y) return true;
+  }
+  return false;
+}
+
+// Push conflicting widgets out of the way
+function _dashResolveCollisions(movedId){
+  const moved = dashConfig.find(w=>w.id===movedId);
+  if(!moved) return;
+  // Nudge overlapping widgets downward
+  let changed = true;
+  let iterations = 0;
+  while(changed && iterations++ < 20){
+    changed = false;
+    for(const w of dashConfig){
+      if(w.id===movedId) continue;
+      if(_dashHasConflict(w.x, w.y, w.w, w.h, w.id)){
+        // Find first non-conflicting row at same column
+        let newY = w.y+1;
+        while(_dashHasConflict(w.x, newY, w.w, w.h, w.id)) newY++;
+        w.y = newY;
+        positionWidget(w);
+        changed = true;
+      }
+    }
+  }
+}
+
 function _dashMouseUp(e){
   if(!_dashDragState) return;
   const {type,id} = _dashDragState;
   const el = document.getElementById('dw-'+id);
+  const hint = document.getElementById('dashDropHint');
+  if(hint) hint.style.display = 'none';
+
   if(el){
     el.classList.remove('dragging','resizing');
     el.style.zIndex='';
-    // Snap to grid
     const colW = getCanvasColWidth();
     const w = dashConfig.find(x=>x.id===id);
+
     if(w && type==='move'){
-      const snapX = Math.round(el.offsetLeft / (colW+GRID_GAP));
-      const snapY = Math.round(el.offsetTop  / (GRID_ROW_H+GRID_GAP));
-      w.x = Math.max(0, Math.min(GRID_COLS-w.w, snapX));
-      w.y = Math.max(0, snapY);
+      const snapX = Math.max(0, Math.round(el.offsetLeft / (colW+GRID_GAP)));
+      const snapY = Math.max(0, Math.round(el.offsetTop  / (GRID_ROW_H+GRID_GAP)));
+      // Clamp to grid
+      w.x = Math.min(GRID_COLS-w.w, snapX);
+      w.y = snapY;
+      // Resolve collisions — push others down
+      _dashResolveCollisions(id);
+      // Snap this widget to final position
       positionWidget(w);
     } else if(w && type==='resize'){
-      const snapW = Math.max(1, Math.round((el.offsetWidth+GRID_GAP)  / (colW+GRID_GAP)));
-      const snapH = Math.max(1, Math.round((el.offsetHeight+GRID_GAP) / (GRID_ROW_H+GRID_GAP)));
-      w.w = Math.min(GRID_COLS - w.x, snapW);
+      const snapW = Math.max(1, Math.round((el.offsetWidth  + GRID_GAP) / (colW+GRID_GAP)));
+      const snapH = Math.max(1, Math.round((el.offsetHeight + GRID_GAP) / (GRID_ROW_H+GRID_GAP)));
+      w.w = Math.min(GRID_COLS - w.x, Math.max(1, snapW));
       w.h = Math.max(1, snapH);
+      // Resolve collisions after resize
+      _dashResolveCollisions(id);
       positionWidget(w);
       // Update canvas height
       const maxRow = dashConfig.reduce((m,x)=>Math.max(m,x.y+(x.h||2)),0);
       const canvas = document.getElementById('dashCanvas');
-      if(canvas) canvas.style.minHeight=(maxRow*(GRID_ROW_H+GRID_GAP)+40)+'px';
-      // Re-render chart after resize
-      if(dashCharts[id]){ try{dashCharts[id].resize();}catch(e){} }
+      if(canvas) canvas.style.minHeight=(Math.max(maxRow,8)*(GRID_ROW_H+GRID_GAP)+40)+'px';
+      // Re-render content now that size changed
+      setTimeout(()=>{
+        if(w.widgetId.startsWith('chart-')){
+          if(dashCharts[id]){try{dashCharts[id].destroy();}catch(e){}delete dashCharts[id];}
+          document.getElementById('dwb-'+id).innerHTML='';
+          renderDashChart(w);
+        } else if(w.widgetId.startsWith('track-')){
+          renderDashTracker(w);
+        } else {
+          renderStatWidget(w);
+        }
+      }, 50);
     }
     saveDashConfig();
   }
