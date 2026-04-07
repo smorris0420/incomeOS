@@ -78,7 +78,7 @@ html{transition:background 300ms ease,color 300ms ease}
   padding:max(32px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom));
   background:var(--bg)
 }
-.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.10);display:flex;flex-direction:column;align-items:center;gap:0}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 22px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.10);display:flex;flex-direction:column;align-items:center;gap:0}
 [data-theme="dark"] .login-card{box-shadow:0 8px 40px rgba(0,0,0,.4)}
 .login-mark{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#16A34A,#14532D);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:26px;font-weight:500;color:#fff;box-shadow:0 4px 20px rgba(37,99,235,0.35);margin-bottom:16px}
 .login-title{font-size:22px;font-weight:700;letter-spacing:-.4px;text-align:center;margin-bottom:4px}
@@ -437,7 +437,7 @@ html{transition:background 300ms ease,color 300ms ease}
 .hist-table td.amber{color:var(--amber)}
 .hist-table td.red{color:var(--red)}
 .hist-table td.muted{color:var(--text3)}
-.hist-table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);box-shadow:var(--shadow)}
+.hist-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);box-shadow:var(--shadow)}
 .hist-yr-header td{background:var(--bg3);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px}
 .ytd-bottom-grid{grid-template-columns:1fr!important}
 @media(min-width:700px){.ytd-bottom-grid{grid-template-columns:1fr 1fr!important}}
@@ -461,7 +461,7 @@ html{transition:background 300ms ease,color 300ms ease}
 
 /* Hero cards */
 .ytd-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-@media(max-width:600px){.ytd-hero{grid-template-columns:1fr}}
+@media(max-width:480px){.ytd-hero{grid-template-columns:1fr}}
 .ytd-hero-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
 .ytd-hero-card--green{border-color:var(--green-border);background:var(--green-dim)}
 .ytd-hero-card--red{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.04)}
@@ -567,7 +567,7 @@ html{transition:background 300ms ease,color 300ms ease}
 .user-badge{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700}
 .user-badge-admin{background:var(--amber-dim);color:var(--amber)}
 .user-badge-inactive{background:var(--red-dim);color:var(--red)}
-.user-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.user-actions{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;min-width:0}
 .icon-btn{background:none;border:1.5px solid var(--border2);color:var(--text2);cursor:pointer;padding:5px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:var(--sans);transition:all .15s}
 .icon-btn:hover{color:var(--text);border-color:var(--border2);background:var(--bg3)}
 .icon-btn.danger:hover{color:var(--red);border-color:rgba(220,38,38,.3);background:var(--red-dim)}
@@ -577,7 +577,7 @@ html{transition:background 300ms ease,color 300ms ease}
 
 /* ── DASHBOARD ── */
 /* Page layout */
-.dash-page{display:flex;height:calc(100vh - 120px);overflow:hidden;min-height:400px}
+.dash-page{display:flex;height:calc(100vh - 120px);height:calc(100dvh - 120px);overflow:hidden;min-height:400px}
 .dash-canvas-wrap{flex:1;overflow:auto;padding:16px;position:relative;min-height:600px}
 .dash-canvas{position:relative;width:100%;min-height:560px}
 
@@ -586,9 +586,27 @@ html{transition:background 300ms ease,color 300ms ease}
 .dash-panel-header{padding:14px 16px 10px;border-bottom:1.5px solid var(--border);flex-shrink:0}
 .dash-panel-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
 .dash-panel-sub{font-size:11px;color:var(--text3)}
-.dash-panel-body{flex:1;overflow-y:auto;padding:12px}
+.dash-panel-body{flex:1;overflow-y:auto;padding:0}
 .dash-panel-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
 .dash-panel-section:first-child{margin-top:0}
+/* Widget Library Panel — card grid */
+.dp-search{width:100%;padding:8px 12px;font-size:13px;font-family:var(--sans);background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;box-sizing:border-box}
+.dp-search:focus{border-color:var(--green-btn);background:var(--bg2)}
+.dp-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 10px 0}
+.dp-tab{padding:4px 9px;font-size:11px;font-weight:700;border:none;border-radius:20px;background:var(--bg4);color:var(--text3);cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:all 150ms ease}
+.dp-tab.active{background:var(--green-btn);color:#fff}
+.dp-cat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:10px 12px 4px;border-bottom:1px solid var(--border)}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px}
+.dp-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:9px 10px;cursor:grab;transition:border-color 180ms ease,background 180ms ease;position:relative;user-select:none}
+.dp-card:hover{border-color:var(--green-btn);background:var(--bg2)}
+.dp-card.on-canvas{opacity:.45;pointer-events:none}
+.dp-card-icon{font-size:14px;margin-bottom:3px}
+.dp-card-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:2px}
+.dp-card-desc{font-size:10px;color:var(--text3);line-height:1.3}
+.dp-card-add{position:absolute;top:7px;right:7px;width:18px;height:18px;background:var(--green-btn);color:#fff;border:none;border-radius:50%;font-size:14px;line-height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 150ms ease;padding:0}
+.dp-card:hover .dp-card-add{opacity:1}
+.dp-card.on-canvas .dp-card-add{display:none}
+.dp-empty{text-align:center;padding:24px 12px;color:var(--text3);font-size:12px}
 
 /* Panel widget items */
 .dash-lib-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);cursor:grab;margin-bottom:6px;transition:all .15s;user-select:none}
@@ -606,7 +624,9 @@ html{transition:background 300ms ease,color 300ms ease}
 .dash-widget:hover{box-shadow:var(--shadow-md)}
 .dash-widget.dragging{opacity:.85;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:100;border-color:var(--blue)}
 .dash-widget.resizing{border-color:var(--blue)}
-.dash-widget-header{display:flex;align-items:center;gap:6px;padding:8px 12px 0;cursor:grab;flex-shrink:0;min-height:32px}
+.dash-widget-header{display:flex;align-items:center;gap:6px;padding:8px 12px 0;cursor:default;flex-shrink:0;min-height:32px}
+.dash-edit-active .dash-widget-header{cursor:grab;touch-action:none}
+.dash-edit-active .dash-widget-header:active{cursor:grabbing}
 .dash-widget-header:active{cursor:grabbing}
 .dash-widget-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .dash-widget-actions{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:opacity .15s}
@@ -622,7 +642,7 @@ html{transition:background 300ms ease,color 300ms ease}
 .dash-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:0;transition:opacity .2s}
 .dash-resize::before{content:'';position:absolute;bottom:3px;right:3px;width:10px;height:10px;border-right:2px solid var(--border2);border-bottom:2px solid var(--border2);border-radius:0 0 2px 0}
 .dash-resize::after{content:'';position:absolute;bottom:5px;right:5px;width:5px;height:5px;border-right:1.5px solid var(--border2);border-bottom:1.5px solid var(--border2)}
-.dash-widget:hover .dash-resize{opacity:1}
+.dash-edit-active .dash-widget:hover .dash-resize{opacity:1}
 .dash-widget.resizing .dash-resize{opacity:1;border-color:var(--blue)}
 
 /* Stat widget */
@@ -643,16 +663,55 @@ html{transition:background 300ms ease,color 300ms ease}
 
 /* Mobile: stacked list */
 @media(max-width:767px){
+  /* ── Dashboard layout ── */
   .dash-page{flex-direction:column;height:auto;overflow:visible}
-  .dash-canvas-wrap{padding:12px;overflow:visible}
+  .dash-canvas-wrap{padding:10px;overflow:visible}
   .dash-canvas{position:static;min-height:unset}
-  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:0;margin-bottom:10px}
+  /* Widgets stack vertically on mobile */
+  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:140px;margin-bottom:10px}
   .dash-widget-body{padding-bottom:12px}
   .dash-resize{display:none}
-  .dash-panel{width:100%;border-left:none;border-top:1.5px solid var(--border);height:auto;max-height:260px}
-  .dash-panel-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;padding:10px}
-  .dash-panel-section{display:none}
-  .dash-lib-item{margin-bottom:0}
+  /* Widget panel becomes bottom sheet */
+  .dash-panel{width:100%;border-left:none;border-top:1.5px solid var(--border);height:auto;max-height:340px;overflow-y:auto}
+  /* Card grid 2-col on mobile */
+  .dp-grid{grid-template-columns:1fr 1fr;gap:5px;padding:6px 8px}
+  .dp-tabs{padding:6px 8px 0;gap:3px}
+  .dp-tab{font-size:10px;padding:3px 8px}
+  /* Dashboard header buttons: stack on very small */
+  #dashEditControls{flex-wrap:wrap;gap:5px}
+}
+
+/* ── Touch target sizing ── */
+@media(max-width:767px){
+  /* Minimum 44px touch targets on all interactive elements */
+  .btn-sm{min-height:40px;padding:8px 14px}
+  .nav-btn{min-height:52px;padding:8px 4px}
+  .dp-card{min-height:72px}
+  .dp-card-add{width:24px;height:24px;font-size:16px}
+  /* Login card full-width on small screens */
+  .login-card{border-radius:12px;padding:24px 18px}
+  /* Modal full-screen on mobile */
+  .modal{width:100%!important;max-width:100%!important;border-radius:16px 16px 0 0;margin:0;max-height:92vh;overflow-y:auto}
+  .modal-overlay.open{align-items:flex-end}
+  /* History table: horizontal scroll */
+  .hist-table-wrap{-webkit-overflow-scrolling:touch}
+  /* YTD hero stacks */
+  .ytd-hero{grid-template-columns:1fr 1fr!important}
+  /* Settings tabs: scroll horizontally */
+  .settings-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .tab-btn{flex-shrink:0;white-space:nowrap}
+  /* Calculator: full-width inputs */
+  .input-wrap{min-width:0;flex:1 1 auto}
+  .input-wrap input{width:100%;min-width:80px}
+  /* Form grid stacks on mobile */
+  .form-grid-2{grid-template-columns:1fr!important}
+}
+
+/* ── Stub items: better mobile tap area ── */
+@media(max-width:600px){
+  .stub-item{padding:14px 14px}
+  .stub-date{font-size:11px}
+  .stub-gross{font-size:15px}
 }
 </style>
 </head>
@@ -796,23 +855,31 @@ html{transition:background 300ms ease,color 300ms ease}
       <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1.5px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:8px">
         <div>
           <div style="font-size:20px;font-weight:700;letter-spacing:-.3px">Dashboard</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:1px">Drag widgets from the panel · drag to move · resize from corner</div>
+          <div id="dashSubLabel" style="font-size:12px;color:var(--text3);margin-top:1px">Your personalized overview</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0">
+          <!-- Edit mode controls — hidden when not editing -->
           <span id="dashSaveStatus" style="font-size:11px;color:var(--text3);display:none;align-items:center;gap:4px"></span>
           <button class="btn btn-primary btn-sm" id="dashSaveBtn" onclick="forceSaveDash()" style="gap:5px;display:none">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Save layout
           </button>
-          <button class="btn btn-secondary btn-sm" onclick="resetDashboard()" style="gap:5px">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            Reset to default
-          </button>
-          <button class="btn btn-secondary btn-sm" id="dashClearBtn" onclick="clearDashboard()" style="color:var(--red)">Clear all</button>
-          <div style="font-size:11px;color:var(--text3);padding:0 4px">|</div>
-          <button class="btn btn-secondary btn-sm" id="dashPanelToggle" onclick="toggleDashPanel()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            Widgets
+          <div id="dashEditControls" style="display:none;gap:8px;align-items:center">
+            <button class="btn btn-secondary btn-sm" onclick="resetDashboard()" style="gap:5px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Reset
+            </button>
+            <button class="btn btn-secondary btn-sm" id="dashClearBtn" onclick="clearDashboard()" style="color:var(--red)">Clear all</button>
+            <div style="font-size:11px;color:var(--text3);padding:0 4px">|</div>
+            <button class="btn btn-secondary btn-sm" id="dashPanelToggle" onclick="toggleDashPanel()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Widgets
+            </button>
+          </div>
+          <!-- Always visible: Edit/Done toggle -->
+          <button class="btn btn-secondary btn-sm" id="dashEditToggle" onclick="toggleDashEditMode()" style="gap:5px">
+            <svg id="dashEditIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span id="dashEditLabel">Edit</span>
           </button>
         </div>
       </div>
@@ -834,7 +901,7 @@ html{transition:background 300ms ease,color 300ms ease}
         <div class="dash-panel" id="dashPanel">
           <div class="dash-panel-header">
             <div class="dash-panel-title">Widget Library</div>
-            <div class="dash-panel-sub">Drag onto canvas or click +</div>
+            <div class="dash-panel-sub">Tap + to add · drag onto canvas</div>
           </div>
           <div class="dash-panel-body" id="dashPanelBody"></div>
         </div>
@@ -2959,46 +3026,65 @@ const GRID_ROW_H = 80; // px per row unit
 const GRID_GAP   = 8;  // px gap
 
 const DASH_CATALOG = {
-  metrics: [
-    { type:'stat', id:'total-gross',    icon:'💵', name:'Total Gross',        desc:'YTD gross earnings',              color:'',      fn:d=>fmt(d.tG),                              sub:d=>`avg ${fmt(d.avgG)} / check` },
-    { type:'stat', id:'total-net',      icon:'💰', name:'Total Net',          desc:'YTD take-home pay',               color:'green', fn:d=>fmt(d.tNet),                            sub:d=>`avg ${fmt(d.avgNet)} / check` },
-    { type:'stat', id:'avg-gross',      icon:'📈', name:'Avg Gross/Check',    desc:'Mean gross per paycheck',         color:'',      fn:d=>fmt(d.avgG),                            sub:d=>`${d.n} paychecks` },
-    { type:'stat', id:'avg-net',        icon:'💚', name:'Avg Net/Check',      desc:'Mean take-home per check',        color:'green', fn:d=>fmt(d.avgNet),                          sub:d=>`keep rate ${d.keepRate.toFixed(1)}%` },
-    { type:'stat', id:'best-check',     icon:'🏆', name:'Best Paycheck',      desc:'Highest gross single check',      color:'green', fn:d=>d.bestStub?fmt(d.bestStub.gross):'—',   sub:d=>d.bestStub?new Date(d.bestStub.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'' },
-    { type:'stat', id:'worst-check',    icon:'📉', name:'Worst Paycheck',     desc:'Lowest gross single check',       color:'red',   fn:d=>d.worstStub?fmt(d.worstStub.gross):'—', sub:d=>d.worstStub?new Date(d.worstStub.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'' },
-    { type:'stat', id:'proj-gross',     icon:'🎯', name:'Projected Gross YE', desc:'Gross at current pace',           color:'',      fn:d=>fmt(d.projGross),                       sub:d=>`${d.daysPassed} of ${d.daysInYear} days elapsed` },
-    { type:'stat', id:'proj-net',       icon:'🔮', name:'Projected Net YE',   desc:'Take-home at current pace',       color:'green', fn:d=>fmt(d.tNet/d.daysPassed*d.daysInYear),  sub:d=>`from ${fmt(d.tNet)} earned` },
-    { type:'stat', id:'paycheck-count', icon:'📋', name:'Paychecks',          desc:'Number of paychecks logged',      color:'',      fn:d=>d.n,                                    sub:d=>`${d.yr} year to date` },
-    { type:'stat', id:'ot-earnings',    icon:'⚡', name:'OT Earnings',         desc:'Overtime pay earned',             color:'amber', fn:d=>d.tOT>0?fmt(d.tOT):'—',                sub:d=>`${fmtH(d.tOTHrs)}h OT worked` },
-    { type:'stat', id:'ot-hours',       icon:'⏱',  name:'OT Hours',           desc:'Total overtime hours',            color:'amber', fn:d=>d.tOTHrs>0?fmtH(d.tOTHrs)+'h':'—',    sub:d=>`${d.tHrs>0?(d.tOTHrs/d.tHrs*100).toFixed(0):0}% of total` },
-    { type:'stat', id:'ot-dep',         icon:'⚠️', name:'OT Dependency',       desc:'% of income from overtime',       color:'amber', fn:d=>d.tG>0?(Math.max(0,d.tOT)/d.tG*100).toFixed(1)+'%':'—', sub:d=>`${fmt(Math.max(0,d.tOT))} from OT` },
-    { type:'stat', id:'total-hours',    icon:'🕐', name:'Total Hours',         desc:'All hours worked',                color:'',      fn:d=>fmtH(d.tHrs)+'h',                      sub:d=>`avg ${fmtH(d.tHrs/d.n)} / check` },
-    { type:'stat', id:'total-tax',      icon:'🏛',  name:'Total Taxes',        desc:'Fed + SS + Medicare',             color:'red',   fn:d=>fmt(d.tTax),                            sub:d=>`${d.taxRate.toFixed(1)}% of gross` },
-    { type:'stat', id:'total-deducted', icon:'➖', name:'Total Deducted',      desc:'Taxes + all benefits',            color:'red',   fn:d=>fmt(d.tDed),                            sub:d=>`${(d.tDed/d.tG*100).toFixed(1)}% of gross` },
-    { type:'stat', id:'fed-rate',       icon:'📉', name:'Effective Fed Rate',  desc:'Federal rate on gross',           color:'amber', fn:d=>d.fedRate.toFixed(1)+'%',               sub:d=>`${fmt(d.tFed)} withheld` },
+  earnings: [
+    { type:'stat', id:'total-gross',    icon:'💵', name:'Total Gross',         desc:'YTD gross earnings',              color:'',      fn:d=>fmt(d.tG),                              sub:d=>`avg ${fmt(d.avgG)} / check` },
+    { type:'stat', id:'total-net',      icon:'💰', name:'Total Net',           desc:'YTD take-home pay',               color:'green', fn:d=>fmt(d.tNet),                            sub:d=>`avg ${fmt(d.avgNet)} / check` },
+    { type:'stat', id:'avg-gross',      icon:'📈', name:'Avg Gross/Check',     desc:'Mean gross per paycheck',         color:'',      fn:d=>fmt(d.avgG),                            sub:d=>`${d.n} paychecks` },
+    { type:'stat', id:'avg-net',        icon:'💚', name:'Avg Net/Check',       desc:'Mean take-home per check',        color:'green', fn:d=>fmt(d.avgNet),                          sub:d=>`keep rate ${d.keepRate.toFixed(1)}%` },
+    { type:'stat', id:'best-check',     icon:'🏆', name:'Best Paycheck',       desc:'Highest gross single check',      color:'green', fn:d=>d.bestStub?fmt(d.bestStub.gross):'—',   sub:d=>d.bestStub?new Date(d.bestStub.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'' },
+    { type:'stat', id:'worst-check',    icon:'📉', name:'Worst Paycheck',      desc:'Lowest gross single check',       color:'red',   fn:d=>d.worstStub?fmt(d.worstStub.gross):'—', sub:d=>d.worstStub?new Date(d.worstStub.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'' },
+    { type:'stat', id:'proj-gross',     icon:'🎯', name:'Projected Gross YE',  desc:'Gross at current pace',           color:'',      fn:d=>fmt(d.projGross),                       sub:d=>`${d.daysPassed} of ${d.daysInYear} days elapsed` },
+    { type:'stat', id:'proj-net',       icon:'🔮', name:'Projected Net YE',    desc:'Take-home at current pace',       color:'green', fn:d=>fmt(d.tNet/d.daysPassed*d.daysInYear),  sub:d=>`from ${fmt(d.tNet)} earned` },
     { type:'stat', id:'keep-rate',      icon:'📊', name:'Keep Rate',           desc:'Net ÷ Gross',                     color:'green', fn:d=>d.keepRate.toFixed(1)+'%',              sub:d=>`${(100-d.keepRate).toFixed(1)}% to deductions` },
-    { type:'stat', id:'net-per-day',    icon:'📆', name:'Net Per Day',         desc:'Average daily net',               color:'green', fn:d=>fmt(d.tNet/d.daysPassed),               sub:d=>`${d.daysPassed} days elapsed` },
+    { type:'stat', id:'net-per-day',    icon:'📆', name:'Net Per Day',         desc:'Average daily net income',        color:'green', fn:d=>fmt(d.tNet/d.daysPassed),               sub:d=>`${d.daysPassed} days elapsed` },
+    { type:'stat', id:'paycheck-count', icon:'📋', name:'Paycheck Count',      desc:'Number of paychecks logged',      color:'',      fn:d=>d.n,                                    sub:d=>`${d.yr} year to date` },
     { type:'stat', id:'pay-rate',       icon:'💲', name:'Current Pay Rate',    desc:'Most recent hourly rate',         color:'',      fn:d=>d.filtered&&d.filtered.length?'$'+[...d.filtered].sort((a,b)=>b.date.localeCompare(a.date))[0].rate.toFixed(4)+'/hr':'—', sub:d=>`from most recent check` },
-    { type:'stat', id:'fica-total',     icon:'💳', name:'FICA Total',          desc:'SS + Medicare YTD',               color:'red',   fn:d=>fmt(d.tSS+d.tMed),                     sub:d=>`7.65% flat rate` },
+    { type:'stat', id:'reg-earnings',   icon:'💼', name:'Regular Earnings',    desc:'Straight-time pay YTD',           color:'',      fn:d=>fmt(d.tRegPay),                         sub:d=>`${fmtH(d.tRegHrs)}h at base rate` },
+    { type:'stat', id:'hol-earnings',   icon:'🎉', name:'Holiday Earnings',    desc:'Holiday pay YTD',                 color:'',      fn:d=>d.tHolPay>0?fmt(d.tHolPay):'—',         sub:d=>`${fmtH(d.tHolHrs)}h holiday` },
+  ],
+  overtime: [
+    { type:'stat', id:'ot-earnings',    icon:'⚡', name:'OT Earnings',          desc:'Overtime pay earned YTD',         color:'amber', fn:d=>d.tOT>0?fmt(d.tOT):'—',                sub:d=>`${fmtH(d.tOTHrs)}h OT worked` },
+    { type:'stat', id:'ot-hours',       icon:'⏱',  name:'OT Hours',            desc:'Total overtime hours YTD',        color:'amber', fn:d=>d.tOTHrs>0?fmtH(d.tOTHrs)+'h':'—',    sub:d=>`${d.tHrs>0?(d.tOTHrs/d.tHrs*100).toFixed(0):0}% of total hours` },
+    { type:'stat', id:'ot-dep',         icon:'⚠️', name:'OT Dependency',        desc:'% of gross income from OT',       color:'amber', fn:d=>d.tG>0?(Math.max(0,d.tOT)/d.tG*100).toFixed(1)+'%':'—', sub:d=>`${fmt(Math.max(0,d.tOT))} from OT` },
+    { type:'stat', id:'dt-earnings',    icon:'🔴', name:'DT Earnings',          desc:'Double-time pay earned YTD',      color:'red',   fn:d=>d.tDTPay>0?fmt(d.tDTPay):'—',           sub:d=>`${fmtH(d.tDTHrs)}h double-time` },
+    { type:'stat', id:'dt-hours',       icon:'⏰', name:'DT Hours',             desc:'Double-time hours YTD',           color:'red',   fn:d=>d.tDTHrs>0?fmtH(d.tDTHrs)+'h':'—',    sub:d=>`2× rate hours` },
+  ],
+  hours: [
+    { type:'stat', id:'total-hours',    icon:'🕐', name:'Total Hours',          desc:'All hours including OT/DT/HOL',   color:'',      fn:d=>fmtH(d.tHrs)+'h',                      sub:d=>`avg ${fmtH(d.tHrs/Math.max(1,d.n))} / check` },
+    { type:'stat', id:'reg-hours',      icon:'📅', name:'Regular Hours',        desc:'Straight-time hours YTD',         color:'',      fn:d=>fmtH(d.tRegHrs)+'h',                   sub:d=>`${d.tHrs>0?(d.tRegHrs/d.tHrs*100).toFixed(0):0}% of total` },
+    { type:'stat', id:'ot-hours',       icon:'⏱',  name:'OT Hours',            desc:'Total overtime hours YTD',        color:'amber', fn:d=>d.tOTHrs>0?fmtH(d.tOTHrs)+'h':'—',    sub:d=>`${d.tHrs>0?(d.tOTHrs/d.tHrs*100).toFixed(0):0}% of total` },
+    { type:'stat', id:'dt-hours',       icon:'⏰', name:'DT Hours',             desc:'Double-time hours YTD',           color:'red',   fn:d=>d.tDTHrs>0?fmtH(d.tDTHrs)+'h':'—',    sub:d=>`2× rate hours` },
+    { type:'stat', id:'hol-hours',      icon:'🎉', name:'Holiday Hours',        desc:'Holiday hours YTD',               color:'',      fn:d=>d.tHolHrs>0?fmtH(d.tHolHrs)+'h':'—',  sub:d=>`paid holiday` },
+    { type:'stat', id:'sick-hours',     icon:'🤒', name:'Sick Hours',           desc:'Sick time used YTD',              color:'',      fn:d=>d.tSickHrs>0?fmtH(d.tSickHrs)+'h':'—', sub:d=>`paid sick leave` },
+    { type:'stat', id:'vac-hours',      icon:'🏖',  name:'Vacation Hours',      desc:'Vacation time used YTD',          color:'green', fn:d=>d.tVacHrs>0?fmtH(d.tVacHrs)+'h':'—',  sub:d=>`paid vacation` },
+  ],
+  taxes: [
+    { type:'stat', id:'total-tax',      icon:'🏛',  name:'Total Taxes',         desc:'Federal + SS + Medicare YTD',     color:'red',   fn:d=>fmt(d.tTax),                            sub:d=>`${d.taxRate.toFixed(1)}% of gross` },
+    { type:'stat', id:'total-fed',      icon:'🦅', name:'Federal Tax',          desc:'Federal income tax withheld',     color:'red',   fn:d=>fmt(d.tFed),                            sub:d=>`${d.fedRate.toFixed(1)}% effective rate` },
+    { type:'stat', id:'total-ss',       icon:'🔒', name:'Social Security',       desc:'SS tax withheld YTD',             color:'red',   fn:d=>fmt(d.tSS),                             sub:d=>`${d.ssRate.toFixed(2)}% of gross` },
+    { type:'stat', id:'total-medicare', icon:'🏥', name:'Medicare',              desc:'Medicare tax withheld YTD',       color:'red',   fn:d=>fmt(d.tMed),                            sub:d=>`${d.medRate.toFixed(2)}% of gross` },
+    { type:'stat', id:'fica-total',     icon:'💳', name:'FICA Total',            desc:'SS + Medicare combined YTD',      color:'red',   fn:d=>fmt(d.tSS+d.tMed),                     sub:d=>`7.65% flat rate` },
+    { type:'stat', id:'total-deducted', icon:'➖', name:'Total Deducted',        desc:'Taxes + all benefits combined',   color:'red',   fn:d=>fmt(d.tDed),                            sub:d=>`${d.tG>0?(d.tDed/d.tG*100).toFixed(1):0}% of gross` },
+    { type:'stat', id:'fed-rate',       icon:'📉', name:'Effective Fed Rate',    desc:'Your federal rate on gross',      color:'amber', fn:d=>d.fedRate.toFixed(1)+'%',               sub:d=>`${fmt(d.tFed)} withheld` },
   ],
   charts: [
     { type:'chart', id:'chart-gross',      icon:'📊', name:'Gross Trend',         desc:'Gross + running avg per check',   chartType:'bar',      defW:6, defH:3 },
     { type:'chart', id:'chart-net',        icon:'📈', name:'Net Trend',           desc:'Take-home per paycheck',          chartType:'line',     defW:6, defH:3 },
     { type:'chart', id:'chart-cum',        icon:'📉', name:'Cumulative Net',      desc:'Running total of take-home',      chartType:'line',     defW:6, defH:3 },
+    { type:'chart', id:'chart-gross-net',  icon:'📊', name:'Gross vs Net',        desc:'Both side by side per check',     chartType:'bar',      defW:12, defH:3 },
+    { type:'chart', id:'chart-monthly',    icon:'📅', name:'Monthly Gross',       desc:'Total gross per month',           chartType:'bar',      defW:6, defH:3 },
     { type:'chart', id:'chart-earnings',   icon:'🥧', name:'Earnings Mix',        desc:'Regular / OT / Holiday split',    chartType:'doughnut', defW:4, defH:4 },
-    { type:'chart', id:'chart-hrs-month',  icon:'📅', name:'Hours by Month',      desc:'Stacked hours per month',         chartType:'bar',      defW:6, defH:3 },
-    { type:'chart', id:'chart-ot-trend',   icon:'⚡', name:'OT Trend',            desc:'OT hours per paycheck',           chartType:'line',     defW:6, defH:3 },
-    { type:'chart', id:'chart-tax-burden', icon:'🏛',  name:'Tax Burden %',       desc:'Tax % per check with avg',        chartType:'line',     defW:6, defH:3 },
-    { type:'chart', id:'chart-gross-net',  icon:'📊', name:'Gross vs Net',        desc:'Both side by side',               chartType:'bar',      defW:12, defH:3 },
-    { type:'chart', id:'chart-deductions', icon:'💸', name:'Deductions Mix',      desc:'Where your money goes',           chartType:'doughnut', defW:4, defH:4 },
-    { type:'chart', id:'chart-monthly',    icon:'📅', name:'Monthly Gross',       desc:'Total per month bar chart',       chartType:'bar',      defW:6, defH:3 },
+    { type:'chart', id:'chart-deductions', icon:'💸', name:'Deductions Mix',      desc:'Fed / SS / Medicare / Benefits',  chartType:'doughnut', defW:4, defH:4 },
+    { type:'chart', id:'chart-hrs-month',  icon:'📅', name:'Hours by Month',      desc:'Regular + OT stacked per month',  chartType:'bar',      defW:6, defH:3 },
+    { type:'chart', id:'chart-ot-trend',   icon:'⚡', name:'OT Trend',            desc:'OT hours per paycheck over time', chartType:'line',     defW:6, defH:3 },
+    { type:'chart', id:'chart-tax-burden', icon:'🏛',  name:'Tax Burden %',       desc:'Tax % per check with avg line',   chartType:'line',     defW:6, defH:3 },
   ],
   trackers: [
-    { type:'tracker', id:'track-ss',     icon:'🏛',  name:'SS Wage Base',        desc:'Progress to $176,100 SS limit',   defW:4, defH:3 },
+    { type:'tracker', id:'track-ss',     icon:'🔒',  name:'SS Wage Base',        desc:'Progress to $176,100 SS limit',   defW:4, defH:3 },
     { type:'tracker', id:'track-goal',   icon:'🎯',  name:'Net Pay Goal',        desc:'Annual net pay goal tracker',     defW:6, defH:3 },
     { type:'tracker', id:'track-streak', icon:'🔥',  name:'OT Streak',           desc:'Consecutive OT paychecks',        defW:3, defH:2 },
-    { type:'tracker', id:'track-mom',    icon:'📅',  name:'Month vs Last',       desc:'This month vs prior month',       defW:3, defH:2 },
-    { type:'tracker', id:'track-rate',   icon:'💰',  name:'Pay Rate History',    desc:'Every rate change on file',       defW:4, defH:3 },
+    { type:'tracker', id:'track-mom',    icon:'📅',  name:'Month vs Last',       desc:'This month vs prior month gross', defW:3, defH:2 },
+    { type:'tracker', id:'track-rate',   icon:'💲',  name:'Pay Rate History',    desc:'Every hourly rate change on file',defW:4, defH:3 },
     { type:'tracker', id:'track-pace',   icon:'🏃',  name:'Earning Pace',        desc:'Daily/weekly pace + projection',  defW:4, defH:3 },
     { type:'tracker', id:'track-recent', icon:'📋',  name:'Recent Paychecks',    desc:'Last 3 paychecks at a glance',    defW:6, defH:3 },
   ]
@@ -3011,14 +3097,88 @@ const CHART_TYPES_FOR = {
   'chart-gross-net':['bar'],'chart-deductions':['doughnut','pie','bar'],'chart-monthly':['bar','line'],
 };
 
+
 let dashConfig = [];
 let dashCharts = {};
 let dashSaveTimer = null;
 let dashData = {};
 let dashPanelVisible = true;
 let _dashDragState = null;  // {type:'move'|'resize', id, startX, startY, startW, startH, startLeft, startTop}
+let dashEditMode = false;  // dashboard locked by default
 
 function dashUID(){ return Math.random().toString(36).slice(2,9); }
+
+function toggleDashEditMode() {
+  dashEditMode = !dashEditMode;
+  const canvas     = document.getElementById('dashCanvas');
+  const panel      = document.getElementById('dashPanel');
+  const editCtrls  = document.getElementById('dashEditControls');
+  const editToggle = document.getElementById('dashEditToggle');
+  const editLabel  = document.getElementById('dashEditLabel');
+  const editIcon   = document.getElementById('dashEditIcon');
+  const subLabel   = document.getElementById('dashSubLabel');
+
+  if(dashEditMode) {
+    canvas?.classList.add('dash-edit-active');
+    if(panel)      panel.style.display      = 'flex';
+    if(editCtrls)  editCtrls.style.display  = 'flex';
+    if(editLabel)  editLabel.textContent    = 'Done';
+    if(editToggle) { editToggle.classList.remove('btn-secondary'); editToggle.classList.add('btn-primary'); }
+    if(subLabel)   subLabel.textContent     = 'Drag to move · resize from corner · add from Widgets panel';
+    if(editIcon)   editIcon.innerHTML       = '<polyline points="20 6 9 17 4 12"/>';
+  } else {
+    canvas?.classList.remove('dash-edit-active');
+    if(panel)      panel.style.display      = 'none';
+    if(editCtrls)  editCtrls.style.display  = 'none';
+    if(editLabel)  editLabel.textContent    = 'Edit';
+    if(editToggle) { editToggle.classList.add('btn-secondary'); editToggle.classList.remove('btn-primary'); }
+    if(subLabel)   subLabel.textContent     = 'Your personalized overview';
+    if(editIcon)   editIcon.innerHTML       = '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>';
+    // Auto-save on Done if unsaved changes
+    const saveBtn = document.getElementById('dashSaveBtn');
+    if(saveBtn && saveBtn.style.display !== 'none') forceSaveDash();
+    const status = document.getElementById('dashSaveStatus');
+    if(status) status.style.display = 'none';
+  }
+}
+
+
+function toggleDashEditMode(save=false) {
+  dashEditMode = !dashEditMode;
+  const canvas     = document.getElementById('dashCanvas');
+  const panel      = document.getElementById('dashPanel');
+  const editCtrls  = document.getElementById('dashEditControls');
+  const editToggle = document.getElementById('dashEditToggle');
+  const editLabel  = document.getElementById('dashEditLabel');
+  const editIcon   = document.getElementById('dashEditIcon');
+  const subLabel   = document.getElementById('dashSubLabel');
+
+  if(dashEditMode) {
+    // Enter edit mode
+    canvas?.classList.add('dash-edit-active');
+    if(editCtrls) editCtrls.style.display = 'flex';
+    if(editLabel) editLabel.textContent = 'Done';
+    if(editToggle) { editToggle.classList.remove('btn-secondary'); editToggle.classList.add('btn-primary'); }
+    if(subLabel)  subLabel.textContent = 'Drag to move · resize from corner · add from Widgets panel';
+    if(editIcon)  editIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';  // checkmark
+  } else {
+    // Exit edit mode — auto-save if there are unsaved changes
+    canvas?.classList.remove('dash-edit-active');
+    if(editCtrls) editCtrls.style.display = 'none';
+    if(editLabel) editLabel.textContent = 'Edit';
+    if(editToggle) { editToggle.classList.add('btn-secondary'); editToggle.classList.remove('btn-primary'); }
+    if(subLabel)  subLabel.textContent = 'Your personalized overview';
+    if(editIcon)  editIcon.innerHTML = '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>';  // pencil
+    // Save any pending changes on exit
+    const saveBtn = document.getElementById('dashSaveBtn');
+    if(saveBtn && saveBtn.style.display !== 'none') {
+      forceSaveDash();
+    }
+    // Hide save status
+    const status = document.getElementById('dashSaveStatus');
+    if(status) status.style.display = 'none';
+  }
+}
 
 function findDef(widgetId){
   for(const cat of Object.values(DASH_CATALOG)){
@@ -3032,7 +3192,7 @@ function computeDashData(yr) {
   const year = yr || ytdYear;
   const filtered = stubs.filter(s=>s.date.startsWith(year+''));
   if(!filtered.length){
-    dashData={yr:year,n:0,tG:0,tNet:0,tTax:0,tDed:0,tFed:0,tSS:0,tMed:0,tBen:0,tOT:0,tOTHrs:0,tHrs:0,avgG:0,avgNet:0,fedRate:0,taxRate:0,keepRate:0,projGross:0,bestStub:null,worstStub:null,daysPassed:1,daysInYear:365,filtered:[],nets:[]};
+    dashData={yr:year,n:0,tG:0,tNet:0,tTax:0,tDed:0,tFed:0,tSS:0,tMed:0,tBen:0,tOT:0,tOTHrs:0,tRegHrs:0,tDTHrs:0,tHolHrs:0,tSickHrs:0,tVacHrs:0,tRegPay:0,tDTPay:0,tHolPay:0,tHrs:0,avgG:0,avgNet:0,fedRate:0,ssRate:0,medRate:0,taxRate:0,keepRate:0,projGross:0,bestStub:null,worstStub:null,daysPassed:1,daysInYear:365,filtered:[],nets:[]};
     return;
   }
   const tG=filtered.reduce((a,s)=>a+s.gross,0);
@@ -3043,6 +3203,14 @@ function computeDashData(yr) {
   const tTax=tFed+tSS+tMed, tDed=tTax+tBen;
   const tOT=filtered.reduce((a,s)=>a+(s.otPay!=null?s.otPay:payRound(rateRound(s.rate*1.5)*(s.ot||0))),0);
   const tOTHrs=filtered.reduce((a,s)=>a+(s.ot||0),0);
+  const tRegHrs=filtered.reduce((a,s)=>a+s.reg,0);
+  const tDTHrs=filtered.reduce((a,s)=>a+(s.dt||0),0);
+  const tHolHrs=filtered.reduce((a,s)=>a+(s.hol||0),0);
+  const tSickHrs=filtered.reduce((a,s)=>a+(s.sick||0),0);
+  const tVacHrs=filtered.reduce((a,s)=>a+(s.vac||0),0);
+  const tRegPay=filtered.reduce((a,s)=>a+((s.regPay!=null&&s.regPay>0)?s.regPay:payRound(rateRound(s.rate)*s.reg)),0);
+  const tDTPay=filtered.reduce((a,s)=>a+payRound(rateRound(s.rate*2)*(s.dt||0)),0);
+  const tHolPay=filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*(s.hol||0)),0);
   const tHrs=filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0),0);
   const nets=filtered.map(s=>{const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);return parseFloat((s.net||(s.gross-d)).toFixed(2));});
   const tNet=nets.reduce((a,v)=>a+v,0);
@@ -3052,8 +3220,9 @@ function computeDashData(yr) {
   const daysInYear=Math.ceil((yearEnd-yearStart)/86400000)+1;
   const bestStub=filtered.reduce((b,s)=>s.gross>b.gross?s:b,filtered[0]);
   const worstStub=filtered.reduce((b,s)=>s.gross<b.gross?s:b,filtered[0]);
-  dashData={yr:year,n,tG,tFed,tSS,tMed,tBen,tTax,tDed,tOT,tOTHrs,tHrs,tNet,avgG,avgNet,
-    fedRate:tG>0?(tFed/tG)*100:0, taxRate:tG>0?(tTax/tG)*100:0, keepRate:tG>0?(tNet/tG)*100:0,
+  dashData={yr:year,n,tG,tFed,tSS,tMed,tBen,tTax,tDed,tOT,tOTHrs,tRegHrs,tDTHrs,tHolHrs,tSickHrs,tVacHrs,tRegPay,tDTPay,tHolPay,tHrs,tNet,avgG,avgNet,
+    fedRate:tG>0?(tFed/tG)*100:0, ssRate:tG>0?(tSS/tG)*100:0, medRate:tG>0?(tMed/tG)*100:0,
+    taxRate:tG>0?(tTax/tG)*100:0, keepRate:tG>0?(tNet/tG)*100:0,
     projGross:tG/daysPassed*daysInYear, bestStub, worstStub, daysPassed, daysInYear, filtered,
     nets: filtered.map(s=>{const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);return parseFloat((s.net||(s.gross-d)).toFixed(2));})
   };
@@ -3435,35 +3604,100 @@ function setDashGoal(wid,val,yr){
 }
 
 // ── Side panel ───────────────────────────────────────────────────────────────
+let _dpActiveTab = 'all';
+let _dpSearch = '';
+
 function buildDashPanel(){
+  const panel = document.getElementById('dashPanel');
+  if(panel) panel.style.display = dashEditMode ? 'flex' : 'none';
   const body = document.getElementById('dashPanelBody');
   if(!body) return;
-  const onCanvas = new Set(dashConfig.map(w=>w.widgetId));
 
-  const sections = [
-    { label:'Stat Cards', key:'metrics' },
-    { label:'Charts',     key:'charts' },
-    { label:'Trackers',   key:'trackers' },
+  const TABS = [
+    { id:'all',      label:'All' },
+    { id:'earnings', label:'💵 Earnings' },
+    { id:'overtime', label:'⚡ Overtime' },
+    { id:'hours',    label:'🕐 Hours' },
+    { id:'taxes',    label:'🏛 Taxes' },
+    { id:'charts',   label:'📊 Charts' },
+    { id:'trackers', label:'📋 Trackers' },
   ];
 
-  body.innerHTML = sections.map(({label,key})=>{
-    const items = DASH_CATALOG[key].map(def=>{
-      const isOn = onCanvas.has(def.id);
-      return '<div class="dash-lib-item'+(isOn?' on-canvas':'')+'" '
-        +'draggable="true" data-lib-id="'+def.id+'" '
-        +'id="dlib-'+def.id+'">'
-        +'<div style="flex:1;min-width:0">'
-          +'<div class="dash-lib-name">'+def.icon+' '+def.name+'</div>'
-          +'<div class="dash-lib-desc">'+def.desc+'</div>'
-        +'</div>'
-        +'<button class="dash-lib-add" data-action="add-widget" data-lib-id="'+def.id+'" title="Add to canvas">'+(isOn?'✓':'+')+'</button>'
-        +'</div>';
-    }).join('');
-    return '<div class="dash-panel-section">'+label+'</div>'+items;
-  }).join('');
+  const onCanvas = new Set(dashConfig.map(w=>w.widgetId));
+
+  // Gather widgets for active tab
+  let allDefs = [];
+  const cats = Object.keys(DASH_CATALOG);
+  for(const cat of cats){
+    if(_dpActiveTab==='all' || cat===_dpActiveTab){
+      DASH_CATALOG[cat].forEach(d=>{ allDefs.push({...d, _cat:cat}); });
+    }
+  }
+  // Dedupe (ot-hours, dt-hours appear in both overtime + hours)
+  const seen = new Set();
+  allDefs = allDefs.filter(d=>{ if(seen.has(d.id)) return false; seen.add(d.id); return true; });
+
+  // Filter by search
+  const q = _dpSearch.trim().toLowerCase();
+  if(q) allDefs = allDefs.filter(d=> d.name.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q));
+
+  // Group by category for display (only if showing all)
+  const CAT_LABELS = {earnings:'💵 Earnings',overtime:'⚡ Overtime',hours:'🕐 Hours',taxes:'🏛 Taxes',charts:'📊 Charts',trackers:'📋 Trackers'};
+
+  function cardHTML(def){
+    const isOn = onCanvas.has(def.id);
+    return `<div class="dp-card\${isOn?' on-canvas':''}" draggable="true" data-lib-id="\${def.id}" id="dlib-\${def.id}" title="\${def.desc}">
+      <div class="dp-card-icon">\${def.icon}</div>
+      <div class="dp-card-name">\${def.name}</div>
+      <div class="dp-card-desc">\${def.desc}</div>
+      \${isOn?'<div style="position:absolute;top:7px;right:7px;font-size:10px;color:var(--green)">✓</div>':'<button class="dp-card-add" data-action="add-widget" data-lib-id="'+def.id+'">+</button>'}
+    </div>`;
+  }
+
+  let html = '';
+
+  // Search box + tabs
+  html += `<div style="padding:10px 10px 0">
+    <input class="dp-search" type="text" placeholder="Search widgets…" value="\${_dpSearch.replace(/"/g,'&quot;')}" oninput="dashPanelSearch(this.value)" autocomplete="off">
+  </div>`;
+  html += '<div class="dp-tabs">';
+  TABS.forEach(t=>{ html += `<button class="dp-tab\${_dpActiveTab===t.id?' active':''}" onclick="dashPanelTab('\${t.id}')">\${t.label}</button>`; });
+  html += '</div>';
+
+  if(!allDefs.length){
+    html += '<div class="dp-empty">No widgets match "'+q+'"</div>';
+  } else if(_dpActiveTab==='all' && !q){
+    // Group by category
+    for(const cat of cats){
+      const defs = allDefs.filter(d=>d._cat===cat);
+      if(!defs.length) continue;
+      html += `<div class="dp-cat-label">\${CAT_LABELS[cat]||cat}</div>`;
+      html += '<div class="dp-grid">';
+      defs.forEach(d=>{ html += cardHTML(d); });
+      html += '</div>';
+    }
+  } else {
+    html += '<div class="dp-grid">';
+    allDefs.forEach(d=>{ html += cardHTML(d); });
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+function dashPanelTab(tab){
+  _dpActiveTab = tab;
+  buildDashPanel();
+}
+
+function dashPanelSearch(val){
+  _dpSearch = val;
+  _dpActiveTab = val ? 'all' : _dpActiveTab;
+  buildDashPanel();
 }
 
 function toggleDashPanel(){
+  if(!dashEditMode) return;
   dashPanelVisible = !dashPanelVisible;
   const panel = document.getElementById('dashPanel');
   if(panel) panel.style.display = dashPanelVisible?'':'none';
@@ -3571,6 +3805,7 @@ function dashLibDragStart(e, widgetId){
 
 // Panel items use data-lib-id for drag; wire dragstart via delegation
 document.addEventListener('dragstart', e=>{
+  if(!dashEditMode) return;
   const item = e.target.closest('[data-lib-id]');
   if(item && item.classList.contains('dash-lib-item')){
     _libDragId = item.dataset.libId;
@@ -3599,8 +3834,9 @@ function attachWidgetEvents(id){
   const rsz = document.getElementById('dwr-'+id);
   if(!el||!hdr) return;
 
-  // Move — drag from header
+  // Move — drag from header (edit mode only)
   hdr.addEventListener('mousedown', e=>{
+    if(!dashEditMode) return;
     if(e.target.closest('.dash-widget-actions')) return;
     e.preventDefault();
     const rect = el.getBoundingClientRect();
@@ -3611,8 +3847,9 @@ function attachWidgetEvents(id){
     el.style.zIndex=50;
   });
 
-  // Resize — drag from handle
+  // Resize — drag from handle (edit mode only)
   if(rsz) rsz.addEventListener('mousedown', e=>{
+    if(!dashEditMode) return;
     e.preventDefault(); e.stopPropagation();
     _dashDragState={type:'resize',id,
       startX:e.clientX, startY:e.clientY,
@@ -3621,8 +3858,9 @@ function attachWidgetEvents(id){
     el.style.zIndex=50;
   });
 
-  // Touch move
+  // Touch move (edit mode only)
   hdr.addEventListener('touchstart', e=>{
+    if(!dashEditMode) return;
     if(e.target.closest('.dash-widget-actions')) return;
     const t=e.touches[0];
     _dashDragState={type:'move',id,startX:t.clientX,startY:t.clientY,origLeft:el.offsetLeft,origTop:el.offsetTop};
@@ -3630,6 +3868,7 @@ function attachWidgetEvents(id){
   },{passive:true});
 
   if(rsz) rsz.addEventListener('touchstart', e=>{
+    if(!dashEditMode) return;
     e.preventDefault();
     const t=e.touches[0];
     _dashDragState={type:'resize',id,startX:t.clientX,startY:t.clientY,origW:el.offsetWidth,origH:el.offsetHeight};
