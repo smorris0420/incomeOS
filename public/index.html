@@ -3615,70 +3615,77 @@ function buildDashPanel(){
 
   const TABS = [
     { id:'all',      label:'All' },
-    { id:'earnings', label:'💵 Earnings' },
-    { id:'overtime', label:'⚡ Overtime' },
-    { id:'hours',    label:'🕐 Hours' },
-    { id:'taxes',    label:'🏛 Taxes' },
-    { id:'charts',   label:'📊 Charts' },
-    { id:'trackers', label:'📋 Trackers' },
+    { id:'earnings', label:'\uD83D\uDCB5 Earnings' },
+    { id:'overtime', label:'\u26A1 Overtime' },
+    { id:'hours',    label:'\uD83D\uDD50 Hours' },
+    { id:'taxes',    label:'\uD83C\uDFDB Taxes' },
+    { id:'charts',   label:'\uD83D\uDCCA Charts' },
+    { id:'trackers', label:'\uD83D\uDCCB Trackers' },
   ];
 
-  const onCanvas = new Set(dashConfig.map(w=>w.widgetId));
+  const onCanvas = new Set(dashConfig.map(function(w){ return w.widgetId; }));
+  const cats = Object.keys(DASH_CATALOG);
+  const CAT_LABELS = {earnings:'\uD83D\uDCB5 Earnings',overtime:'\u26A1 Overtime',hours:'\uD83D\uDD50 Hours',taxes:'\uD83C\uDFDB Taxes',charts:'\uD83D\uDCCA Charts',trackers:'\uD83D\uDCCB Trackers'};
 
   // Gather widgets for active tab
   let allDefs = [];
-  const cats = Object.keys(DASH_CATALOG);
-  for(const cat of cats){
+  for(let ci=0; ci<cats.length; ci++){
+    const cat = cats[ci];
     if(_dpActiveTab==='all' || cat===_dpActiveTab){
-      DASH_CATALOG[cat].forEach(d=>{ allDefs.push({...d, _cat:cat}); });
+      DASH_CATALOG[cat].forEach(function(d){ allDefs.push(Object.assign({}, d, {_cat:cat})); });
     }
   }
-  // Dedupe (ot-hours, dt-hours appear in both overtime + hours)
+  // Dedupe (some widgets appear in multiple categories)
   const seen = new Set();
-  allDefs = allDefs.filter(d=>{ if(seen.has(d.id)) return false; seen.add(d.id); return true; });
+  allDefs = allDefs.filter(function(d){ if(seen.has(d.id)) return false; seen.add(d.id); return true; });
 
   // Filter by search
   const q = _dpSearch.trim().toLowerCase();
-  if(q) allDefs = allDefs.filter(d=> d.name.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q));
-
-  // Group by category for display (only if showing all)
-  const CAT_LABELS = {earnings:'💵 Earnings',overtime:'⚡ Overtime',hours:'🕐 Hours',taxes:'🏛 Taxes',charts:'📊 Charts',trackers:'📋 Trackers'};
+  if(q) allDefs = allDefs.filter(function(d){ return d.name.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q); });
 
   function cardHTML(def){
     const isOn = onCanvas.has(def.id);
-    return `<div class="dp-card\${isOn?' on-canvas':''}" draggable="true" data-lib-id="\${def.id}" id="dlib-\${def.id}" title="\${def.desc}">
-      <div class="dp-card-icon">\${def.icon}</div>
-      <div class="dp-card-name">\${def.name}</div>
-      <div class="dp-card-desc">\${def.desc}</div>
-      \${isOn?'<div style="position:absolute;top:7px;right:7px;font-size:10px;color:var(--green)">✓</div>':'<button class="dp-card-add" data-action="add-widget" data-lib-id="'+def.id+'">+</button>'}
-    </div>`;
+    const addBtn = isOn
+      ? '<div style="position:absolute;top:7px;right:7px;font-size:11px;color:var(--green)">&#10003;</div>'
+      : '<button class="dp-card-add" data-action="add-widget" data-lib-id="'+def.id+'">+</button>';
+    return '<div class="dp-card'+(isOn?' on-canvas':'')+'" draggable="true" data-lib-id="'+def.id+'" id="dlib-'+def.id+'" title="'+def.desc+'">'
+      +'<div class="dp-card-icon">'+def.icon+'</div>'
+      +'<div class="dp-card-name">'+def.name+'</div>'
+      +'<div class="dp-card-desc">'+def.desc+'</div>'
+      +addBtn
+      +'</div>';
   }
 
-  let html = '';
+  // Search box
+  const safeQ = _dpSearch.replace(/"/g,'&quot;');
+  let html = '<div style="padding:10px 10px 0">'
+    +'<input class="dp-search" type="text" placeholder="Search widgets\u2026" value="'+safeQ+'" oninput="dashPanelSearch(this.value)" autocomplete="off">'
+    +'</div>';
 
-  // Search box + tabs
-  html += `<div style="padding:10px 10px 0">
-    <input class="dp-search" type="text" placeholder="Search widgets…" value="\${_dpSearch.replace(/"/g,'&quot;')}" oninput="dashPanelSearch(this.value)" autocomplete="off">
-  </div>`;
+  // Tab bar
   html += '<div class="dp-tabs">';
-  TABS.forEach(t=>{ html += `<button class="dp-tab\${_dpActiveTab===t.id?' active':''}" onclick="dashPanelTab('\${t.id}')">\${t.label}</button>`; });
+  TABS.forEach(function(t){
+    html += '<button class="dp-tab'+(_dpActiveTab===t.id?' active':'')+'" onclick="dashPanelTab(\''+t.id+'\')">'+t.label+'</button>';
+  });
   html += '</div>';
 
+  // Content
   if(!allDefs.length){
-    html += '<div class="dp-empty">No widgets match "'+q+'"</div>';
+    html += '<div class="dp-empty">No widgets match &ldquo;'+q+'&rdquo;</div>';
   } else if(_dpActiveTab==='all' && !q){
-    // Group by category
-    for(const cat of cats){
-      const defs = allDefs.filter(d=>d._cat===cat);
+    // Grouped by category
+    for(let ci=0; ci<cats.length; ci++){
+      const cat = cats[ci];
+      const defs = allDefs.filter(function(d){ return d._cat===cat; });
       if(!defs.length) continue;
-      html += `<div class="dp-cat-label">\${CAT_LABELS[cat]||cat}</div>`;
+      html += '<div class="dp-cat-label">'+(CAT_LABELS[cat]||cat)+'</div>';
       html += '<div class="dp-grid">';
-      defs.forEach(d=>{ html += cardHTML(d); });
+      defs.forEach(function(d){ html += cardHTML(d); });
       html += '</div>';
     }
   } else {
     html += '<div class="dp-grid">';
-    allDefs.forEach(d=>{ html += cardHTML(d); });
+    allDefs.forEach(function(d){ html += cardHTML(d); });
     html += '</div>';
   }
 
