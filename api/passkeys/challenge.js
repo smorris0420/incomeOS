@@ -20,72 +20,66 @@ export default async function handler(req, res) {
   const supabase = db();
   const rpId = getRpId(req);
 
-  // ── Registration challenge ──────────────────────────────────────────────────
   if(type==='registration') {
     const user = await verifyToken(req);
     if(!user) return res.status(401).json({ error: 'Not authenticated' });
 
-    const userId = user.userId || user.id;
+    // Log exactly what we have
+    console.log('[challenge/registration] user payload:', JSON.stringify(user));
+    const userId = String(user.userId || user.id || '');
+    console.log('[challenge/registration] using userId:', userId);
 
-    // Get existing credentials to exclude
+    if(!userId) return res.status(400).json({ error: 'Could not determine user ID from token' });
+
     const { data: existing } = await supabase
       .from('passkeys').select('credential_id').eq('user_id', userId);
 
     const options = await generateRegistrationOptions({
-      rpName: RP_NAME,
-      rpID: rpId,
+      rpName: RP_NAME, rpID: rpId,
       userID: new TextEncoder().encode(userId),
-      userName: user.username,
-      userDisplayName: user.username,
+      userName: user.username, userDisplayName: user.username,
       attestationType: 'none',
       excludeCredentials: (existing||[]).map(c=>({ id: c.credential_id, type:'public-key' })),
       authenticatorSelection: { residentKey:'preferred', userVerification:'preferred' },
     });
 
-    // Delete any existing registration challenge for this user, then insert fresh
-    await supabase.from('webauthn_challenges')
+    // Delete old, insert fresh
+    const { error: delErr } = await supabase.from('webauthn_challenges')
       .delete().eq('user_id', userId).eq('type','registration');
+    console.log('[challenge/registration] delete result:', delErr?.message || 'ok');
 
-    const { error: insertErr } = await supabase.from('webauthn_challenges').insert({
-      user_id:    userId,
-      challenge:  options.challenge,
-      type:       'registration',
-      expires_at: new Date(Date.now() + 5*60*1000).toISOString(),
-    });
+    const { data: inserted, error: insertErr } = await supabase
+      .from('webauthn_challenges')
+      .insert({
+        user_id:    userId,
+        challenge:  options.challenge,
+        type:       'registration',
+        expires_at: new Date(Date.now() + 5*60*1000).toISOString(),
+      })
+      .select('id, user_id, challenge')
+      .single();
 
-    if(insertErr) {
-      console.error('Challenge insert error:', insertErr.message);
-      return res.status(500).json({ error: 'Failed to store challenge: ' + insertErr.message });
-    }
+    console.log('[challenge/registration] insert result:', insertErr?.message || JSON.stringify(inserted));
+
+    if(insertErr) return res.status(500).json({ error: 'Failed to store challenge: ' + insertErr.message });
 
     return res.status(200).json(options);
   }
 
-  // ── Authentication challenge ────────────────────────────────────────────────
   if(type==='authentication') {
-    let allowCredentials = [];
-    let scopedUserId = null;
-
+    let allowCredentials = [], scopedUserId = null;
     if(username) {
       const login = username.toLowerCase().trim();
-      const { data: u } = await supabase
-        .from('users').select('id')
-        .or(`username.eq.${login},email.eq.${login}`)
-        .eq('active', true).maybeSingle();
+      const { data: u } = await supabase.from('users').select('id')
+        .or(`username.eq.${login},email.eq.${login}`).eq('active',true).maybeSingle();
       if(u) {
-        scopedUserId = u.id;
-        const { data: creds } = await supabase
-          .from('passkeys').select('credential_id').eq('user_id', u.id);
+        scopedUserId = String(u.id);
+        const { data: creds } = await supabase.from('passkeys').select('credential_id').eq('user_id', scopedUserId);
         allowCredentials = (creds||[]).map(c=>({ id: c.credential_id, type:'public-key' }));
       }
     }
 
-    const options = await generateAuthenticationOptions({
-      rpID: rpId,
-      userVerification: 'preferred',
-      allowCredentials,
-    });
-
+    const options = await generateAuthenticationOptions({ rpID: rpId, userVerification:'preferred', allowCredentials });
     const challengeUserId = scopedUserId || ('anon_' + options.challenge.slice(0,8));
 
     const { error: insertErr } = await supabase.from('webauthn_challenges').insert({
@@ -95,11 +89,7 @@ export default async function handler(req, res) {
       expires_at: new Date(Date.now() + 5*60*1000).toISOString(),
     });
 
-    if(insertErr) {
-      console.error('Auth challenge insert error:', insertErr.message);
-      return res.status(500).json({ error: 'Failed to store challenge: ' + insertErr.message });
-    }
-
+    if(insertErr) return res.status(500).json({ error: 'Failed to store challenge: ' + insertErr.message });
     return res.status(200).json({ ...options, scopedUserId });
   }
 
