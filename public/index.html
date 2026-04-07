@@ -3828,9 +3828,9 @@ async function setTheme(theme) {
 function toggleDark(){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
 
 // Boot: apply immediately from localStorage (avoids flash), then sync from server after login
+// Default is always light — dark only if user has explicitly chosen it
 (function(){
-  const pref = localStorage.getItem('payday-theme-pref') ||
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const pref = localStorage.getItem('payday-theme-pref') || 'light';
   applyTheme(pref);
 })();
 // Called after settings load from server
