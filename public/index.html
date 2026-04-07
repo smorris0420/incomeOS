@@ -73,8 +73,9 @@ html{transition:background 300ms ease,color 300ms ease}
 .login-title{font-size:22px;font-weight:700;letter-spacing:-.4px;text-align:center;margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:24px}
 /* Option buttons (biometric / password) */
-.login-option{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;transition:border-color 200ms ease,background 200ms ease,box-shadow 200ms ease;text-align:left;margin-bottom:10px}
-.login-option:hover{border-color:var(--green-btn);background:var(--bg2);box-shadow:0 0 0 3px var(--green-dim)}
+.login-option{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;transition:border-color 200ms ease,box-shadow 200ms ease;text-align:left;margin-bottom:10px}
+.login-option:hover{border-color:var(--green-btn);box-shadow:0 0 0 3px var(--green-dim)}
+.login-option:active{border-color:var(--green-btn);box-shadow:0 0 0 3px var(--green-dim);opacity:.9}
 .login-option:last-child{margin-bottom:0}
 .login-option-icon{width:40px;height:40px;border-radius:10px;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2)}
 .login-option-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:1px}
@@ -89,6 +90,13 @@ html{transition:background 300ms ease,color 300ms ease}
 .login-form input:focus{border-color:var(--green-btn);box-shadow:0 0 0 3px var(--green-dim);background:var(--bg2)}
 .login-err{font-size:13px;color:var(--red);text-align:center;min-height:18px}
 .login-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.6}
+
+/* Biometric verifying spinner */
+.login-option-spinner{width:22px;height:22px;border:2px solid var(--green-dim);border-top-color:var(--green);border-radius:50%;animation:loginSpin 700ms linear infinite;flex-shrink:0}
+@keyframes loginSpin{to{transform:rotate(360deg)}}
+/* Login card fade-out on success */
+.login-card.success{animation:loginSuccess 400ms cubic-bezier(0.16,1,0.3,1) both}
+@keyframes loginSuccess{to{opacity:0;transform:scale(1.03)}}
 
 /* APP SHELL */
 #appShell{display:none}
@@ -649,21 +657,22 @@ html{transition:background 300ms ease,color 300ms ease}
     <!-- View 1: Choose sign-in method -->
     <div id="loginChooseView" style="width:100%">
       <button class="login-option" id="loginBioBtn" onclick="loginWithPasskey()" style="display:none">
-        <div class="login-option-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <div class="login-option-icon" id="loginBioIcon" style="background:var(--green-dim);position:relative;display:flex;align-items:center;justify-content:center">
+          <svg id="loginBioSvg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6">
             <path d="M7 3H5a2 2 0 00-2 2v2"/><path d="M17 3h2a2 2 0 012 2v2"/>
             <path d="M7 21H5a2 2 0 01-2-2v-2"/><path d="M17 21h2a2 2 0 002-2v-2"/>
             <path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 15a3 3 0 006 0"/>
           </svg>
+          <div id="loginBioSpinner" class="login-option-spinner" style="display:none;position:absolute"></div>
         </div>
         <div>
-          <div class="login-option-title" id="loginBioLabel">Face ID / Touch ID</div>
-          <div class="login-option-sub">Sign in with biometrics</div>
+          <div class="login-option-title" id="loginBioLabel">Biometric Login</div>
+          <div class="login-option-sub" id="loginBioSub">Sign in with Face ID, Touch ID, or Windows Hello</div>
         </div>
       </button>
       <button class="login-option" onclick="showLoginForm()">
-        <div class="login-option-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <div class="login-option-icon" style="background:var(--green-dim)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
         </div>
@@ -3845,12 +3854,8 @@ async function initLoginScreen() {
 
   if(hasPlatform) {
     bioBtn.style.display = 'flex';
-    const ua = navigator.userAgent;
-    const label = /iPhone|iPad/.test(ua) ? 'Face ID / Touch ID'
-      : /Mac/.test(ua) ? 'Touch ID'
-      : /Android/.test(ua) ? 'Fingerprint / Face Unlock'
-      : 'Windows Hello';
-    document.getElementById('loginBioLabel').textContent = label;
+    // Label is always "Biometric Login" — subtext explains the options
+    document.getElementById('loginBioLabel').textContent = 'Biometric Login';
   } else {
     bioBtn.style.display = 'none';
   }
@@ -3877,14 +3882,43 @@ function showLoginForm() {
 
 function toggleLoginForm() { showLoginForm(); }
 
+// ── Biometric UI state helpers ────────────────────────────────────────────────
+function _setBioVerifying(on) {
+  const btn     = document.getElementById('loginBioBtn');
+  const icon    = document.getElementById('loginBioIcon');
+  const svg     = document.getElementById('loginBioSvg');
+  const spinner = document.getElementById('loginBioSpinner');
+  const label   = document.getElementById('loginBioLabel');
+  const sub     = document.getElementById('loginBioSub');
+  if(!btn) return;
+  if(on) {
+    btn.disabled = true;
+    btn.style.borderColor = 'var(--green-btn)';
+    btn.style.boxShadow   = '0 0 0 3px var(--green-dim)';
+    btn.style.background  = 'var(--bg2)';
+    if(svg)     svg.style.display     = 'none';
+    if(spinner) spinner.style.display = 'block';
+    if(label)   label.textContent     = 'Verifying…';
+    if(sub)     sub.textContent       = 'Sign in with biometrics';
+    if(icon)    icon.style.background = 'var(--green-dim)';
+  } else {
+    btn.disabled = false;
+    btn.style.borderColor = '';
+    btn.style.boxShadow   = '';
+    btn.style.background  = '';
+    if(svg)     svg.style.display     = '';
+    if(spinner) spinner.style.display = 'none';
+    if(label)   label.textContent     = 'Biometric Login';
+    if(sub)     sub.textContent       = 'Sign in with Face ID, Touch ID, or Windows Hello';
+  }
+}
+
 async function loginWithPasskey() {
-  const btn = document.getElementById('loginBioBtn');
   const err = document.getElementById('loginErr');
   if(err) err.textContent = '';
-  if(btn) btn.style.opacity = '0.7';
+  _setBioVerifying(true);
 
   try {
-    // Get challenge from server (no username — discoverable credential)
     const challengeRes = await fetch('/api/passkeys/challenge', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ type:'authentication' })
@@ -3892,7 +3926,6 @@ async function loginWithPasskey() {
     const challengeData = await challengeRes.json();
     if(!challengeRes.ok) throw new Error(challengeData.error || 'Could not get challenge');
 
-    // Build PublicKeyCredentialRequestOptions
     const options = {
       challenge: b64urlToUint8(challengeData.challenge),
       rpId: challengeData.rpId || location.hostname,
@@ -3908,7 +3941,6 @@ async function loginWithPasskey() {
 
     const assertion = await navigator.credentials.get({ publicKey: options });
 
-    // Send assertion to server
     const authRes = await fetch('/api/passkeys/authenticate', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -3928,21 +3960,20 @@ async function loginWithPasskey() {
     const authData = await authRes.json();
     if(!authRes.ok) throw new Error(authData.error || 'Authentication failed');
 
-    // Success — same as password login
-    if(btn) btn.style.opacity = '1';
+    // Success — fade card out, then transition to app
+    _setBioVerifying(false);
     await _onLoginSuccess(authData);
 
   } catch(e) {
-    if(btn) btn.style.opacity = '1';
+    _setBioVerifying(false);
     if(e.name === 'NotAllowedError') {
       if(err) err.textContent = 'Cancelled. Use password instead.';
-    } else if(e.message && e.message.includes('not found')) {
+    } else if(e.message && (e.message.includes('not found') || e.message.includes('No passkey'))) {
       if(err) err.textContent = 'No passkey found. Sign in with password first.';
+      setTimeout(()=>showLoginForm(), 1200);
     } else {
       if(err) err.textContent = e.message || 'Sign-in failed';
     }
-    // Auto-show password form after failure
-    setTimeout(()=>toggleLoginForm(), 1200);
   }
 }
 
@@ -3952,7 +3983,20 @@ async function _onLoginSuccess(data) {
   currentUser = { username:data.username, displayName:data.displayName||data.username, role:data.role, id:data.userId };
   sessionStorage.setItem('payday_token', token);
   sessionStorage.setItem('payday_user', JSON.stringify(currentUser));
+
+  // Animate card out
+  const card = document.querySelector('.login-card');
+  if(card) {
+    card.style.transition = 'opacity 350ms ease, transform 350ms cubic-bezier(0.16,1,0.3,1)';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(1.02) translateY(-8px)';
+    await new Promise(r => setTimeout(r, 320));
+  }
+
   document.getElementById('loginScreen').style.display = 'none';
+  // Reset card for next login
+  if(card) { card.style.opacity=''; card.style.transform=''; card.style.transition=''; }
+
   document.getElementById('appShell').classList.add('visible');
   updateSidebarUser();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
