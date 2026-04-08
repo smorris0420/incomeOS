@@ -3163,62 +3163,26 @@ function toggleDashEditMode() {
   const subLabel   = document.getElementById('dashSubLabel');
 
   if(dashEditMode) {
+    // Enter edit mode — show panel and controls
     canvas?.classList.add('dash-edit-active');
-    if(panel)      panel.style.display      = 'flex';
-    if(editCtrls)  editCtrls.style.display  = 'flex';
-    if(editLabel)  editLabel.textContent    = 'Done';
+    if(panel)      panel.style.display     = 'flex';
+    if(editCtrls)  editCtrls.style.display = 'flex';
+    if(editLabel)  editLabel.textContent   = 'Done';
     if(editToggle) { editToggle.classList.remove('btn-secondary'); editToggle.classList.add('btn-primary'); }
-    if(subLabel)   subLabel.textContent     = 'Drag to move · resize from corner · add from Widgets panel';
-    if(editIcon)   editIcon.innerHTML       = '<polyline points="20 6 9 17 4 12"/>';
+    if(subLabel)   subLabel.textContent    = 'Drag to move · resize from corner · add from Widgets panel';
+    if(editIcon)   editIcon.innerHTML      = '<polyline points="20 6 9 17 4 12"/>';
   } else {
+    // Exit edit mode — collapse panel and controls
     canvas?.classList.remove('dash-edit-active');
-    if(panel)      panel.style.display      = 'none';
-    if(editCtrls)  editCtrls.style.display  = 'none';
-    if(editLabel)  editLabel.textContent    = 'Edit';
+    if(panel)      panel.style.display     = 'none';
+    if(editCtrls)  editCtrls.style.display = 'none';
+    if(editLabel)  editLabel.textContent   = 'Edit';
     if(editToggle) { editToggle.classList.add('btn-secondary'); editToggle.classList.remove('btn-primary'); }
-    if(subLabel)   subLabel.textContent     = 'Your personalized overview';
-    if(editIcon)   editIcon.innerHTML       = '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>';
-    // Auto-save on Done if unsaved changes
+    if(subLabel)   subLabel.textContent    = 'Your personalized overview';
+    if(editIcon)   editIcon.innerHTML      = '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>';
+    // Auto-save on Done
     const saveBtn = document.getElementById('dashSaveBtn');
     if(saveBtn && saveBtn.style.display !== 'none') forceSaveDash();
-    const status = document.getElementById('dashSaveStatus');
-    if(status) status.style.display = 'none';
-  }
-}
-
-
-function toggleDashEditMode(save=false) {
-  dashEditMode = !dashEditMode;
-  const canvas     = document.getElementById('dashCanvas');
-  const panel      = document.getElementById('dashPanel');
-  const editCtrls  = document.getElementById('dashEditControls');
-  const editToggle = document.getElementById('dashEditToggle');
-  const editLabel  = document.getElementById('dashEditLabel');
-  const editIcon   = document.getElementById('dashEditIcon');
-  const subLabel   = document.getElementById('dashSubLabel');
-
-  if(dashEditMode) {
-    // Enter edit mode
-    canvas?.classList.add('dash-edit-active');
-    if(editCtrls) editCtrls.style.display = 'flex';
-    if(editLabel) editLabel.textContent = 'Done';
-    if(editToggle) { editToggle.classList.remove('btn-secondary'); editToggle.classList.add('btn-primary'); }
-    if(subLabel)  subLabel.textContent = 'Drag to move · resize from corner · add from Widgets panel';
-    if(editIcon)  editIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';  // checkmark
-  } else {
-    // Exit edit mode — auto-save if there are unsaved changes
-    canvas?.classList.remove('dash-edit-active');
-    if(editCtrls) editCtrls.style.display = 'none';
-    if(editLabel) editLabel.textContent = 'Edit';
-    if(editToggle) { editToggle.classList.add('btn-secondary'); editToggle.classList.remove('btn-primary'); }
-    if(subLabel)  subLabel.textContent = 'Your personalized overview';
-    if(editIcon)  editIcon.innerHTML = '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>';  // pencil
-    // Save any pending changes on exit
-    const saveBtn = document.getElementById('dashSaveBtn');
-    if(saveBtn && saveBtn.style.display !== 'none') {
-      forceSaveDash();
-    }
-    // Hide save status
     const status = document.getElementById('dashSaveStatus');
     if(status) status.style.display = 'none';
   }
@@ -3468,19 +3432,27 @@ function renderStatWidget(w) {
   const val = d.n>0 ? def.fn(d) : '—';
   const sub = d.n>0 && def.sub ? def.sub(d) : 'No data yet';
   const cfg = dashConfig.find(x=>x.id===w.id)||w;
-  const h = cfg.h||4;
-  // Measure actual rendered pixel height of the body element
-  const physH = el.offsetHeight || (h * GRID_ROW_H + (h-1) * GRID_GAP);
-  // Fluid font: fills ~35% of body height, clamped to readable range
-  const valSize = Math.min(48, Math.max(15, Math.round(physH * 0.35)));
-  const subSize = Math.min(13, Math.max(9,  Math.round(physH * 0.09)));
-  const showSub = physH >= 52;
+
+  // Use actual rendered dimensions for accuracy
+  const physH = el.offsetHeight || ((cfg.h||4) * GRID_ROW_H + ((cfg.h||4)-1) * GRID_GAP);
+  const physW = el.offsetWidth  || ((cfg.w||12) * (getCanvasColWidth()||20) + ((cfg.w||12)-1) * GRID_GAP);
+
+  // Constrain by both height AND the number of characters that must fit
+  const charCount = Math.max(1, String(val).replace(/[.,]/g,'').length); // dots are narrow
+  const fromH = physH * 0.38;
+  // Each mono char is ~0.60× its font-size wide; leave 20px total horizontal padding
+  const fromW = (physW - 20) / (charCount * 0.60);
+  const valSize = Math.min(44, Math.max(11, Math.floor(Math.min(fromH, fromW))));
+
+  const subSize = Math.min(12, Math.max(9, Math.floor(physH * 0.08)));
+  const showSub = physH >= 48 && valSize <= physH * 0.55;
   const color = def.color==='green'?'var(--green)':def.color==='red'?'var(--red)':def.color==='amber'?'var(--amber)':'var(--text)';
+
   el.style.justifyContent = 'center';
-  el.style.padding = '6px 10px 8px';
+  el.style.padding = '4px 8px 6px';
   el.innerHTML =
-    '<div style="font-family:var(--mono);font-size:'+valSize+'px;font-weight:700;line-height:1;color:'+color+';word-break:break-all;'+(showSub?'margin-bottom:3px':'')+'">'+val+'</div>'
-    +(showSub?'<div style="font-size:'+subSize+'px;color:var(--text3);line-height:1.4">'+sub+'</div>':'');
+    '<div style="font-family:var(--mono);font-size:'+valSize+'px;font-weight:700;line-height:1.05;color:'+color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;'+(showSub?'margin-bottom:2px':'')+'">'+val+'</div>'
+    +(showSub?'<div style="font-size:'+subSize+'px;color:var(--text3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">'+sub+'</div>':'');
 }
 
 function renderDashChart(w) {
