@@ -340,6 +340,11 @@ html{transition:background 300ms ease,color 300ms ease}
 .badge{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700;flex-shrink:0}
 .badge-ot{background:var(--amber-dim);color:var(--amber)}
 .badge-hol{background:var(--blue-dim);color:var(--blue)}
+.badge-correction{background:rgba(220,38,38,0.10);color:var(--red);font-weight:700}
+.badge-bonus{background:rgba(22,163,74,0.12);color:var(--green);font-weight:700}
+.badge-adjustment{background:rgba(217,119,6,0.12);color:var(--amber);font-weight:700}
+.badge-retro{background:rgba(124,58,237,0.10);color:#7C3AED;font-weight:700}
+.badge-final{background:rgba(17,24,39,0.08);color:var(--text2);font-weight:700}
 .rate-tag{font-family:var(--mono);font-size:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:2px 6px;color:var(--text3);flex-shrink:0}
 
 /* MODALS */
@@ -1433,6 +1438,21 @@ html{transition:background 300ms ease,color 300ms ease}
       <div class="form-grid">
         <div class="form-field"><label>Pay date</label><input type="date" id="lDate"></div>
         <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="lRate" step="0.01" min="0"></div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label>Paycheck type</label>
+          <select id="lPayType" style="width:100%;padding:10px 12px;font-family:var(--sans);font-size:14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none">
+            <option value="regular">Regular — standard pay period</option>
+            <option value="correction">Correction — missed hours / timesheet fix</option>
+            <option value="bonus">Bonus — one-time bonus or incentive</option>
+            <option value="adjustment">Adjustment — pay rate or retroactive change</option>
+            <option value="retro">Retro — back pay for prior period</option>
+            <option value="final">Final — separation / last check</option>
+          </select>
+        </div>
+        <div class="form-field" id="lNoteField" style="grid-column:1/-1;display:none">
+          <label>Note <span style="font-weight:400;opacity:.6">— optional</span></label>
+          <input type="text" id="lNote" placeholder="e.g. missed 8hrs from 11/3 timesheet" style="width:100%;padding:10px 12px;font-family:var(--sans);font-size:14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none">
+        </div>
       </div>
     </div>
 
@@ -1518,6 +1538,21 @@ html{transition:background 300ms ease,color 300ms ease}
         <div class="form-grid">
           <div class="form-field"><label>Pay date</label><input type="date" id="eDate"></div>
           <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="eRate" step="0.01" min="0"></div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label>Paycheck type</label>
+            <select id="ePayType" style="width:100%;padding:10px 12px;font-family:var(--sans);font-size:14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none">
+              <option value="regular">Regular — standard pay period</option>
+              <option value="correction">Correction — missed hours / timesheet fix</option>
+              <option value="bonus">Bonus — one-time bonus or incentive</option>
+              <option value="adjustment">Adjustment — pay rate or retroactive change</option>
+              <option value="retro">Retro — back pay for prior period</option>
+              <option value="final">Final — separation / last check</option>
+            </select>
+          </div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label>Note <span style="font-weight:400;opacity:.6">— optional</span></label>
+            <input type="text" id="eNote" placeholder="e.g. missed 8hrs from 11/3 timesheet" style="width:100%;padding:10px 12px;font-family:var(--sans);font-size:14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none">
+          </div>
         </div>
       </div>
 
@@ -1953,6 +1988,8 @@ function fromRealtimeRow(r) {
     regPay: r.reg_pay != null ? parseFloat(r.reg_pay) : null,
     otPay:  r.ot_pay  != null ? parseFloat(r.ot_pay)  : null,
     net: r.net != null ? parseFloat(r.net) : null,
+    payType: r.pay_type || null,
+    note: r.note || null,
     seeded: r.seeded,
   };
 }
@@ -2270,6 +2307,8 @@ function buildHistory() {
     const d=new Date(s.date+'T12:00:00'), ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const totalHrs=s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0);
     let badges='';
+    // Pay type badge first — most important
+    if(s.payType&&s.payType!=='regular') badges+='<span class="badge badge-'+s.payType+'">'+s.payType.toUpperCase()+'</span> ';
     if(s.ot>0) badges+='<span class="badge badge-ot">OT</span> ';
     if((s.dt||0)>0) badges+='<span class="badge" style="background:rgba(220,38,38,0.1);color:var(--red)">DT</span> ';
     if(s.hol>0) badges+='<span class="badge badge-hol">HOL</span> ';
@@ -2278,7 +2317,9 @@ function buildHistory() {
     if((s.fltHol||0)>0) badges+='<span class="badge badge-hol">FLTHOL</span> ';
     if((s.premHrs||0)>0) badges+='<span class="badge" style="background:rgba(29,78,216,0.08);color:var(--blue)">PREM</span> ';
     if((s.addl||0)>0) badges+='<span class="badge" style="background:rgba(29,78,216,0.08);color:var(--blue)">+PAY</span>';
-    html+=`<div class="stub-item${bulkMode?' bulk-mode-item':''}" onclick="${bulkMode?`toggleSelect('${s.id}',event)`:`openDetail('${s.id}')`}">
+    // Note tooltip on stub item
+    const noteAttr=s.note?' title="'+s.note.replace(/"/g,"&quot;")+'"':'';
+    html+=`<div class="stub-item${bulkMode?' bulk-mode-item':''}"${noteAttr} onclick="${bulkMode?`toggleSelect('${s.id}',event)`:`openDetail('${s.id}')`}">
       ${bulkMode?`<input type="checkbox" id="cb-${s.id}" class="stub-cb" ${selectedIds.has(s.id)?'checked':''} onclick="toggleSelect('${s.id}',event)">`:''}
       <div class="stub-top"><span class="stub-date">${ds} ${badges}</span><span class="stub-net">${fmt(net)}</span></div>
       <div class="stub-bottom"><span class="stub-detail">${fmtH(totalHrs)}h &middot; ${fmt(s.gross)}</span><span class="rate-tag">$${parseFloat(s.rate).toFixed(2)}/hr</span><div class="stub-bar-wrap"><div class="stub-bar" style="width:${pct}%"></div></div></div>
@@ -4714,6 +4755,12 @@ function openLogModal() {
   document.getElementById('lDen').value=parseFloat(appSettings.den||2).toFixed(2);
   document.getElementById('lMedI').value=parseFloat(appSettings.medI||17).toFixed(2);
   document.getElementById('lVis').value=parseFloat(appSettings.vis||0.5).toFixed(2);
+  document.getElementById('lPayType').value='regular';
+  document.getElementById('lNote').value='';
+  document.getElementById('lNoteField').style.display='none';
+  document.getElementById('lPayType').onchange=function(){
+    document.getElementById('lNoteField').style.display=this.value==='regular'?'none':'block';
+  };
   document.getElementById('logModal').classList.add('open');
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -4760,10 +4807,15 @@ async function saveLog() {
     finalGross = parseFloat((fReg+fOT+payRound(rateRound(rate*2)*dt)+payRound(_r*hol)+payRound(_r*sick)+payRound(_r*vac)+payRound(_r*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
   }
   const netRaw=parseFloat(document.getElementById('lNet').value);
+  const payType=document.getElementById('lPayType')?.value||'regular';
+  const noteVal=(document.getElementById('lNote')?.value||'').trim();
   const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
     regPay:(!isNaN(regPayRaw)&&regPayRaw>0)?regPayRaw:null,
     otPay:(!isNaN(otPayRaw)&&otPayRaw>0)?otPayRaw:null,
-    fed,ss,med,den,medI,vis,retire,net:isNaN(netRaw)?null:netRaw,seeded:false};
+    fed,ss,med,den,medI,vis,retire,net:isNaN(netRaw)?null:netRaw,
+    payType:payType==='regular'?null:payType,
+    note:noteVal||null,
+    seeded:false};
 
   // === LIVE UPDATE: add to local state immediately ===
   stubs.unshift(stub);
@@ -4908,6 +4960,8 @@ function toggleEditMode() {
     document.getElementById('eOTPay').value=s.otPay!=null?s.otPay:((s.ot||0)>0?(_eShowOT||''):'');
     document.getElementById('eGross').value=s.gross||'';
     document.getElementById('eNet').value=s.net||'';
+    document.getElementById('ePayType').value=s.payType||'regular';
+    document.getElementById('eNote').value=s.note||'';
     document.getElementById('dReadView').style.display='none';
     ev.style.display='block';
     document.getElementById('dEditBtn').textContent='Cancel';
@@ -4941,6 +4995,8 @@ async function saveEdit() {
     // Only treat Gross as a manual override if user changed it from the stored value
     grossOverride: (!isNaN(eGrossVal) && eGrossVal > 0 && Math.abs(eGrossVal - s.gross) > 0.001) ? eGrossVal : null,
     net:parseFloat(document.getElementById('eNet').value)||null,
+    payType:(document.getElementById('ePayType').value||'regular')==='regular'?null:document.getElementById('ePayType').value,
+    note:(document.getElementById('eNote').value||'').trim()||null,
   };
   // Compute correct gross from pay overrides or hours
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
