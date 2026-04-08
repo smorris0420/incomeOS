@@ -625,35 +625,38 @@ html{transition:background 300ms ease,color 300ms ease}
 .dash-lib-add:hover{color:var(--green)}
 
 /* Canvas widgets */
-.dash-widget{position:absolute;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,border-color .15s;min-width:80px;min-height:40px}
+.dash-widget{position:absolute;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow 200ms ease,border-color 200ms ease;min-width:80px;min-height:40px;container-type:size}
 .dash-widget:hover{box-shadow:var(--shadow-md)}
-.dash-widget.dragging{opacity:.85;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:100;border-color:var(--blue)}
-.dash-widget.resizing{border-color:var(--blue)}
-.dash-widget-header{display:flex;align-items:center;gap:6px;padding:8px 12px 0;cursor:default;flex-shrink:0;min-height:32px}
+.dash-edit-active .dash-widget:hover{border-color:var(--border2)}
+.dash-widget.dragging{opacity:.88;box-shadow:0 16px 40px rgba(0,0,0,.20);z-index:100;border-color:var(--green-border)!important}
+.dash-widget.resizing{border-color:var(--green-border)!important}
+
+/* Header — compact, only takes what it needs */
+.dash-widget-header{display:flex;align-items:center;gap:5px;padding:7px 10px 4px;cursor:default;flex-shrink:0}
 .dash-edit-active .dash-widget-header{cursor:grab;touch-action:none}
 .dash-edit-active .dash-widget-header:active{cursor:grabbing}
-.dash-widget-header:active{cursor:grabbing}
-.dash-widget-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-.dash-widget-actions{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:opacity .15s}
-.dash-widget:hover .dash-widget-actions{opacity:1}
-.dash-wbtn{background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 5px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--sans);transition:all .1s;line-height:1.4}
-.dash-wbtn:hover{background:var(--bg3);color:var(--text)}
-.dash-wbtn.active{background:var(--blue-dim);color:var(--blue);border-color:rgba(29,78,216,.3)}
-.dash-wbtn.danger:hover{color:var(--red);background:var(--red-dim)}
-.dash-widget-body{padding:8px 12px 10px;flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column;min-height:0}
-.dash-widget-body canvas{flex:1;min-height:0;display:block;width:100%!important}
+.dash-widget-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;line-height:1}
+.dash-widget-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity 180ms ease}
+.dash-edit-active .dash-widget:hover .dash-widget-actions{opacity:1}
+.dash-wbtn{background:none;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:9px;color:var(--text3);cursor:pointer;font-family:var(--sans);transition:all 120ms ease;line-height:1.5}
+.dash-wbtn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.dash-wbtn.active{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.dash-wbtn.danger:hover{color:var(--red);background:var(--red-dim);border-color:var(--red)}
 
-/* Resize handle */
-.dash-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:0;transition:opacity .2s}
-.dash-resize::before{content:'';position:absolute;bottom:3px;right:3px;width:10px;height:10px;border-right:2px solid var(--border2);border-bottom:2px solid var(--border2);border-radius:0 0 2px 0}
-.dash-resize::after{content:'';position:absolute;bottom:5px;right:5px;width:5px;height:5px;border-right:1.5px solid var(--border2);border-bottom:1.5px solid var(--border2)}
+/* Body — fills all remaining space */
+.dash-widget-body{padding:0 10px 8px;flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column;min-height:0}
+.dash-widget-body canvas{flex:1;min-height:0;display:block;width:100%!important;height:100%!important}
+
+/* Resize handle — subtle corner dots */
+.dash-resize{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:se-resize;z-index:10;opacity:0;transition:opacity 180ms ease}
+.dash-resize::before{content:'';position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid var(--green-border);border-bottom:2px solid var(--green-border);border-radius:0 0 2px 0}
 .dash-edit-active .dash-widget:hover .dash-resize{opacity:1}
-.dash-widget.resizing .dash-resize{opacity:1;border-color:var(--blue)}
+.dash-widget.resizing .dash-resize{opacity:1}
 
-/* Stat widget */
-.dash-stat-val{font-family:var(--mono);font-weight:700;color:var(--text);line-height:1;margin-bottom:3px;font-size:clamp(18px,4cqw,28px)}
+/* Stat widget — uses container queries for fluid sizing */
+.dash-stat-val{font-family:var(--mono);font-weight:700;color:var(--text);line-height:1;margin-bottom:3px}
 .dash-stat-val.green{color:var(--green)}.dash-stat-val.red{color:var(--red)}.dash-stat-val.amber{color:var(--amber)}
-.dash-stat-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.dash-stat-sub{color:var(--text3);line-height:1.3}
 
 /* Grid snap overlay (edit mode) */
 .dash-grid-overlay{display:none;position:absolute;inset:0;pointer-events:none;z-index:0}
@@ -673,8 +676,8 @@ html{transition:background 300ms ease,color 300ms ease}
   .dash-canvas-wrap{padding:10px;overflow:visible}
   .dash-canvas{position:static;min-height:unset}
   /* Widgets stack vertically on mobile */
-  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:140px;margin-bottom:10px}
-  .dash-widget-body{padding-bottom:8px}
+  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:120px;margin-bottom:8px}
+  .dash-widget-body{padding:0 8px 6px}
   .dash-resize{display:none}
   /* Widget panel becomes bottom sheet */
   .dash-panel{width:100%;border-left:none;border-top:1.5px solid var(--border);height:auto;max-height:340px;overflow-y:auto}
@@ -3062,9 +3065,9 @@ function updateYTDGoal() {
 // Config format: [{id, widgetId, x, y, w, h, chartType}]
 // x,y,w,h are in grid units (col/row). Grid: 12 cols, rows ~80px each.
 
-const GRID_COLS = 24;
-const GRID_ROW_H = 40; // px per row unit — finer control
-const GRID_GAP   = 6;  // px gap
+const GRID_COLS = 48;
+const GRID_ROW_H = 10; // px per row unit — pixel-precise
+const GRID_GAP   = 4;  // px gap
 
 const DASH_CATALOG = {
   earnings: [
@@ -3109,25 +3112,25 @@ const DASH_CATALOG = {
     { type:'stat', id:'fed-rate',       icon:'📉', name:'Effective Fed Rate',    desc:'Your federal rate on gross',      color:'amber', fn:d=>d.fedRate.toFixed(1)+'%',               sub:d=>`${fmt(d.tFed)} withheld` },
   ],
   charts: [
-    { type:'chart', id:'chart-gross',      icon:'📊', name:'Gross Trend',         desc:'Gross + running avg per check',   chartType:'bar',      defW:12, defH:6 },
-    { type:'chart', id:'chart-net',        icon:'📈', name:'Net Trend',           desc:'Take-home per paycheck',          chartType:'line',     defW:12, defH:6 },
-    { type:'chart', id:'chart-cum',        icon:'📉', name:'Cumulative Net',      desc:'Running total of take-home',      chartType:'line',     defW:12, defH:6 },
-    { type:'chart', id:'chart-gross-net',  icon:'📊', name:'Gross vs Net',        desc:'Both side by side per check',     chartType:'bar',      defW:24, defH:6 },
-    { type:'chart', id:'chart-monthly',    icon:'📅', name:'Monthly Gross',       desc:'Total gross per month',           chartType:'bar',      defW:12, defH:6 },
-    { type:'chart', id:'chart-earnings',   icon:'🥧', name:'Earnings Mix',        desc:'Regular / OT / Holiday split',    chartType:'doughnut', defW:8, defH:8 },
-    { type:'chart', id:'chart-deductions', icon:'💸', name:'Deductions Mix',      desc:'Fed / SS / Medicare / Benefits',  chartType:'doughnut', defW:8, defH:8 },
-    { type:'chart', id:'chart-hrs-month',  icon:'📅', name:'Hours by Month',      desc:'Regular + OT stacked per month',  chartType:'bar',      defW:12, defH:6 },
-    { type:'chart', id:'chart-ot-trend',   icon:'⚡', name:'OT Trend',            desc:'OT hours per paycheck over time', chartType:'line',     defW:12, defH:6 },
-    { type:'chart', id:'chart-tax-burden', icon:'🏛',  name:'Tax Burden %',       desc:'Tax % per check with avg line',   chartType:'line',     defW:12, defH:6 },
+    { type:'chart', id:'chart-gross',      icon:'📊', name:'Gross Trend',         desc:'Gross + running avg per check',   chartType:'bar',      defW:24, defH:24 },
+    { type:'chart', id:'chart-net',        icon:'📈', name:'Net Trend',           desc:'Take-home per paycheck',          chartType:'line',     defW:24, defH:24 },
+    { type:'chart', id:'chart-cum',        icon:'📉', name:'Cumulative Net',      desc:'Running total of take-home',      chartType:'line',     defW:24, defH:24 },
+    { type:'chart', id:'chart-gross-net',  icon:'📊', name:'Gross vs Net',        desc:'Both side by side per check',     chartType:'bar',      defW:48, defH:24 },
+    { type:'chart', id:'chart-monthly',    icon:'📅', name:'Monthly Gross',       desc:'Total gross per month',           chartType:'bar',      defW:24, defH:24 },
+    { type:'chart', id:'chart-earnings',   icon:'🥧', name:'Earnings Mix',        desc:'Regular / OT / Holiday split',    chartType:'doughnut', defW:16, defH:32 },
+    { type:'chart', id:'chart-deductions', icon:'💸', name:'Deductions Mix',      desc:'Fed / SS / Medicare / Benefits',  chartType:'doughnut', defW:16, defH:32 },
+    { type:'chart', id:'chart-hrs-month',  icon:'📅', name:'Hours by Month',      desc:'Regular + OT stacked per month',  chartType:'bar',      defW:24, defH:24 },
+    { type:'chart', id:'chart-ot-trend',   icon:'⚡', name:'OT Trend',            desc:'OT hours per paycheck over time', chartType:'line',     defW:24, defH:24 },
+    { type:'chart', id:'chart-tax-burden', icon:'🏛',  name:'Tax Burden %',       desc:'Tax % per check with avg line',   chartType:'line',     defW:24, defH:24 },
   ],
   trackers: [
-    { type:'tracker', id:'track-ss',     icon:'🔒',  name:'SS Wage Base',        desc:'Progress to $176,100 SS limit',   defW:8, defH:6 },
-    { type:'tracker', id:'track-goal',   icon:'🎯',  name:'Net Pay Goal',        desc:'Annual net pay goal tracker',     defW:12, defH:6 },
-    { type:'tracker', id:'track-streak', icon:'🔥',  name:'OT Streak',           desc:'Consecutive OT paychecks',        defW:6, defH:4 },
-    { type:'tracker', id:'track-mom',    icon:'📅',  name:'Month vs Last',       desc:'This month vs prior month gross', defW:6, defH:4 },
-    { type:'tracker', id:'track-rate',   icon:'💲',  name:'Pay Rate History',    desc:'Every hourly rate change on file',defW:8, defH:6 },
-    { type:'tracker', id:'track-pace',   icon:'🏃',  name:'Earning Pace',        desc:'Daily/weekly pace + projection',  defW:8, defH:6 },
-    { type:'tracker', id:'track-recent', icon:'📋',  name:'Recent Paychecks',    desc:'Last 3 paychecks at a glance',    defW:12, defH:6 },
+    { type:'tracker', id:'track-ss',     icon:'🔒',  name:'SS Wage Base',        desc:'Progress to $176,100 SS limit',   defW:16, defH:24 },
+    { type:'tracker', id:'track-goal',   icon:'🎯',  name:'Net Pay Goal',        desc:'Annual net pay goal tracker',     defW:24, defH:24 },
+    { type:'tracker', id:'track-streak', icon:'🔥',  name:'OT Streak',           desc:'Consecutive OT paychecks',        defW:12, defH:16 },
+    { type:'tracker', id:'track-mom',    icon:'📅',  name:'Month vs Last',       desc:'This month vs prior month gross', defW:12, defH:16 },
+    { type:'tracker', id:'track-rate',   icon:'💲',  name:'Pay Rate History',    desc:'Every hourly rate change on file',defW:16, defH:24 },
+    { type:'tracker', id:'track-pace',   icon:'🏃',  name:'Earning Pace',        desc:'Daily/weekly pace + projection',  defW:16, defH:24 },
+    { type:'tracker', id:'track-recent', icon:'📋',  name:'Recent Paychecks',    desc:'Last 3 paychecks at a glance',    defW:24, defH:24 },
   ]
 };
 
@@ -3293,22 +3296,22 @@ async function loadDashboard() {
 
 function getDefaultDashConfig() {
   return [
-    // Row 0 — four key stats (6w × 4h each = same physical size as before)
-    { id:dashUID(), widgetId:'total-gross',    x:0,  y:0,  w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'total-net',      x:6,  y:0,  w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'keep-rate',      x:12, y:0,  w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'ot-earnings',    x:18, y:0,  w:6,  h:4,  chartType:null },
-    // Row 4 — main chart + earnings donut
-    { id:dashUID(), widgetId:'chart-gross',    x:0,  y:4,  w:16, h:8,  chartType:'bar' },
-    { id:dashUID(), widgetId:'chart-earnings', x:16, y:4,  w:8,  h:8,  chartType:'doughnut' },
-    // Row 12 — pace stats + OT info
-    { id:dashUID(), widgetId:'proj-gross',     x:0,  y:12, w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'ot-hours',       x:6,  y:12, w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'track-streak',   x:12, y:12, w:6,  h:4,  chartType:null },
-    { id:dashUID(), widgetId:'net-per-day',    x:18, y:12, w:6,  h:4,  chartType:null },
-    // Row 16 — SS tracker + recent paychecks
-    { id:dashUID(), widgetId:'track-ss',       x:0,  y:16, w:8,  h:6,  chartType:null },
-    { id:dashUID(), widgetId:'track-recent',   x:8,  y:16, w:16, h:6,  chartType:null },
+    // Row 0 — four key stats (~140×160px each)
+    { id:dashUID(), widgetId:'total-gross',    x:0,  y:0,  w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'total-net',      x:12, y:0,  w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'keep-rate',      x:24, y:0,  w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'ot-earnings',    x:36, y:0,  w:12, h:16, chartType:null },
+    // Row 16 — main chart + earnings donut
+    { id:dashUID(), widgetId:'chart-gross',    x:0,  y:16, w:32, h:32, chartType:'bar' },
+    { id:dashUID(), widgetId:'chart-earnings', x:32, y:16, w:16, h:32, chartType:'doughnut' },
+    // Row 48 — pace stats + OT info
+    { id:dashUID(), widgetId:'proj-gross',     x:0,  y:48, w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'ot-hours',       x:12, y:48, w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'track-streak',   x:24, y:48, w:12, h:16, chartType:null },
+    { id:dashUID(), widgetId:'net-per-day',    x:36, y:48, w:12, h:16, chartType:null },
+    // Row 64 — SS tracker + recent paychecks
+    { id:dashUID(), widgetId:'track-ss',       x:0,  y:64, w:16, h:24, chartType:null },
+    { id:dashUID(), widgetId:'track-recent',   x:16, y:64, w:32, h:24, chartType:null },
   ];
 }
 
@@ -3384,7 +3387,7 @@ function renderDashboard() {
 
   // Compute canvas height needed
   const maxRow = dashConfig.reduce((m,w)=>Math.max(m, w.y+(w.h||2)),0);
-  canvas.style.minHeight = (Math.max(maxRow, 16)*(GRID_ROW_H+GRID_GAP)+40)+'px';
+  canvas.style.minHeight = (Math.max(maxRow, 64)*(GRID_ROW_H+GRID_GAP)+40)+'px';
 
   container.innerHTML = dashConfig.map(w=>buildWidgetHTML(w)).join('');
 
@@ -3460,17 +3463,18 @@ function renderStatWidget(w) {
   const sub = d.n>0 && def.sub ? def.sub(d) : 'No data yet';
   const cfg = dashConfig.find(x=>x.id===w.id)||w;
   const h = cfg.h||4;
-  // Physical height in px = h * GRID_ROW_H + (h-1) * GRID_GAP
-  const physH = h * GRID_ROW_H + (h-1) * GRID_GAP;
-  // Scale value font fluidly based on physical height
-  const valSize = Math.min(42, Math.max(16, Math.round(physH * 0.22)));
-  const subSize = Math.max(10, Math.min(13, Math.round(physH * 0.07)));
-  const showSub = physH >= 60;
+  // Measure actual rendered pixel height of the body element
+  const physH = el.offsetHeight || (h * GRID_ROW_H + (h-1) * GRID_GAP);
+  // Fluid font: fills ~35% of body height, clamped to readable range
+  const valSize = Math.min(48, Math.max(15, Math.round(physH * 0.35)));
+  const subSize = Math.min(13, Math.max(9,  Math.round(physH * 0.09)));
+  const showSub = physH >= 52;
   const color = def.color==='green'?'var(--green)':def.color==='red'?'var(--red)':def.color==='amber'?'var(--amber)':'var(--text)';
-  // Vertically center the content in the full widget body
   el.style.justifyContent = 'center';
-  el.innerHTML = '<div style="font-family:var(--mono);font-size:'+valSize+'px;font-weight:700;line-height:1.1;color:'+color+';margin-bottom:4px;word-break:break-all">'+val+'</div>'
-    +(showSub?'<div style="font-size:'+subSize+'px;color:var(--text3);line-height:1.3">'+sub+'</div>':'');
+  el.style.padding = '6px 10px 8px';
+  el.innerHTML =
+    '<div style="font-family:var(--mono);font-size:'+valSize+'px;font-weight:700;line-height:1;color:'+color+';word-break:break-all;'+(showSub?'margin-bottom:3px':'')+'">'+val+'</div>'
+    +(showSub?'<div style="font-size:'+subSize+'px;color:var(--text3);line-height:1.4">'+sub+'</div>':'');
 }
 
 function renderDashChart(w) {
@@ -3483,6 +3487,7 @@ function renderDashChart(w) {
   }
   // Canvas fills the body — body has padding-bottom:24px for resize handle
   if(!bodyEl.querySelector('canvas')){
+    bodyEl.style.padding='0 6px 4px';
     bodyEl.innerHTML='<canvas style="display:block;width:100%;height:100%;min-height:40px"></canvas>';
   }
   const canvas = bodyEl.querySelector('canvas');
@@ -3490,10 +3495,17 @@ function renderDashChart(w) {
 
   const sorted=[...d.filtered].sort((a,b)=>a.date.localeCompare(b.date));
   const labels=sorted.map(s=>new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+  // Adaptive tick count based on widget width
+  const wEl = document.getElementById('dw-'+w.id);
+  const physW = wEl ? wEl.offsetWidth : 300;
+  const maxTicks = Math.max(4, Math.min(12, Math.floor(physW / 40)));
   const cd={responsive:true,maintainAspectRatio:false,
+    layout:{padding:{top:4,right:6,bottom:0,left:0}},
     plugins:{legend:{display:false}},
-    scales:{x:{ticks:{font:{size:8},color:'#8a96a3',autoSkip:true,maxTicksLimit:12},grid:{display:false},border:{display:false}},
-            y:{ticks:{font:{size:8},color:'#8a96a3',callback:v=>'$'+v.toLocaleString()},grid:{color:'rgba(128,128,128,.08)'},border:{display:false}}}};
+    scales:{
+      x:{ticks:{font:{size:9},color:'var(--text3)',autoSkip:true,maxTicksLimit:maxTicks,maxRotation:0},grid:{display:false},border:{display:false}},
+      y:{ticks:{font:{size:9},color:'var(--text3)',callback:v=>'$'+v.toLocaleString(),maxTicksLimit:5},grid:{color:'rgba(128,128,128,.06)'},border:{display:false}}
+    }};
   const ct = w.chartType||'bar';
   let cfg = null;
 
@@ -3557,7 +3569,7 @@ function renderDashChart(w) {
 
   if(cfg) {
     try {
-      if(dashCharts[w.id]) { dashCharts[w.id].destroy(); delete dashCharts[w.id]; }
+      if(dashCharts[w.id]) { try{dashCharts[w.id].destroy();}catch(e){} delete dashCharts[w.id]; }
       dashCharts[w.id] = new Chart(canvas, cfg);
     } catch(e) { console.error('Chart err',e); }
   }
@@ -3763,15 +3775,15 @@ function addDashWidget(widgetId){
   dashConfig.forEach(w=>{ for(let r=w.y;r<w.y+w.h;r++) for(let c=w.x;c<w.x+w.w;c++) occupied.add(r+','+c); });
   let px=0, py=0;
   outer: for(let row=0;row<100;row++){
-    for(let col=0;col<=GRID_COLS-(def.defW||8);col++){
+    for(let col=0;col<=GRID_COLS-(def.defW||16);col++){
       let fits=true;
-      for(let r=row;r<row+(def.defH||4);r++) for(let c=col;c<col+(def.defW||8);c++){
+      for(let r=row;r<row+(def.defH||16);r++) for(let c=col;c<col+(def.defW||16);c++){
         if(occupied.has(r+','+c)){fits=false;break;}
       }
       if(fits){px=col;py=row;break outer;}
     }
   }
-  const w={id:dashUID(),widgetId,x:px,y:py,w:def.defW||8,h:def.defH||4,chartType:def.chartType||def.defChartType||null};
+  const w={id:dashUID(),widgetId,x:px,y:py,w:def.defW||16,h:def.defH||16,chartType:def.chartType||def.defChartType||null};
   dashConfig.push(w);
   saveDashConfig();
   renderDashboard(); buildDashPanel();
@@ -3786,7 +3798,7 @@ function removeDashWidget(id){
   // Update canvas height
   const maxRow=dashConfig.reduce((m,w)=>Math.max(m,w.y+(w.h||2)),0);
   const canvas=document.getElementById('dashCanvas');
-  if(canvas) canvas.style.minHeight=(maxRow*(GRID_ROW_H+GRID_GAP)+40)+'px';
+  if(canvas) canvas.style.minHeight=(Math.max(maxRow,64)*(GRID_ROW_H+GRID_GAP)+40)+'px';
   const emptyEl=document.getElementById('dashEmpty');
   if(emptyEl) emptyEl.style.display=dashConfig.length?'none':'flex';
   saveDashConfig();
@@ -4040,8 +4052,8 @@ function _dashMouseUp(e){
       // Snap this widget to final position
       positionWidget(w);
     } else if(w && type==='resize'){
-      const snapW = Math.max(2, Math.round((el.offsetWidth  + GRID_GAP) / (colW+GRID_GAP)));
-      const snapH = Math.max(2, Math.round((el.offsetHeight + GRID_GAP) / (GRID_ROW_H+GRID_GAP)));
+      const snapW = Math.max(1, Math.round((el.offsetWidth  + GRID_GAP) / (colW+GRID_GAP)));
+      const snapH = Math.max(1, Math.round((el.offsetHeight + GRID_GAP) / (GRID_ROW_H+GRID_GAP)));
       w.w = Math.min(GRID_COLS - w.x, Math.max(1, snapW));
       w.h = Math.max(1, snapH);
       // Resolve collisions after resize
@@ -4052,7 +4064,7 @@ function _dashMouseUp(e){
       const canvas = document.getElementById('dashCanvas');
       if(canvas) canvas.style.minHeight=(Math.max(maxRow,8)*(GRID_ROW_H+GRID_GAP)+40)+'px';
       // Re-render content now that size changed
-      setTimeout(()=>{
+      requestAnimationFrame(()=>{ setTimeout(()=>{
         if(w.widgetId.startsWith('chart-')){
           if(dashCharts[id]){try{dashCharts[id].destroy();}catch(e){}delete dashCharts[id];}
           document.getElementById('dwb-'+id).innerHTML='';
@@ -4062,7 +4074,7 @@ function _dashMouseUp(e){
         } else {
           renderStatWidget(w);
         }
-      }, 50);
+      }, 60); });
     }
     saveDashConfig();
   }
@@ -4082,6 +4094,12 @@ function initDashResizeObserver() {
   _dashResizeObs = new ResizeObserver(()=>{
     if(!dashConfig.length) return;
     dashConfig.forEach(w=>positionWidget(w));
+    // Re-render stat widgets so font scales to new physical size
+    dashConfig.forEach(w=>{
+      if(!w.widgetId.startsWith('chart-') && !w.widgetId.startsWith('track-')) {
+        requestAnimationFrame(()=>renderStatWidget(w));
+      }
+    });
     Object.values(dashCharts).forEach(c=>{ try{c.resize();}catch(e){} });
   });
   _dashResizeObs.observe(canvas);
