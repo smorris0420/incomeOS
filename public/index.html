@@ -1255,6 +1255,84 @@ html{transition:background 300ms ease,color 300ms ease}
           </div>
         </div>
 
+        <!-- ── SECTION: SHIFT PLANNER ── -->
+        <div class="ytd-section" id="shiftPlannerSection">
+          <div class="ytd-section-label">Shift Planner</div>
+          <div class="card card-pad" style="display:grid;gap:20px">
+
+            <!-- 8-Hour Rule Calculator -->
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">8-Hour Rule — Shift Gap Calculator</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">
+                <div>
+                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Shift End Time</label>
+                  <input type="time" id="spShiftEnd" oninput="calcShiftGap()"
+                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Required Gap (hours)</label>
+                  <input type="number" id="spGapHrs" value="8" min="1" max="24" step="0.5" oninput="calcShiftGap()"
+                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box;-moz-appearance:textfield">
+                </div>
+                <div>
+                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Next Shift Start</label>
+                  <input type="time" id="spNextStart" oninput="calcShiftGap()"
+                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
+                </div>
+              </div>
+
+              <!-- Result card -->
+              <div id="spGapResult" style="display:none;border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;line-height:1.6"></div>
+
+              <!-- Countdown (shown when violation or close) -->
+              <div id="spCountdownWrap" style="display:none;margin-top:10px;text-align:center">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Time until earliest start</div>
+                <div id="spCountdown" style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--amber);letter-spacing:.04em">--:--:--</div>
+              </div>
+            </div>
+
+            <div style="height:1px;background:var(--border)"></div>
+
+            <!-- Week Builder -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+                <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em">Week Builder — OT &amp; Hours Preview</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <label style="font-size:11px;color:var(--text3)">Pay rate</label>
+                  <div style="display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:4px 8px;gap:4px">
+                    <span style="font-size:12px;color:var(--text3)">$</span>
+                    <input type="number" id="spRate" step="0.01" min="0" placeholder="21.90" oninput="calcWeek()"
+                      style="border:none;background:transparent;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:60px;-moz-appearance:textfield">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Day rows -->
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
+                  <thead>
+                    <tr style="color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">
+                      <th style="text-align:left;padding:0 8px 8px 0;width:70px">Day</th>
+                      <th style="text-align:center;padding:0 6px 8px;width:90px">Start</th>
+                      <th style="text-align:center;padding:0 6px 8px;width:90px">End</th>
+                      <th style="text-align:center;padding:0 6px 8px;width:60px">Break</th>
+                      <th style="text-align:right;padding:0 6px 8px;width:60px">Hours</th>
+                      <th style="text-align:right;padding:0 6px 8px;width:60px">Reg</th>
+                      <th style="text-align:right;padding:0 0 8px 6px;width:60px">OT</th>
+                    </tr>
+                  </thead>
+                  <tbody id="spDayRows"></tbody>
+                  <tfoot id="spWeekTotals"></tfoot>
+                </table>
+              </div>
+
+              <!-- OT earnings summary -->
+              <div id="spWeekSummary" style="display:none;margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
     <!-- BULK IMPORT PAGE -->
@@ -2209,6 +2287,8 @@ function showPage(id, btn, source) {
     // Wire search box
     const srch=document.getElementById('ytdSearch');
     if(srch && !srch._wired){ srch._wired=true; srch.addEventListener('input',buildYTD); }
+    // Init shift planner (after stubs loaded)
+    requestAnimationFrame(()=>{ if(typeof initShiftPlanner==='function') initShiftPlanner(); });
   }
   if(id==='settings') {
     buildSettingsUI();
@@ -5305,11 +5385,7 @@ async function bulkSave() {
     const fedRaw=parseFloat(document.getElementById('bc-fed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bc-ss-'+i)?.value);
     const medRaw=parseFloat(document.getElementById('bc-med-'+i)?.value);
-    const fed=isNaN(fedRaw)?irsWithholding(_bTaxable,date):fedRaw;
-    const _bFicaBase=Math.max(0,gross-den-medI-vis);         // SS/Med base: retire NOT pre-tax for SS
-    const _bTaxable=Math.max(0,gross-den-medI-vis-retireVal); // Fed base: retire IS pre-tax for fed
-    const ss=isNaN(ssRaw)?parseFloat((_bFicaBase*0.062).toFixed(2)):ssRaw;
-    const med=isNaN(medRaw)?parseFloat((_bFicaBase*0.0145).toFixed(2)):medRaw;
+    // Deductions must be declared BEFORE they're used in taxable/FICA calculations
     const retireVal=parseFloat(document.getElementById('bc-retire-'+i)?.value)||0;
     const _denRaw=document.getElementById('bc-den-'+i)?.value;
     const _medIRaw=document.getElementById('bc-medi-'+i)?.value;
@@ -5318,6 +5394,11 @@ async function bulkSave() {
     const den=(_denRaw!==''&&_denRaw!==null&&_denRaw!==undefined)?parseFloat(_denRaw):(parseFloat(appSettings.den)||0);
     const medI=(_medIRaw!==''&&_medIRaw!==null&&_medIRaw!==undefined)?parseFloat(_medIRaw):(parseFloat(appSettings.medI)||0);
     const vis=(_visRaw!==''&&_visRaw!==null&&_visRaw!==undefined)?parseFloat(_visRaw):(parseFloat(appSettings.vis)||0);
+    const _bFicaBase=Math.max(0,gross-den-medI-vis);          // SS/Med base: retire NOT pre-tax for SS
+    const _bTaxable=Math.max(0,gross-den-medI-vis-retireVal); // Fed base: retire IS pre-tax for fed
+    const fed=isNaN(fedRaw)?irsWithholding(_bTaxable,date):fedRaw;
+    const ss=isNaN(ssRaw)?parseFloat((_bFicaBase*0.062).toFixed(2)):ssRaw;
+    const med=isNaN(medRaw)?parseFloat((_bFicaBase*0.0145).toFixed(2)):medRaw;
     const grossRaw=parseFloat(document.getElementById('bc-gross-'+i)?.value);
     const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bc-net-'+i)?.value);
@@ -5352,6 +5433,263 @@ async function bulkSave() {
     bulkCount=0;
     bulkAddCards(3);
     bulkUpdateCountLabel();
+  }
+}
+
+// ===== SHIFT PLANNER =====
+
+const SP_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function initShiftPlanner() {
+  // Seed rate from most recent stub
+  if(!document.getElementById('spRate').value && stubs.length) {
+    const r = stubs[0].rate;
+    if(r) document.getElementById('spRate').value = r;
+  }
+  buildDayRows();
+  calcShiftGap();
+  calcWeek();
+}
+
+// ---------- 8-Hour Rule ----------
+
+let _spCountdownTimer = null;
+
+function calcShiftGap() {
+  const endVal  = document.getElementById('spShiftEnd').value;   // "HH:MM"
+  const startVal= document.getElementById('spNextStart').value;
+  const gapHrs  = parseFloat(document.getElementById('spGapHrs').value) || 8;
+  const result  = document.getElementById('spGapResult');
+  const cWrap   = document.getElementById('spCountdownWrap');
+
+  if (_spCountdownTimer) { clearInterval(_spCountdownTimer); _spCountdownTimer = null; }
+
+  if (!endVal) { result.style.display='none'; cWrap.style.display='none'; return; }
+
+  // Parse shift end as today (or "tonight" if past midnight we may cross day)
+  const now = new Date();
+  const [eH, eM] = endVal.split(':').map(Number);
+  const shiftEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, eM, 0);
+
+  // Earliest allowed next start
+  const gapMs = gapHrs * 3600000;
+  const earliest = new Date(shiftEnd.getTime() + gapMs);
+
+  // Format helper
+  const fmtTime = d => d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  const fmtDay  = d => {
+    const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diff = Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()) - t) / 86400000);
+    if(diff === 0) return 'today';
+    if(diff === 1) return 'tomorrow';
+    return SP_DAYS[d.getDay()];
+  };
+
+  result.style.display = 'block';
+
+  // If next start is provided, check violation
+  if (startVal) {
+    const [sH, sM] = startVal.split(':').map(Number);
+    // Next start could be same day or next day — pick whichever makes a forward shift
+    let nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM, 0);
+    if (nextStart <= shiftEnd) nextStart = new Date(nextStart.getTime() + 86400000); // next day
+
+    const actualGapMs = nextStart - shiftEnd;
+    const actualGapH  = actualGapMs / 3600000;
+    const ok = actualGapMs >= gapMs;
+
+    if (ok) {
+      result.style.background = 'rgba(34,197,94,.08)';
+      result.style.border = '1px solid var(--green-border)';
+      result.style.color = 'var(--text)';
+      result.innerHTML = `<span style="color:var(--green);font-weight:700">✓ Compliant</span> &nbsp;—&nbsp; 
+        Shift ends <strong>${fmtTime(shiftEnd)}</strong>, next starts <strong>${fmtTime(nextStart)}</strong> ${fmtDay(nextStart) !== 'today' ? '(' + fmtDay(nextStart) + ')' : ''}.
+        Gap: <strong style="color:var(--green)">${actualGapH.toFixed(1)} hrs</strong> 
+        <span style="color:var(--text3)">(${(actualGapH - gapHrs).toFixed(1)} hrs to spare)</span>`;
+      cWrap.style.display = 'none';
+    } else {
+      const shortBy = (gapMs - actualGapMs) / 3600000;
+      result.style.background = 'rgba(239,68,68,.08)';
+      result.style.border = '1px solid rgba(239,68,68,.3)';
+      result.style.color = 'var(--text)';
+      result.innerHTML = `<span style="color:var(--red);font-weight:700">⚠ Violation</span> &nbsp;—&nbsp; 
+        Only <strong style="color:var(--red)">${actualGapH.toFixed(1)} hrs</strong> between shifts. 
+        Need ${gapHrs} hrs — short by <strong style="color:var(--red)">${shortBy.toFixed(1)} hrs</strong>.<br>
+        <span style="color:var(--text3)">Earliest legal start: <strong style="color:var(--amber)">${fmtTime(earliest)}</strong> ${fmtDay(earliest) !== 'today' ? '(' + fmtDay(earliest) + ')' : ''}</span>`;
+      cWrap.style.display = 'none';
+    }
+  } else {
+    // No next-start given — just show earliest allowed
+    result.style.background = 'rgba(29,78,216,.06)';
+    result.style.border = '1px solid rgba(29,78,216,.2)';
+    result.style.color = 'var(--text)';
+    result.innerHTML = `Shift ends <strong>${fmtTime(shiftEnd)}</strong>.
+      Earliest next start: <strong style="color:var(--blue)">${fmtTime(earliest)}</strong>
+      <span style="color:var(--text3)">${fmtDay(earliest) !== 'today' ? '(' + fmtDay(earliest) + ')' : ''}</span>`;
+
+    // Show countdown if earliest is in the future
+    if (earliest > now) {
+      cWrap.style.display = 'block';
+      const tick = () => {
+        const rem = earliest - new Date();
+        if (rem <= 0) {
+          document.getElementById('spCountdown').textContent = 'You\'re clear!';
+          document.getElementById('spCountdown').style.color = 'var(--green)';
+          clearInterval(_spCountdownTimer);
+          return;
+        }
+        const h = Math.floor(rem / 3600000);
+        const m = Math.floor((rem % 3600000) / 60000);
+        const s = Math.floor((rem % 60000) / 1000);
+        document.getElementById('spCountdown').textContent =
+          String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      };
+      tick();
+      _spCountdownTimer = setInterval(tick, 1000);
+    } else {
+      cWrap.style.display = 'none';
+    }
+  }
+}
+
+// ---------- Week Builder ----------
+
+function buildDayRows() {
+  const tbody = document.getElementById('spDayRows');
+  if (!tbody) return;
+  const today = new Date().getDay(); // 0=Sun
+  tbody.innerHTML = SP_DAYS.map((day, i) => {
+    const isToday = i === today;
+    return `<tr id="sp-row-${i}" style="${isToday ? 'background:var(--bg3)' : ''}">
+      <td style="padding:5px 8px 5px 0;color:${isToday ? 'var(--green)' : 'var(--text2)'};font-weight:${isToday ? '700' : '500'};white-space:nowrap">
+        ${day.slice(0,3)}${isToday ? ' ●' : ''}
+      </td>
+      <td style="padding:4px 6px">
+        <input type="time" id="sp-start-${i}" oninput="calcWeek()" 
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box">
+      </td>
+      <td style="padding:4px 6px">
+        <input type="time" id="sp-end-${i}" oninput="calcWeek()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box">
+      </td>
+      <td style="padding:4px 6px">
+        <input type="number" id="sp-brk-${i}" placeholder="0" min="0" max="120" step="15" oninput="calcWeek()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box;text-align:right;-moz-appearance:textfield">
+      </td>
+      <td id="sp-hrs-${i}" style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
+      <td id="sp-reg-${i}" style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
+      <td id="sp-ot-${i}"  style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
+    </tr>`;
+  }).join('');
+}
+
+function calcWeek() {
+  const rate = parseFloat(document.getElementById('spRate')?.value) || 0;
+  const regRate = rate ? Math.round(rate * 10000) / 10000 : 0;
+  const otRate  = rate ? Math.round(rate * 1.5 * 10000) / 10000 : 0;
+
+  let totalHrs = 0;
+  const dayHrs = [];
+
+  // First pass: compute hours per day
+  for (let i = 0; i < 7; i++) {
+    const s = document.getElementById('sp-start-'+i)?.value;
+    const e = document.getElementById('sp-end-'+i)?.value;
+    const brkMin = parseFloat(document.getElementById('sp-brk-'+i)?.value) || 0;
+    if (!s || !e) { dayHrs.push(0); continue; }
+    const [sH,sM] = s.split(':').map(Number);
+    const [eH,eM] = e.split(':').map(Number);
+    let mins = (eH*60+eM) - (sH*60+sM);
+    if (mins < 0) mins += 1440; // crosses midnight
+    const worked = Math.max(0, (mins - brkMin) / 60);
+    dayHrs.push(worked);
+    totalHrs += worked;
+  }
+
+  // Second pass: assign reg/OT per day based on weekly 40hr threshold
+  let runningReg = 0;
+  for (let i = 0; i < 7; i++) {
+    const hrs = dayHrs[i];
+    const hrsEl = document.getElementById('sp-hrs-'+i);
+    const regEl = document.getElementById('sp-reg-'+i);
+    const otEl  = document.getElementById('sp-ot-'+i);
+    if (!hrs) {
+      if(hrsEl) hrsEl.textContent = '—';
+      if(regEl) regEl.textContent = '—';
+      if(otEl)  otEl.textContent  = '—';
+      continue;
+    }
+    const regThis = Math.min(hrs, Math.max(0, 40 - runningReg));
+    const otThis  = Math.max(0, hrs - regThis);
+    runningReg += regThis;
+
+    if(hrsEl) { hrsEl.textContent = hrs.toFixed(2); hrsEl.style.color = 'var(--text)'; }
+    if(regEl) { regEl.textContent = regThis.toFixed(2); regEl.style.color = regThis > 0 ? 'var(--text)' : 'var(--text3)'; }
+    if(otEl)  {
+      otEl.textContent = otThis > 0 ? otThis.toFixed(2) : '—';
+      otEl.style.color = otThis > 0 ? 'var(--amber)' : 'var(--text3)';
+    }
+
+    // 8-hr rule check vs previous worked day
+    let prevWorked = -1;
+    for (let p = i-1; p >= 0; p--) { if(dayHrs[p] > 0) { prevWorked = p; break; } }
+    if (prevWorked >= 0) {
+      const prevEnd = document.getElementById('sp-end-'+prevWorked)?.value;
+      const thisStart = document.getElementById('sp-start-'+i)?.value;
+      if (prevEnd && thisStart) {
+        const [peH,peM] = prevEnd.split(':').map(Number);
+        const [tsH,tsM] = thisStart.split(':').map(Number);
+        const gapHrs = parseFloat(document.getElementById('spGapHrs')?.value) || 8;
+        // Days between
+        let gapMins = (tsH*60+tsM) - (peH*60+peM) + (i - prevWorked)*1440;
+        const row = document.getElementById('sp-row-'+i);
+        if (row) {
+          if (gapMins < gapHrs * 60) {
+            row.style.outline = '2px solid var(--red)';
+            row.title = `⚠ Only ${(gapMins/60).toFixed(1)}h gap from ${SP_DAYS[prevWorked]} — needs ${gapHrs}h`;
+          } else {
+            row.style.outline = '';
+            row.title = '';
+          }
+        }
+      }
+    }
+  }
+
+  // Totals footer
+  const regTotal = Math.min(totalHrs, 40);
+  const otTotal  = Math.max(0, totalHrs - 40);
+  const tfoot = document.getElementById('spWeekTotals');
+  if (tfoot) {
+    tfoot.innerHTML = `<tr style="border-top:1.5px solid var(--border2);font-weight:700">
+      <td colspan="4" style="padding:8px 8px 4px 0;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Week Total</td>
+      <td style="padding:8px 6px 4px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--text)">${totalHrs.toFixed(2)}</td>
+      <td style="padding:8px 6px 4px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--text)">${regTotal.toFixed(2)}</td>
+      <td style="padding:8px 0 4px 6px;text-align:right;font-family:var(--mono);font-size:13px;color:${otTotal>0?'var(--amber)':'var(--text3)'}">${otTotal>0?otTotal.toFixed(2):'—'}</td>
+    </tr>`;
+  }
+
+  // Summary cards
+  const sumEl = document.getElementById('spWeekSummary');
+  if (sumEl) {
+    sumEl.style.display = 'grid';
+    const regPay = rate ? Math.round(regTotal * regRate * 100) / 100 : null;
+    const otPay  = rate ? Math.round(otTotal  * otRate  * 100) / 100 : null;
+    const totPay = rate ? Math.round((regPay + otPay) * 100) / 100 : null;
+    const otPct  = totalHrs > 0 ? (otTotal / totalHrs * 100).toFixed(0) : '0';
+
+    const card = (label, value, sub, color) =>
+      `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">${label}</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${color||'var(--text)'}">${value}</div>
+        ${sub ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${sub}</div>` : ''}
+      </div>`;
+
+    sumEl.innerHTML =
+      card('Total Hours', totalHrs.toFixed(2)+'h', `${regTotal.toFixed(2)}h reg + ${otTotal.toFixed(2)}h OT`, 'var(--text)') +
+      (rate ? card('Est. Gross', '$'+totPay.toFixed(2), `$${regPay.toFixed(2)} reg + $${otPay.toFixed(2)} OT`, 'var(--green)') : '') +
+      card('OT %', otPct+'%', otTotal > 0 ? `${otTotal.toFixed(2)}h over 40` : 'No OT this week', otTotal > 0 ? 'var(--amber)' : 'var(--text3)') +
+      (totalHrs > 0 ? card('Hrs Left to OT', Math.max(0, 40-totalHrs).toFixed(2)+'h', totalHrs >= 40 ? 'Already in OT!' : 'until 40h threshold', totalHrs >= 40 ? 'var(--amber)' : 'var(--text)') : '');
   }
 }
 
