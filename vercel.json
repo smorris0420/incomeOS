@@ -1,10 +1,13 @@
 {
   "rewrites": [
-    { "source": "/api/users/me", "destination": "/api/users" },
-    { "source": "/api/setup",    "destination": "/api/admin?action=setup" },
-    { "source": "/api/seed",     "destination": "/api/admin?action=seed" },
-    { "source": "/api/(.*)",     "destination": "/api/$1" },
-    { "source": "/(.*)",         "destination": "/public/$1" }
+    { "source": "/api/users/me",              "destination": "/api/users" },
+    { "source": "/api/passkeys/challenge",    "destination": "/api/passkeys?action=challenge" },
+    { "source": "/api/passkeys/register",     "destination": "/api/passkeys?action=register" },
+    { "source": "/api/passkeys/authenticate", "destination": "/api/passkeys?action=authenticate" },
+    { "source": "/api/setup",                 "destination": "/api/admin?action=setup" },
+    { "source": "/api/seed",                  "destination": "/api/admin?action=seed" },
+    { "source": "/api/(.*)",                  "destination": "/api/$1" },
+    { "source": "/(.*)",                      "destination": "/public/$1" }
   ],
   "headers": [
     {
