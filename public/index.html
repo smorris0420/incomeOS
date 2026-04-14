@@ -823,6 +823,9 @@ html{transition:background 300ms ease,color 300ms ease}
       <button class="sidebar-nav-btn" onclick="showPage('bulk',this,'sb')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Bulk Import
       </button>
+      <button class="sidebar-nav-btn" onclick="showPage('planner',this,'sb')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 3.5"/><path d="M16.5 3.5l1 2M7.5 3.5l-1 2"/></svg>Planner
+      </button>
       <button class="sidebar-nav-btn" onclick="showPage('settings',this,'sb')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
       </button>
@@ -1255,82 +1258,83 @@ html{transition:background 300ms ease,color 300ms ease}
           </div>
         </div>
 
-        <!-- ── SECTION: SHIFT PLANNER ── -->
-        <div class="ytd-section" id="shiftPlannerSection">
-          <div class="ytd-section-label">Shift Planner</div>
-          <div class="card card-pad" style="display:grid;gap:20px">
-
-            <!-- 8-Hour Rule Calculator -->
-            <div>
-              <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">8-Hour Rule — Shift Gap Calculator</div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">
-                <div>
-                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Shift End Time</label>
-                  <input type="time" id="spShiftEnd" oninput="calcShiftGap()"
-                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
-                </div>
-                <div>
-                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Required Gap (hours)</label>
-                  <input type="number" id="spGapHrs" value="8" min="1" max="24" step="0.5" oninput="calcShiftGap()"
-                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box;-moz-appearance:textfield">
-                </div>
-                <div>
-                  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Next Shift Start</label>
-                  <input type="time" id="spNextStart" oninput="calcShiftGap()"
-                    style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
-                </div>
-              </div>
-
-              <!-- Result card -->
-              <div id="spGapResult" style="display:none;border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;line-height:1.6"></div>
-
-              <!-- Countdown (shown when violation or close) -->
-              <div id="spCountdownWrap" style="display:none;margin-top:10px;text-align:center">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Time until earliest start</div>
-                <div id="spCountdown" style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--amber);letter-spacing:.04em">--:--:--</div>
-              </div>
-            </div>
-
-            <div style="height:1px;background:var(--border)"></div>
-
-            <!-- Week Builder -->
-            <div>
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-                <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em">Week Builder — OT &amp; Hours Preview</div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <label style="font-size:11px;color:var(--text3)">Pay rate</label>
-                  <div style="display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:4px 8px;gap:4px">
-                    <span style="font-size:12px;color:var(--text3)">$</span>
-                    <input type="number" id="spRate" step="0.01" min="0" placeholder="21.90" oninput="calcWeek()"
-                      style="border:none;background:transparent;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:60px;-moz-appearance:textfield">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Day rows -->
-              <div style="overflow-x:auto">
-                <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
-                  <thead>
-                    <tr style="color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">
-                      <th style="text-align:left;padding:0 8px 8px 0;width:70px">Day</th>
-                      <th style="text-align:center;padding:0 6px 8px;width:90px">Start</th>
-                      <th style="text-align:center;padding:0 6px 8px;width:90px">End</th>
-                      <th style="text-align:center;padding:0 6px 8px;width:60px">Break</th>
-                      <th style="text-align:right;padding:0 6px 8px;width:60px">Hours</th>
-                      <th style="text-align:right;padding:0 6px 8px;width:60px">Reg</th>
-                      <th style="text-align:right;padding:0 0 8px 6px;width:60px">OT</th>
-                    </tr>
-                  </thead>
-                  <tbody id="spDayRows"></tbody>
-                  <tfoot id="spWeekTotals"></tfoot>
-                </table>
-              </div>
-
-              <!-- OT earnings summary -->
-              <div id="spWeekSummary" style="display:none;margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
-            </div>
-
+      </div>
+    </div>
+    <!-- PLANNER PAGE -->
+    <div id="page-planner" class="page">
+      <div class="page-inner">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Shift Planner</div>
+            <div class="page-sub">8-hour rule &amp; week builder</div>
           </div>
+        </div>
+
+        <!-- 8-Hour Rule Card -->
+        <div class="card card-pad" style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">8-Hour Rule — Shift Gap Calculator</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px">
+            <div>
+              <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Shift End Time</label>
+              <input type="time" id="spShiftEnd" oninput="calcShiftGap()"
+                style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Required Gap (hours)</label>
+              <input type="number" id="spGapHrs" value="8" min="1" max="24" step="0.5" oninput="calcShiftGap()"
+                style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box;-moz-appearance:textfield">
+            </div>
+            <div>
+              <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:block;margin-bottom:6px">Next Shift Start <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <input type="time" id="spNextStart" oninput="calcShiftGap()"
+                style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:15px;padding:8px 10px;outline:none;box-sizing:border-box">
+            </div>
+          </div>
+          <div id="spGapResult" style="display:none;border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;line-height:1.7"></div>
+          <div id="spCountdownWrap" style="display:none;margin-top:14px;text-align:center;padding:16px;background:var(--bg3);border-radius:var(--radius-sm)">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Time until earliest start</div>
+            <div id="spCountdown" style="font-family:var(--mono);font-size:36px;font-weight:700;color:var(--amber);letter-spacing:.06em">--:--:--</div>
+          </div>
+        </div>
+
+        <!-- Week Builder Card -->
+        <div class="card card-pad">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em">Week Builder — OT &amp; Hours Preview</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px">
+                <label style="font-size:11px;color:var(--text3)">Pay rate</label>
+                <div style="display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:5px 10px;gap:4px">
+                  <span style="font-size:12px;color:var(--text3)">$</span>
+                  <input type="number" id="spRate" step="0.01" min="0" placeholder="21.90" oninput="calcWeek()"
+                    style="border:none;background:transparent;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:64px;-moz-appearance:textfield">
+                  <span style="font-size:11px;color:var(--text3)">/hr</span>
+                </div>
+              </div>
+              <button onclick="clearWeek()" class="btn btn-secondary btn-sm">Clear week</button>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;margin-bottom:16px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
+              <thead>
+                <tr style="color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--border2)">
+                  <th style="text-align:left;padding:0 8px 10px 0;width:80px">Day</th>
+                  <th style="text-align:center;padding:0 6px 10px;width:96px">Start</th>
+                  <th style="text-align:center;padding:0 6px 10px;width:96px">End</th>
+                  <th style="text-align:center;padding:0 6px 10px;width:72px">Break (min)</th>
+                  <th style="text-align:right;padding:0 6px 10px;width:64px">Hours</th>
+                  <th style="text-align:right;padding:0 6px 10px;width:64px">Reg</th>
+                  <th style="text-align:right;padding:0 6px 10px;width:64px">OT</th>
+                  <th style="text-align:right;padding:0 0 10px 6px;width:80px">Gap ⚑</th>
+                </tr>
+              </thead>
+              <tbody id="spDayRows"></tbody>
+              <tfoot id="spWeekTotals"></tfoot>
+            </table>
+          </div>
+
+          <div id="spWeekSummary" style="display:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
         </div>
 
       </div>
@@ -1497,8 +1501,8 @@ html{transition:background 300ms ease,color 300ms ease}
     <button class="nav-btn" onclick="showPage('ytd',this,'mb')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-8"/></svg>YTD
     </button>
-    <button class="nav-btn" onclick="showPage('bulk',this,'mb')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>Import
+    <button class="nav-btn" onclick="showPage('planner',this,'mb')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 3.5"/><path d="M16.5 3.5l1 2M7.5 3.5l-1 2"/></svg>Planner
     </button>
     <button class="nav-btn" onclick="showPage('settings',this,'mb')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
@@ -2259,7 +2263,7 @@ document.getElementById('iDate').value=new Date().toISOString().slice(0,10);
 ['iDate','iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetire'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
 
 // ===== NAVIGATION =====
-const pageOrder = ['calc','history','ytd','bulk','settings','admin'];
+const pageOrder = ['calc','history','ytd','bulk','planner','settings','admin'];
 function showPage(id, btn, source) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -2287,9 +2291,8 @@ function showPage(id, btn, source) {
     // Wire search box
     const srch=document.getElementById('ytdSearch');
     if(srch && !srch._wired){ srch._wired=true; srch.addEventListener('input',buildYTD); }
-    // Init shift planner (after stubs loaded)
-    requestAnimationFrame(()=>{ if(typeof initShiftPlanner==='function') initShiftPlanner(); });
   }
+  if(id==='planner') { requestAnimationFrame(()=>{ if(typeof initShiftPlanner==='function') initShiftPlanner(); }); }
   if(id==='settings') {
     buildSettingsUI();
     const el=document.getElementById('settingsWho'); if(el) el.textContent=currentUser?.username||'';
@@ -5560,99 +5563,129 @@ function buildDayRows() {
   const today = new Date().getDay(); // 0=Sun
   tbody.innerHTML = SP_DAYS.map((day, i) => {
     const isToday = i === today;
-    return `<tr id="sp-row-${i}" style="${isToday ? 'background:var(--bg3)' : ''}">
-      <td style="padding:5px 8px 5px 0;color:${isToday ? 'var(--green)' : 'var(--text2)'};font-weight:${isToday ? '700' : '500'};white-space:nowrap">
-        ${day.slice(0,3)}${isToday ? ' ●' : ''}
+    return `<tr id="sp-row-${i}" style="${isToday ? 'background:rgba(34,197,94,.05)' : ''}">
+      <td style="padding:6px 8px 6px 0;color:${isToday ? 'var(--green)' : 'var(--text2)'};font-weight:${isToday ? '700' : '500'};white-space:nowrap;font-size:13px">
+        ${day.slice(0,3)}${isToday ? '<span style="color:var(--green);font-size:9px;margin-left:3px">●</span>' : ''}
       </td>
       <td style="padding:4px 6px">
-        <input type="time" id="sp-start-${i}" oninput="calcWeek()" 
-          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box">
+        <input type="time" id="sp-start-${i}" oninput="calcWeek()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 7px;outline:none;box-sizing:border-box">
       </td>
       <td style="padding:4px 6px">
         <input type="time" id="sp-end-${i}" oninput="calcWeek()"
-          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box">
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 7px;outline:none;box-sizing:border-box">
       </td>
       <td style="padding:4px 6px">
-        <input type="number" id="sp-brk-${i}" placeholder="0" min="0" max="120" step="15" oninput="calcWeek()"
-          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;box-sizing:border-box;text-align:right;-moz-appearance:textfield">
+        <input type="number" id="sp-brk-${i}" placeholder="30" min="0" max="120" step="15" oninput="calcWeek()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 7px;outline:none;box-sizing:border-box;text-align:right;-moz-appearance:textfield">
       </td>
       <td id="sp-hrs-${i}" style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
       <td id="sp-reg-${i}" style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
       <td id="sp-ot-${i}"  style="padding:4px 6px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text3)">—</td>
+      <td id="sp-gap-${i}" style="padding:4px 0 4px 6px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--text3)">—</td>
     </tr>`;
   }).join('');
+}
+
+function clearWeek() {
+  for (let i = 0; i < 7; i++) {
+    const s = document.getElementById('sp-start-'+i);
+    const e = document.getElementById('sp-end-'+i);
+    const b = document.getElementById('sp-brk-'+i);
+    if(s) s.value=''; if(e) e.value=''; if(b) b.value='';
+    const row = document.getElementById('sp-row-'+i);
+    if(row) { row.style.outline=''; row.title=''; }
+  }
+  calcWeek();
 }
 
 function calcWeek() {
   const rate = parseFloat(document.getElementById('spRate')?.value) || 0;
   const regRate = rate ? Math.round(rate * 10000) / 10000 : 0;
   const otRate  = rate ? Math.round(rate * 1.5 * 10000) / 10000 : 0;
+  const gapHrs  = parseFloat(document.getElementById('spGapHrs')?.value) || 8;
 
   let totalHrs = 0;
   const dayHrs = [];
+  const dayEnd = []; // clock-out time in minutes from midnight (for gap calc)
 
-  // First pass: compute hours per day
+  // First pass: compute worked hours and clock-out per day
   for (let i = 0; i < 7; i++) {
     const s = document.getElementById('sp-start-'+i)?.value;
     const e = document.getElementById('sp-end-'+i)?.value;
     const brkMin = parseFloat(document.getElementById('sp-brk-'+i)?.value) || 0;
-    if (!s || !e) { dayHrs.push(0); continue; }
+    if (!s || !e) { dayHrs.push(0); dayEnd.push(null); continue; }
     const [sH,sM] = s.split(':').map(Number);
     const [eH,eM] = e.split(':').map(Number);
     let mins = (eH*60+eM) - (sH*60+sM);
-    if (mins < 0) mins += 1440; // crosses midnight
+    if (mins <= 0) mins += 1440; // crosses midnight
     const worked = Math.max(0, (mins - brkMin) / 60);
     dayHrs.push(worked);
+    // Clock-out = end time in minutes (absolute from midnight of that day)
+    dayEnd.push(i * 1440 + eH*60 + eM + (eH*60+eM <= sH*60+sM ? 1440 : 0));
     totalHrs += worked;
   }
 
-  // Second pass: assign reg/OT per day based on weekly 40hr threshold
+  // Second pass: reg/OT + gap column
   let runningReg = 0;
+  let prevWorkedDay = -1;
+
   for (let i = 0; i < 7; i++) {
     const hrs = dayHrs[i];
     const hrsEl = document.getElementById('sp-hrs-'+i);
     const regEl = document.getElementById('sp-reg-'+i);
     const otEl  = document.getElementById('sp-ot-'+i);
+    const gapEl = document.getElementById('sp-gap-'+i);
+    const row   = document.getElementById('sp-row-'+i);
+
+    // Gap from previous worked day (uses clock-out time, not scheduled end - break)
+    if (gapEl) {
+      if (prevWorkedDay >= 0 && hrs > 0 && dayEnd[prevWorkedDay] !== null) {
+        const s = document.getElementById('sp-start-'+i)?.value;
+        if (s) {
+          const [sH,sM] = s.split(':').map(Number);
+          const thisStartAbs = i * 1440 + sH*60 + sM;
+          const actualGapMins = thisStartAbs - dayEnd[prevWorkedDay];
+          const actualGapH = actualGapMins / 60;
+          const ok = actualGapH >= gapHrs;
+          gapEl.textContent = actualGapH.toFixed(1) + 'h';
+          gapEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+          gapEl.style.fontWeight = ok ? '400' : '700';
+          if (row) {
+            row.style.outline = ok ? '' : '2px solid rgba(239,68,68,.4)';
+            row.title = ok
+              ? `✓ ${actualGapH.toFixed(1)}h gap from ${SP_DAYS[prevWorkedDay]}`
+              : `⚠ Only ${actualGapH.toFixed(1)}h gap from ${SP_DAYS[prevWorkedDay]} — needs ${gapHrs}h`;
+          }
+        } else {
+          gapEl.textContent = '—';
+          gapEl.style.color = 'var(--text3)';
+          if(row) { row.style.outline=''; row.title=''; }
+        }
+      } else {
+        gapEl.textContent = i === 0 || prevWorkedDay < 0 ? '—' : '—';
+        gapEl.style.color = 'var(--text3)';
+        if(row && hrs > 0) { row.style.outline=''; row.title=''; }
+      }
+    }
+
     if (!hrs) {
-      if(hrsEl) hrsEl.textContent = '—';
-      if(regEl) regEl.textContent = '—';
-      if(otEl)  otEl.textContent  = '—';
+      if(hrsEl) { hrsEl.textContent='—'; hrsEl.style.color='var(--text3)'; }
+      if(regEl) { regEl.textContent='—'; regEl.style.color='var(--text3)'; }
+      if(otEl)  { otEl.textContent='—';  otEl.style.color='var(--text3)'; }
       continue;
     }
+
     const regThis = Math.min(hrs, Math.max(0, 40 - runningReg));
     const otThis  = Math.max(0, hrs - regThis);
     runningReg += regThis;
+    prevWorkedDay = i;
 
     if(hrsEl) { hrsEl.textContent = hrs.toFixed(2); hrsEl.style.color = 'var(--text)'; }
-    if(regEl) { regEl.textContent = regThis.toFixed(2); regEl.style.color = regThis > 0 ? 'var(--text)' : 'var(--text3)'; }
+    if(regEl) { regEl.textContent = regThis.toFixed(2); regEl.style.color = 'var(--text)'; }
     if(otEl)  {
       otEl.textContent = otThis > 0 ? otThis.toFixed(2) : '—';
       otEl.style.color = otThis > 0 ? 'var(--amber)' : 'var(--text3)';
-    }
-
-    // 8-hr rule check vs previous worked day
-    let prevWorked = -1;
-    for (let p = i-1; p >= 0; p--) { if(dayHrs[p] > 0) { prevWorked = p; break; } }
-    if (prevWorked >= 0) {
-      const prevEnd = document.getElementById('sp-end-'+prevWorked)?.value;
-      const thisStart = document.getElementById('sp-start-'+i)?.value;
-      if (prevEnd && thisStart) {
-        const [peH,peM] = prevEnd.split(':').map(Number);
-        const [tsH,tsM] = thisStart.split(':').map(Number);
-        const gapHrs = parseFloat(document.getElementById('spGapHrs')?.value) || 8;
-        // Days between
-        let gapMins = (tsH*60+tsM) - (peH*60+peM) + (i - prevWorked)*1440;
-        const row = document.getElementById('sp-row-'+i);
-        if (row) {
-          if (gapMins < gapHrs * 60) {
-            row.style.outline = '2px solid var(--red)';
-            row.title = `⚠ Only ${(gapMins/60).toFixed(1)}h gap from ${SP_DAYS[prevWorked]} — needs ${gapHrs}h`;
-          } else {
-            row.style.outline = '';
-            row.title = '';
-          }
-        }
-      }
     }
   }
 
@@ -5661,35 +5694,39 @@ function calcWeek() {
   const otTotal  = Math.max(0, totalHrs - 40);
   const tfoot = document.getElementById('spWeekTotals');
   if (tfoot) {
-    tfoot.innerHTML = `<tr style="border-top:1.5px solid var(--border2);font-weight:700">
-      <td colspan="4" style="padding:8px 8px 4px 0;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Week Total</td>
-      <td style="padding:8px 6px 4px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--text)">${totalHrs.toFixed(2)}</td>
-      <td style="padding:8px 6px 4px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--text)">${regTotal.toFixed(2)}</td>
-      <td style="padding:8px 0 4px 6px;text-align:right;font-family:var(--mono);font-size:13px;color:${otTotal>0?'var(--amber)':'var(--text3)'}">${otTotal>0?otTotal.toFixed(2):'—'}</td>
+    tfoot.innerHTML = `<tr style="border-top:2px solid var(--border2);font-weight:700">
+      <td colspan="4" style="padding:10px 8px 4px 0;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Week Total</td>
+      <td style="padding:10px 6px 4px;text-align:right;font-family:var(--mono);font-size:14px;color:var(--text)">${totalHrs > 0 ? totalHrs.toFixed(2) : '—'}</td>
+      <td style="padding:10px 6px 4px;text-align:right;font-family:var(--mono);font-size:14px;color:var(--text)">${regTotal > 0 ? regTotal.toFixed(2) : '—'}</td>
+      <td style="padding:10px 6px 4px;text-align:right;font-family:var(--mono);font-size:14px;color:${otTotal>0?'var(--amber)':'var(--text3)'}">${otTotal>0?otTotal.toFixed(2):'—'}</td>
+      <td style="padding:10px 0 4px 6px"></td>
     </tr>`;
   }
 
   // Summary cards
   const sumEl = document.getElementById('spWeekSummary');
   if (sumEl) {
+    if (totalHrs === 0) { sumEl.style.display='none'; return; }
     sumEl.style.display = 'grid';
     const regPay = rate ? Math.round(regTotal * regRate * 100) / 100 : null;
     const otPay  = rate ? Math.round(otTotal  * otRate  * 100) / 100 : null;
-    const totPay = rate ? Math.round((regPay + otPay) * 100) / 100 : null;
+    const totPay = rate ? (regPay + otPay) : null;
     const otPct  = totalHrs > 0 ? (otTotal / totalHrs * 100).toFixed(0) : '0';
+    const hrsLeft = Math.max(0, 40 - totalHrs);
 
     const card = (label, value, sub, color) =>
       `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">${label}</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${color||'var(--text)'}">${value}</div>
-        ${sub ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${sub}</div>` : ''}
+        <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${color||'var(--text)'}">${value}</div>
+        ${sub ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">${sub}</div>` : ''}
       </div>`;
 
     sumEl.innerHTML =
-      card('Total Hours', totalHrs.toFixed(2)+'h', `${regTotal.toFixed(2)}h reg + ${otTotal.toFixed(2)}h OT`, 'var(--text)') +
+      card('Total Hours', totalHrs.toFixed(2)+'h', `${regTotal.toFixed(2)}h reg · ${otTotal.toFixed(2)}h OT`, 'var(--text)') +
       (rate ? card('Est. Gross', '$'+totPay.toFixed(2), `$${regPay.toFixed(2)} reg + $${otPay.toFixed(2)} OT`, 'var(--green)') : '') +
-      card('OT %', otPct+'%', otTotal > 0 ? `${otTotal.toFixed(2)}h over 40` : 'No OT this week', otTotal > 0 ? 'var(--amber)' : 'var(--text3)') +
-      (totalHrs > 0 ? card('Hrs Left to OT', Math.max(0, 40-totalHrs).toFixed(2)+'h', totalHrs >= 40 ? 'Already in OT!' : 'until 40h threshold', totalHrs >= 40 ? 'var(--amber)' : 'var(--text)') : '');
+      (hrsLeft > 0
+        ? card('Until OT', hrsLeft.toFixed(2)+'h', 'remaining before 40h', 'var(--blue)')
+        : card('OT Hours', otTotal.toFixed(2)+'h', `${otPct}% of week is OT`, 'var(--amber)'));
   }
 }
 
