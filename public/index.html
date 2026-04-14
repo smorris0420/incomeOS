@@ -678,15 +678,12 @@ html{transition:background 300ms ease,color 300ms ease}
   .dash-page{flex-direction:column;height:auto;overflow:visible}
   .dash-canvas-wrap{padding:10px;overflow:visible}
   .dash-canvas{position:static;min-height:unset}
-  /* Widgets stack vertically on mobile */
-  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:120px;margin-bottom:8px}
-  .dash-widget-body{padding:0 8px 6px}
-  /* Chart canvases need explicit pixel height — Chart.js ignores % without fixed parent */
-  .dash-widget-body canvas{height:200px!important;min-height:200px!important;flex:none!important;max-height:200px!important}
-  /* Widget body must not clip the canvas — let it grow */
-  .dash-widget-body{overflow:visible!important;min-height:0}
-  /* Widgets containing charts get a natural height */
-  .dash-widget{overflow:visible!important}
+  /* Widgets stack vertically on mobile — disable containment which causes clipping */
+  .dash-widget{position:static!important;width:100%!important;height:auto!important;min-height:60px;margin-bottom:8px;overflow:visible!important;container-type:normal!important}
+  /* Body must grow to fit canvas — never flex-collapse, never clip */
+  .dash-widget-body{padding:0 8px 10px;flex:none!important;overflow:visible!important;height:auto!important;min-height:0}
+  /* Canvas: explicit pixel size so Chart.js has a real measurement target */
+  .dash-widget-body canvas{display:block!important;width:100%!important;height:220px!important;min-height:220px!important;max-height:220px!important;flex:none!important}
   .dash-resize{display:none}
   /* Widget panel becomes bottom sheet */
   .dash-panel{width:100%;border-left:none;border-top:1.5px solid var(--border);height:auto;max-height:340px;overflow-y:auto}
@@ -2057,8 +2054,16 @@ async function loadAll() {
   const userId = currentUser?.id;
   try {
     if(isOnline) {
-      const [sd,st] = await Promise.all([apiFetch('/api/stubs'), apiFetch('/api/settings')]);
+      const [sd,st,dc] = await Promise.all([apiFetch('/api/stubs'), apiFetch('/api/settings'), apiFetch('/api/dashboard').catch(()=>null)]);
       stubs=sd; appSettings=st;
+      // Pre-load dashboard config so renderDashboard has data immediately
+      if(dc?.config?.length) {
+        dashConfig = dc.config;
+      } else if(!dashConfig?.length) {
+        dashConfig = getDefaultDashConfig();
+        // Save default for new users in background
+        apiFetch('/api/dashboard',{method:'POST',body:JSON.stringify({config:dashConfig})}).catch(()=>{});
+      }
       applyServerTheme(appSettings); // sync theme across devices
       // Persist to IndexedDB for offline use
       if(window._idb && userId) {
@@ -2088,7 +2093,9 @@ async function loadAll() {
     if(pending > 0) setSyncDot('pending', pending);
     else setSyncDot(isOnline?'ok':'offline');
     calc(); buildYTDTabs(); buildYTD();
-    if(isOnline) loadDashboard();
+    // Dashboard config already fetched above — just compute and render
+    computeDashData(); renderDashboard(); buildDashPanel();
+    requestAnimationFrame(()=>{ initCanvasDrop(); initDashResizeObserver(); });
     if(currentUser?.role==='admin' && isOnline) {
       try { allUsers=await apiFetch('/api/users'); } catch {}
     }
@@ -3475,20 +3482,17 @@ function computeDashData(yr) {
 
 // ── Load / Save ──────────────────────────────────────────────────────────────
 async function loadDashboard() {
-  let isNew = false;
+  // Fetch fresh config (used for manual refresh or when called standalone)
   try {
     const r = await apiFetch('/api/dashboard');
     if(r.config && r.config.length) {
       dashConfig = r.config;
-    } else {
-      // No saved config — new user, seed with default and save immediately
+    } else if(!dashConfig?.length) {
       dashConfig = getDefaultDashConfig();
-      isNew = true;
+      apiFetch('/api/dashboard',{method:'POST',body:JSON.stringify({config:dashConfig})}).catch(()=>{});
     }
-  } catch(e) { dashConfig = getDefaultDashConfig(); isNew = true; }
-  if(isNew) {
-    // Save default layout to Supabase so it persists
-    try { await apiFetch('/api/dashboard',{method:'POST',body:JSON.stringify({config:dashConfig})}); } catch(e){}
+  } catch(e) {
+    if(!dashConfig?.length) dashConfig = getDefaultDashConfig();
   }
   computeDashData();
   renderDashboard(); buildDashPanel();
@@ -3611,9 +3615,11 @@ function renderDashboard() {
       else if(w.widgetId.startsWith('track-')) renderDashTracker(w);
       else renderStatWidget(w);
     });
-    // Second pass for charts — ensure they fill after layout is stable
+    // Second pass — resize after layout stabilizes (double rAF catches mobile reflow)
     requestAnimationFrame(()=>{
-      Object.values(dashCharts).forEach(c=>{ try{c.resize();}catch(e){} });
+      requestAnimationFrame(()=>{
+        Object.values(dashCharts).forEach(c=>{ try{c.resize();}catch(e){} });
+      });
     });
   });
 }
