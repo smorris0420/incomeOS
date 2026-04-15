@@ -212,33 +212,6 @@ html{transition:background 300ms ease,color 300ms ease}
 /* Toast notification */
 .toast{transition:transform 350ms cubic-bezier(0.16,1,0.3,1),opacity 250ms ease}
 
-/* Paycheck reference / comparison modal */
-.ref-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.ref-col-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:8px 14px 6px;border-bottom:1px solid var(--border)}
-.ref-row{display:contents}
-.ref-cell{padding:9px 14px;font-size:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px}
-.ref-cell:nth-child(odd){background:var(--bg3)}
-.ref-cell:nth-child(even){background:var(--bg2)}
-.ref-cell.ref-total{font-weight:700;font-family:var(--mono)}
-.ref-cell.ref-green{color:var(--green)}
-.ref-cell.ref-red{color:var(--red)}
-.ref-badge-ok{font-size:10px;font-weight:700;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:1px 6px;flex-shrink:0}
-.ref-badge-warn{font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(180,83,9,.2);border-radius:10px;padding:1px 6px;flex-shrink:0}
-.ref-badge-na{font-size:10px;color:var(--text3);background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:1px 6px;flex-shrink:0}
-.ref-field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:6px 14px 2px;grid-column:1/-1;background:var(--bg3);border-bottom:1px solid var(--border)}
-.ref-source-tag{font-size:10px;color:var(--text3);font-style:italic}
-.ref-table-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px}
-.ref-entry-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 32px;gap:0;border-bottom:1px solid var(--border)}
-.ref-entry-row:last-child{border-bottom:none}
-.ref-entry-row.ref-header{background:var(--bg4)}
-.ref-entry-cell{padding:6px 8px;font-size:11px;font-family:var(--mono)}
-.ref-entry-cell.ref-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-family:var(--sans)}
-.ref-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px 6px;display:flex;align-items:center;justify-content:center}
-.ref-del-btn:hover{color:var(--red)}
-/* Results card clickable hint */
-.card-compare-hint{font-size:11px;color:var(--text3);text-align:center;padding:6px 0 2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:color .15s}
-.card-compare-hint:hover{color:var(--green)}
-
 /* Skeleton shimmer */
 .skel{
   background:linear-gradient(90deg,var(--bg4) 25%,var(--bg3) 50%,var(--bg4) 75%);
@@ -375,21 +348,6 @@ html{transition:background 300ms ease,color 300ms ease}
 .badge-retro{background:rgba(124,58,237,0.10);color:#7C3AED;font-weight:700}
 .badge-final{background:rgba(17,24,39,0.08);color:var(--text2);font-weight:700}
 .rate-tag{font-family:var(--mono);font-size:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:2px 6px;color:var(--text3);flex-shrink:0}
-.cmp-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0}
-.cmp-badge.match{background:rgba(22,163,74,.12);color:var(--green)}
-.cmp-badge.diff{background:rgba(217,119,6,.12);color:var(--amber)}
-.cmp-row{display:grid;grid-template-columns:100px 1fr 1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
-.cmp-row:last-child{border-bottom:none}
-.cmp-row-label{font-size:12px;color:var(--text2);font-weight:500}
-.cmp-val{font-family:var(--mono);font-size:13px;font-weight:600;text-align:right}
-.cmp-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);text-align:right}
-.cmp-head:first-child{text-align:left}
-.ref-input{padding:6px 7px;font-family:var(--mono);font-size:12px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;width:100%}
-.ref-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)}
-.calc-results-card{cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.calc-results-card:hover{border-color:var(--green-border)!important;box-shadow:0 2px 12px rgba(22,163,74,.12)!important}
-.calc-compare-hint{font-size:11px;color:var(--text3);padding:5px 0 2px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
-.calc-compare-hint:hover{color:var(--green)}
 
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
@@ -844,53 +802,6 @@ html{transition:background 300ms ease,color 300ms ease}
 <div id="appShell">
   <div id="toast" class="toast">Saved</div>
 
-    <!-- PAYCHECK COMPARE MODAL -->
-    <div id="compareModal" class="modal-overlay">
-      <div class="modal" style="max-width:540px">
-        <div class="modal-title">
-          <div>
-            <div>Paycheck Comparison</div>
-            <div style="font-size:12px;color:var(--text3);font-weight:400;margin-top:1px" id="cmpSubtitle"></div>
-          </div>
-          <button class="modal-close" onclick="closeModal('compareModal')">Close</button>
-        </div>
-        <div id="cmpSourceBadge" style="margin-bottom:12px;display:none">
-          <span style="font-size:11px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);border-radius:20px;padding:3px 10px;font-weight:600" id="cmpSourceText"></span>
-        </div>
-        <div id="cmpHasMatch">
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr auto;gap:8px;padding:0 0 7px;border-bottom:2px solid var(--border2);margin-bottom:2px">
-            <div class="cmp-head">Field</div>
-            <div class="cmp-head">Calculated</div>
-            <div class="cmp-head">Actual</div>
-            <div class="cmp-head" style="text-align:center">Match</div>
-          </div>
-          <div id="cmpRows"></div>
-        </div>
-        <div id="cmpNoMatch" style="display:none;text-align:center;padding:16px 0 8px">
-          <div style="font-size:28px;margin-bottom:8px">&#128269;</div>
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px">No matching paycheck found</div>
-          <div style="font-size:12px;color:var(--text3)">No history or reference entry matches this rate + hours. Save actual values below.</div>
-        </div>
-        <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:10px">Save actual values to reference table</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Gross</div><div class="input-wrap" style="width:100%"><span class="prefix">$</span><input type="number" id="cmpGross" step="0.01" style="width:100%"></div></div>
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Federal</div><div class="input-wrap" style="width:100%"><span class="prefix">$</span><input type="number" id="cmpFed" step="0.01" style="width:100%"></div></div>
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Soc Security</div><div class="input-wrap" style="width:100%"><span class="prefix">$</span><input type="number" id="cmpSS" step="0.01" style="width:100%"></div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Medicare</div><div class="input-wrap" style="width:100%"><span class="prefix">$</span><input type="number" id="cmpMed" step="0.01" style="width:100%"></div></div>
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Net</div><div class="input-wrap" style="width:100%"><span class="prefix">$</span><input type="number" id="cmpNet" step="0.01" style="width:100%"></div></div>
-            <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Label</div><input type="text" id="cmpLabel" placeholder="e.g. 80hr week" style="width:100%;padding:8px 10px;font-size:12px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none"></div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="saveRefEntry()" style="width:100%">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            Save to reference table
-          </button>
-        </div>
-      </div>
-    </div>
-
   <!-- SIDEBAR -->
   <nav class="sidebar">
     <div class="sidebar-logo">
@@ -1030,7 +941,7 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="metric"><div class="metric-label">Deducted</div><div class="metric-value" id="mDeduct">—</div></div>
           <div class="metric"><div class="metric-label">Take-home</div><div class="metric-value green" id="mNet">—</div></div>
         </div>
-        <div class="card calc-results-card" id="calcResultsCard" onclick="openCompareModal()">
+        <div class="card">
           <div class="card-row"><span class="card-label">Regular pay</span><span class="card-value" id="bRegPay">—</span></div>
           <div class="card-row" id="rowOT" style="display:none"><span class="card-label">Overtime (1.5×)</span><span class="card-value amber" id="bOTPay">—</span></div>
           <div class="card-row" id="rowDT" style="display:none"><span class="card-label">Double time (2×)</span><span class="card-value amber" id="bDTPay">—</span></div>
@@ -1049,14 +960,6 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="card-row" id="rowRetirePretax" style="display:none"><span class="card-label" style="color:var(--red)">– Pre-tax 401k</span><span class="card-value red" id="bRetirePretax">—</span></div>
           <div class="card-row" id="rowRetireRoth" style="display:none"><span class="card-label" style="color:var(--red)">– Roth 401k <span style="font-size:10px;opacity:.6">(post-tax)</span></span><span class="card-value red" id="bRetireRoth">—</span></div>
           <div class="card-row card-total"><span class="card-label">Take-home pay</span><span class="card-value green" id="bNet">—</span></div>
-          <div class="card-compare-hint" id="compareHint" onclick="openCompareModal()" style="display:none">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
-            <span id="compareHintText">Tap to compare with real paycheck</span>
-          </div>
-        </div>
-        <div class="calc-compare-hint" id="calcCompareHint" onclick="openCompareModal()" style="display:none">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <span id="calcCompareHintText">Match found — tap card to compare</span>
         </div>
         <div class="section-title">Hours &amp; Pay</div>
         <div class="card card-pad">
@@ -1561,57 +1464,6 @@ html{transition:background 300ms ease,color 300ms ease}
           </div>
           <button class="btn btn-primary" style="margin-bottom:20px" onclick="saveSettings()">Save defaults</button>
 
-          <div class="section-title">Paycheck reference table</div>
-          <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">Save known real-paycheck values. The calculator will compare against these (and your history) when totals match.</p>
-          <div id="refTableWrap" style="margin-bottom:8px"></div>
-          <div class="card card-pad" style="margin-bottom:8px">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px">Add entry</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-              <div class="form-field"><label>Rate ($/hr)</label><input type="number" id="refRate" step="0.01" min="0" placeholder="21.90" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>Reg hrs</label><input type="number" id="refReg" step="0.25" min="0" placeholder="40" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>OT hrs</label><input type="number" id="refOT" step="0.25" min="0" placeholder="0" style="font-family:var(--mono)"></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-              <div class="form-field"><label>Gross</label><input type="number" id="refGross" step="0.01" min="0" placeholder="876.00" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>Federal</label><input type="number" id="refFed" step="0.01" min="0" placeholder="103.53" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>Soc Sec</label><input type="number" id="refSS" step="0.01" min="0" placeholder="53.11" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>Medicare</label><input type="number" id="refMed" step="0.01" min="0" placeholder="12.42" style="font-family:var(--mono)"></div>
-              <div class="form-field"><label>Net</label><input type="number" id="refNet" step="0.01" min="0" placeholder="687.44" style="font-family:var(--mono)"></div>
-            </div>
-            <div class="form-field" style="margin-bottom:10px"><label>Label (optional)</label><input type="text" id="refLabel" placeholder="e.g. Standard 40hr week" style="font-family:var(--sans);font-size:13px"></div>
-            <button class="btn btn-secondary" onclick="addRefEntry()" style="width:auto">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              Add to table
-            </button>
-          </div>
-
-          <div class="section-title">Paycheck reference table</div>
-          <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">Known real paycheck values per hour combo. The calculator matches against these when you tap the results card.</p>
-          <div class="card" style="overflow:visible;margin-bottom:6px">
-            <div style="display:grid;grid-template-columns:50px 50px 1fr 1fr 1fr 1fr 1fr 28px;gap:5px;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--bg3)">
-              <div class="ref-head">Reg</div><div class="ref-head">OT</div>
-              <div class="ref-head">Gross</div><div class="ref-head">Fed</div>
-              <div class="ref-head">SS</div><div class="ref-head">Med</div>
-              <div class="ref-head">Net</div><div></div>
-            </div>
-            <div id="refTableRows" style="padding:0 12px;max-height:220px;overflow-y:auto">
-              <div id="refTableEmpty" style="font-size:12px;color:var(--text3);padding:12px 0;text-align:center">No entries yet</div>
-            </div>
-            <div style="padding:10px 12px;border-top:1px solid var(--border);background:var(--bg3)">
-              <div style="display:grid;grid-template-columns:50px 50px 1fr 1fr 1fr 1fr 1fr 28px;gap:5px;align-items:center;margin-bottom:5px">
-                <input type="number" id="refReg" placeholder="Reg" step="0.25" min="0" class="ref-input">
-                <input type="number" id="refOT" placeholder="OT" step="0.25" min="0" class="ref-input">
-                <input type="number" id="refGross" placeholder="Gross" step="0.01" class="ref-input">
-                <input type="number" id="refFed" placeholder="Fed" step="0.01" class="ref-input">
-                <input type="number" id="refSS" placeholder="SS" step="0.01" class="ref-input">
-                <input type="number" id="refMed" placeholder="Med" step="0.01" class="ref-input">
-                <input type="number" id="refNet" placeholder="Net" step="0.01" class="ref-input">
-                <button onclick="addRefEntry()" title="Add" style="width:28px;height:28px;border-radius:6px;border:none;background:var(--green-btn);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
-              </div>
-              <div style="font-size:10px;color:var(--text3)">Reg hrs · OT hrs · Gross · Fed · SS · Med · Net</div>
-            </div>
-          </div>
-
           <div class="section-title">Federal withholding</div>
           <div class="card card-pad">
             <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">Calculator uses IRS 2026 weekly withholding tables (Single filer). Override to pin a flat % rate instead (blank = auto).</p>
@@ -1729,20 +1581,6 @@ html{transition:background 300ms ease,color 300ms ease}
 </div>
 
 <!-- LOG MODAL -->
-<!-- PAYCHECK COMPARISON MODAL -->
-<div id="compareModal" class="modal-overlay">
-  <div class="modal" style="max-width:600px;padding:0;overflow:hidden">
-    <div class="modal-title" style="padding:16px 18px 12px;border-bottom:1px solid var(--border);margin:0">
-      <div>
-        <div style="font-size:16px;font-weight:700">Paycheck Comparison</div>
-        <div id="compareSubtitle" style="font-size:11px;color:var(--text3);margin-top:2px"></div>
-      </div>
-      <button class="modal-close" onclick="closeModal('compareModal')">Close</button>
-    </div>
-    <div id="compareBody" style="overflow-y:auto;max-height:72vh;padding:0"></div>
-  </div>
-</div>
-
 <div id="logModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-title">Log paycheck <button class="modal-close" onclick="closeModal('logModal')">Close</button></div>
@@ -2283,8 +2121,6 @@ async function loadAll() {
     else setSyncDot(isOnline?'ok':'offline');
     calc(); buildYTDTabs(); buildYTD();
     // Dashboard config already fetched above — just compute and render
-    // Load reference table from settings
-    loadRefTableFromSettings();
     // Set dashYear to most recent year with data before computing
     const _dashYears = [...new Set(stubs.map(s=>parseInt(s.date.slice(0,4))))].sort((a,b)=>b-a);
     if(_dashYears.length) dashYear = _dashYears[0];
@@ -2532,21 +2368,6 @@ function calc() {
   document.getElementById('rowRetireRoth').style.display=retireRoth>0?'flex':'none';
   document.getElementById('bNet').textContent=fmt(net);
   document.getElementById('calcRateLabel').textContent='$'+rate.toFixed(2)+'/hr';
-  // Store for comparison modal
-  _lastCalcValues={rate,reg,ot,dt,gross,fed,ss,med,net};
-  // Check if a reference match exists and show/update hint
-  const _ref = gross>0 ? findBestRef(rate,reg,ot,gross) : null;
-  const hint = document.getElementById('compareHint');
-  const hintText = document.getElementById('compareHintText');
-  if(hint) hint.style.display = gross>0 ? 'flex' : 'none';
-  if(hintText && _ref) {
-    const src = _ref.source==='history' ? 'real paycheck ('+_ref.entry.label+')' : 'reference table';
-    hintText.textContent = 'Compare with '+src+' →';
-    hint.style.color='var(--green)';
-  } else if(hintText) {
-    hintText.textContent='No reference match — tap to add one';
-    hint.style.color='';
-  }
   document.getElementById('rowOT').style.display=ot>0?'flex':'none';
   document.getElementById('rowDT').style.display=dt>0?'flex':'none';
   document.getElementById('rowHol').style.display=hol>0?'flex':'none';
@@ -2557,31 +2378,6 @@ function calc() {
   document.getElementById('rowAddl').style.display=addl>0?'flex':'none';
 }
 document.getElementById('iDate').value=new Date().toISOString().slice(0,10);
-
-// Wrap calc() to update compare hint after every recalculation
-(function(){
-  const _orig=calc;
-  window.calc=function(){
-    _orig();
-    requestAnimationFrame(()=>{
-      const rate=parseFloat(document.getElementById('iRate').value)||0;
-      const reg=parseFloat(document.getElementById('iReg').value)||0;
-      const ot=parseFloat(document.getElementById('iOT').value)||0;
-      const gross=parseFloat(document.getElementById('mGross').textContent.replace(/[$,]/g,''))||0;
-      const net=parseFloat(document.getElementById('mNet').textContent.replace(/[$,]/g,''))||0;
-      const den=parseFloat(document.getElementById('iDen').value)||0;
-      const medI=parseFloat(document.getElementById('iMedI').value)||0;
-      const vis=parseFloat(document.getElementById('iVis').value)||0;
-      const ficaBase=Math.max(0,gross-den-medI-vis);
-      const cd=document.getElementById('iDate')?.value||new Date().toISOString().slice(0,10);
-      const taxG=Math.max(0,gross-den-medI-vis-(parseFloat(document.getElementById('iRetirePretax').value)||0));
-      _cmpCalc={rate,reg,ot,gross,fed:irsWithholding(taxG,cd),ss:parseFloat((ficaBase*0.062).toFixed(2)),med:parseFloat((ficaBase*0.0145).toFixed(2)),net};
-      if(typeof findPaycheckMatch==='function'&&typeof updateCompareHint==='function'){
-        updateCompareHint(findPaycheckMatch(rate,reg,ot));
-      }
-    });
-  };
-})();
 ['iDate','iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetirePretax','iRetireRoth'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
 
 // ===== NAVIGATION =====
@@ -2640,186 +2436,6 @@ let bulkMode = false;
 let selectedIds = new Set();
 
 // ===== RETIRE MODE ($ vs %) =====
-// ===== PAYCHECK REFERENCE TABLE =====
-let paycheckRef = [];
-
-function loadRefTable() {
-  paycheckRef = Array.isArray(appSettings.paycheckRef) ? appSettings.paycheckRef : [];
-  renderRefTable();
-}
-
-function renderRefTable() {
-  const container = document.getElementById('refTableRows');
-  if(!container) return;
-  if(!paycheckRef.length) {
-    container.innerHTML = '<div id="refTableEmpty" style="font-size:12px;color:var(--text3);padding:12px 0;text-align:center">No entries yet</div>';
-    return;
-  }
-  container.innerHTML = paycheckRef.map((r,i) => `
-    <div style="display:grid;grid-template-columns:50px 50px 1fr 1fr 1fr 1fr 1fr 28px;gap:5px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px">
-      <div>${r.reg}</div><div>${r.ot||0}</div>
-      <div>$${parseFloat(r.gross).toFixed(2)}</div>
-      <div>$${parseFloat(r.fed).toFixed(2)}</div>
-      <div>$${parseFloat(r.ss).toFixed(2)}</div>
-      <div>$${parseFloat(r.med).toFixed(2)}</div>
-      <div style="color:var(--green)">$${parseFloat(r.net).toFixed(2)}</div>
-      <button onclick="deleteRefEntry(${i})" title="Delete" style="width:22px;height:22px;border-radius:5px;border:none;background:var(--red-dim);color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">&times;</button>
-    </div>`).join('');
-}
-
-function addRefEntry() {
-  const reg=parseFloat(document.getElementById('refReg').value);
-  const ot=parseFloat(document.getElementById('refOT').value)||0;
-  const gross=parseFloat(document.getElementById('refGross').value);
-  const fed=parseFloat(document.getElementById('refFed').value);
-  const ss=parseFloat(document.getElementById('refSS').value);
-  const med=parseFloat(document.getElementById('refMed').value);
-  const net=parseFloat(document.getElementById('refNet').value);
-  if([reg,gross,fed,ss,med,net].some(isNaN)){showToast('Fill all fields',true);return;}
-  const idx=paycheckRef.findIndex(r=>Math.abs(r.reg-reg)<0.01&&Math.abs((r.ot||0)-ot)<0.01);
-  if(idx>=0) paycheckRef[idx]={reg,ot,gross,fed,ss,med,net,source:'manual'};
-  else paycheckRef.push({reg,ot,gross,fed,ss,med,net,source:'manual'});
-  saveRefToSettings();
-  renderRefTable();
-  ['refReg','refOT','refGross','refFed','refSS','refMed','refNet'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  showToast('Entry saved');
-}
-
-function deleteRefEntry(i) {
-  paycheckRef.splice(i,1);
-  saveRefToSettings();
-  renderRefTable();
-  showToast('Entry removed');
-}
-
-async function saveRefToSettings() {
-  appSettings.paycheckRef=paycheckRef;
-  try{await syncOp('/api/settings','POST',{paycheckRef});}catch(e){}
-}
-
-function findPaycheckMatch(rate,reg,ot) {
-  const regR=Math.round((reg||0)*100)/100;
-  const otR=Math.round((ot||0)*100)/100;
-  // 1. History: exact rate+reg+ot, no bonus pay types
-  const hits=stubs.filter(s=>{
-    if(Math.abs(parseFloat(s.rate)-rate)>0.005) return false;
-    if(Math.abs(parseFloat(s.reg)-regR)>0.01) return false;
-    if(Math.abs(parseFloat(s.ot||0)-otR)>0.01) return false;
-    if(s.payType&&s.payType!=='regular') return false;
-    if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.premHrs||0)+(s.addl||0)>0) return false;
-    return true;
-  }).sort((a,b)=>b.date.localeCompare(a.date));
-  if(hits.length){
-    const s=hits[0];
-    const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);
-    const net=s.net!=null?s.net:parseFloat((s.gross-ded).toFixed(2));
-    return{match:{gross:s.gross,fed:s.fed,ss:s.ss,med:s.med,net},source:'history',
-      label:new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
-      count:hits.length};
-  }
-  // 2. Manual reference
-  const ref=paycheckRef.find(r=>Math.abs(r.reg-regR)<0.01&&Math.abs((r.ot||0)-otR)<0.01);
-  if(ref) return{match:{gross:ref.gross,fed:ref.fed,ss:ref.ss,med:ref.med,net:ref.net},source:'manual',label:ref.label||'Manual entry'};
-  return null;
-}
-
-let _cmpCalc={};
-function openCompareModal() {
-  const rate=parseFloat(document.getElementById('iRate').value)||0;
-  const reg=parseFloat(document.getElementById('iReg').value)||0;
-  const ot=parseFloat(document.getElementById('iOT').value)||0;
-  const gross=parseFloat(document.getElementById('mGross').textContent.replace(/[$,]/g,''))||0;
-  const net=parseFloat(document.getElementById('mNet').textContent.replace(/[$,]/g,''))||0;
-  const den=parseFloat(document.getElementById('iDen').value)||0;
-  const medI=parseFloat(document.getElementById('iMedI').value)||0;
-  const vis=parseFloat(document.getElementById('iVis').value)||0;
-  const ficaBase=Math.max(0,gross-den-medI-vis);
-  const cd=document.getElementById('iDate')?.value||new Date().toISOString().slice(0,10);
-  const taxG=Math.max(0,gross-den-medI-vis-(parseFloat(document.getElementById('iRetirePretax').value)||0));
-  const calcFed=irsWithholding(taxG,cd);
-  const calcSS=parseFloat((ficaBase*0.062).toFixed(2));
-  const calcMed=parseFloat((ficaBase*0.0145).toFixed(2));
-  _cmpCalc={rate,reg,ot,gross,fed:calcFed,ss:calcSS,med:calcMed,net};
-  ['cmpGross','cmpFed','cmpSS','cmpMed','cmpNet'].forEach((id,j)=>{
-    const v=[gross,calcFed,calcSS,calcMed,net][j];
-    const el=document.getElementById(id);if(el)el.value=v>0?v.toFixed(2):'';
-  });
-  const lbl=document.getElementById('cmpLabel');
-  if(lbl)lbl.value=reg+'reg'+(ot>0?'+'+ot+'OT':'');
-  const result=findPaycheckMatch(rate,reg,ot);
-  buildCompareRows(result);
-  document.getElementById('compareModal').classList.add('open');
-}
-
-function buildCompareRows(result) {
-  const c=_cmpCalc;
-  const has=!!result;
-  document.getElementById('cmpHasMatch').style.display=has?'block':'none';
-  document.getElementById('cmpNoMatch').style.display=has?'none':'block';
-  const badge=document.getElementById('cmpSourceBadge');
-  const src=document.getElementById('cmpSourceText');
-  if(badge)badge.style.display=has?'block':'none';
-  if(src&&result){
-    src.textContent=result.source==='history'
-      ?'✓ Matched from history — '+result.label+(result.count>1?' ('+result.count+' checks)':'')
-      :'✓ Reference table — '+(result.label||'manual entry');
-  }
-  const sub=document.getElementById('cmpSubtitle');
-  if(sub)sub.textContent='$'+c.rate.toFixed(2)+'/hr · '+c.reg+'h reg'+(c.ot>0?' · '+c.ot+'h OT':'');
-  if(!has){document.getElementById('cmpRows').innerHTML='';return;}
-  const a=result.match;
-  const THRESH=0.50;
-  const fields=[
-    {label:'Gross',    calc:c.gross, actual:a.gross},
-    {label:'Federal',  calc:c.fed,   actual:a.fed},
-    {label:'Soc Sec',  calc:c.ss,    actual:a.ss},
-    {label:'Medicare', calc:c.med,   actual:a.med},
-    {label:'Net',      calc:c.net,   actual:a.net},
-  ];
-  document.getElementById('cmpRows').innerHTML=fields.map(f=>{
-    const diff=Math.abs(f.calc-f.actual);
-    const ok=diff<=THRESH;
-    const diffStr=diff>0.005?' ('+( f.calc>f.actual?'+':'-')+'$'+diff.toFixed(2)+')':'';
-    const b=ok
-      ?'<span class="cmp-badge match"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Match</span>'
-      :'<span class="cmp-badge diff"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Off'+diffStr+'</span>';
-    return '<div class="cmp-row"><div class="cmp-row-label">'+f.label+'</div><div class="cmp-val">'+fmt(f.calc)+'</div><div class="cmp-val" style="color:var(--green)">'+fmt(f.actual)+'</div><div style="text-align:center">'+b+'</div></div>';
-  }).join('');
-}
-
-function updateCompareHint(result) {
-  const hint=document.getElementById('calcCompareHint');
-  const text=document.getElementById('calcCompareHintText');
-  if(!hint)return;
-  if(!result){hint.style.display='none';return;}
-  hint.style.display='flex';
-  const c=_cmpCalc; const a=result.match;
-  const allOk=['gross','fed','ss','med','net'].every(k=>Math.abs((c[k]||0)-(a[k]||0))<=0.50);
-  text.textContent=allOk?'✓ All fields match — tap card to compare':'⚠ Differences found — tap card to compare';
-  hint.style.color=allOk?'var(--green)':'var(--amber)';
-}
-
-function saveRefEntry() {
-  const gross=parseFloat(document.getElementById('cmpGross').value);
-  const fed=parseFloat(document.getElementById('cmpFed').value);
-  const ss=parseFloat(document.getElementById('cmpSS').value);
-  const med=parseFloat(document.getElementById('cmpMed').value);
-  const net=parseFloat(document.getElementById('cmpNet').value);
-  const label=(document.getElementById('cmpLabel').value||'').trim();
-  if([gross,fed,ss,med,net].some(isNaN)){showToast('Fill all values',true);return;}
-  const reg=_cmpCalc.reg||0; const ot=_cmpCalc.ot||0;
-  const idx=paycheckRef.findIndex(r=>Math.abs(r.reg-reg)<0.01&&Math.abs((r.ot||0)-ot)<0.01);
-  const entry={reg,ot,gross,fed,ss,med,net,source:'manual'};
-  if(label)entry.label=label;
-  if(idx>=0)paycheckRef[idx]=entry;else paycheckRef.push(entry);
-  saveRefToSettings();
-  renderRefTable();
-  showToast('Saved to reference table');
-  const result=findPaycheckMatch(_cmpCalc.rate||0,reg,ot);
-  buildCompareRows(result);
-  updateCompareHint(result);
-}
-
 // ===== DASHBOARD EMPTY STATE (mobile-aware) =====
 function updateDashEmptyText() {
   const isMobile = window.innerWidth < 768;
@@ -2829,172 +2445,6 @@ function updateDashEmptyText() {
   if(s) s.textContent = isMobile ? 'Open the widget panel below ↓' : 'Pick from the panel on the right →';
 }
 window.addEventListener('resize', updateDashEmptyText);
-
-// ===== PAYCHECK REFERENCE TABLE =====
-let _refTable = []; // [{id,rate,reg,ot,gross,fed,ss,med,net,label}]
-let _lastCalcValues = null; // {rate,reg,ot,gross,fed,ss,med,net}
-
-function refUID() { return 'r'+Math.random().toString(36).slice(2,9); }
-
-function addRefEntry() {
-  const rate  = parseFloat(document.getElementById('refRate').value);
-  const reg   = parseFloat(document.getElementById('refReg').value)||0;
-  const ot    = parseFloat(document.getElementById('refOT').value)||0;
-  const gross = parseFloat(document.getElementById('refGross').value);
-  const fed   = parseFloat(document.getElementById('refFed').value);
-  const ss    = parseFloat(document.getElementById('refSS').value);
-  const med   = parseFloat(document.getElementById('refMed').value);
-  const net   = parseFloat(document.getElementById('refNet').value);
-  const label = (document.getElementById('refLabel').value||'').trim();
-  if(isNaN(rate)||isNaN(gross)||isNaN(fed)||isNaN(net)) {
-    showToast('Rate, Gross, Federal, and Net are required', true); return;
-  }
-  const entry = {id:refUID(),rate,reg,ot,gross,fed,ss:isNaN(ss)?0:ss,med:isNaN(med)?0:med,net,label};
-  _refTable.push(entry);
-  ['refRate','refReg','refOT','refGross','refFed','refSS','refMed','refNet','refLabel'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  renderRefTable();
-  saveRefTable();
-}
-
-function deleteRefEntry(id) {
-  _refTable = _refTable.filter(e=>e.id!==id);
-  renderRefTable();
-  saveRefTable();
-}
-
-function renderRefTable() {
-  const wrap = document.getElementById('refTableWrap');
-  if(!wrap) return;
-  if(!_refTable.length) {
-    wrap.innerHTML='<p style="font-size:12px;color:var(--text3);margin-bottom:8px">No entries yet. Add one below.</p>';
-    return;
-  }
-  const hdr = `<div class="ref-entry-row ref-header">
-    <div class="ref-entry-cell ref-head">Rate</div>
-    <div class="ref-entry-cell ref-head">Reg</div>
-    <div class="ref-entry-cell ref-head">OT</div>
-    <div class="ref-entry-cell ref-head">Gross</div>
-    <div class="ref-entry-cell ref-head">Fed</div>
-    <div class="ref-entry-cell ref-head">Net</div>
-    <div class="ref-entry-cell ref-head"></div>
-  </div>`;
-  const rows = _refTable.map(e=>`<div class="ref-entry-row" title="${e.label||''}">
-    <div class="ref-entry-cell">$${parseFloat(e.rate).toFixed(2)}</div>
-    <div class="ref-entry-cell">${e.reg}h</div>
-    <div class="ref-entry-cell">${e.ot||0}h</div>
-    <div class="ref-entry-cell">$${parseFloat(e.gross).toFixed(2)}</div>
-    <div class="ref-entry-cell">$${parseFloat(e.fed).toFixed(2)}</div>
-    <div class="ref-entry-cell" style="color:var(--green)">$${parseFloat(e.net).toFixed(2)}</div>
-    <div class="ref-entry-cell" style="padding:0"><button class="ref-del-btn" onclick="deleteRefEntry('${e.id}')">✕</button></div>
-  </div>`).join('');
-  wrap.innerHTML = `<div class="ref-table-wrap">${hdr}${rows}</div>`;
-}
-
-async function saveRefTable() {
-  const payload = { refTable: JSON.stringify(_refTable) };
-  try { await syncOp('/api/settings','POST', payload); } catch(e) {}
-}
-
-function loadRefTableFromSettings() {
-  try {
-    const raw = appSettings.refTable;
-    if(raw) _refTable = typeof raw==='string' ? JSON.parse(raw) : raw;
-  } catch(e) { _refTable = []; }
-  renderRefTable();
-}
-
-// Find the best matching reference for the current calc values
-// Returns {source:'history'|'manual', entry, score} or null
-function findBestRef(rate, reg, ot, gross) {
-  const THRESH = 0.01; // $0.01 tolerance for floating point
-  let best = null;
-
-  // 1. Exact match from history (same rate + same gross = same hours)
-  for(const s of stubs) {
-    if(Math.abs(parseFloat(s.rate)-rate) < THRESH && Math.abs(s.gross-gross) < THRESH) {
-      const entry = {
-        rate:s.rate, reg:s.reg, ot:s.ot||0,
-        gross:s.gross, fed:s.fed, ss:s.ss, med:s.med,
-        net:s.net!=null?s.net:(s.gross-s.fed-s.ss-s.med-s.den-s.medI-s.vis-(s.retire||0)),
-        label: new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-      };
-      return {source:'history', entry, score:0};
-    }
-  }
-
-  // 2. Closest match from manual ref table (same rate + reg + OT, or just same rate + gross)
-  for(const e of _refTable) {
-    const rateMatch = Math.abs(parseFloat(e.rate)-rate) < THRESH;
-    if(!rateMatch) continue;
-    const grossMatch = Math.abs(parseFloat(e.gross)-gross) < THRESH;
-    const hrsMatch = Math.abs((e.reg||0)-reg) < THRESH && Math.abs((e.ot||0)-ot) < THRESH;
-    if(grossMatch || hrsMatch) {
-      const score = grossMatch ? 0 : 1;
-      if(!best || score < best.score) best = {source:'manual', entry:e, score};
-    }
-  }
-  return best;
-}
-
-// ══ Confidence badge helper ══
-function badge(calcVal, refVal, tolerance) {
-  if(refVal==null||isNaN(refVal)) return '<span class="ref-badge-na">N/A</span>';
-  return Math.abs(calcVal-refVal) <= tolerance
-    ? '<span class="ref-badge-ok">✓ match</span>'
-    : '<span class="ref-badge-warn">⚠ off by $'+Math.abs(calcVal-refVal).toFixed(2)+'</span>';
-}
-
-function openCompareModal() {
-  if(!_lastCalcValues) return;
-  const cv = _lastCalcValues;
-  const ref = findBestRef(cv.rate, cv.reg, cv.ot, cv.gross);
-
-  const subtitle = ref
-    ? (ref.source==='history' ? 'Matched from history · '+ref.entry.label : 'Matched from reference table'+(ref.entry.label?' · '+ref.entry.label:''))
-    : 'No matching reference found';
-  document.getElementById('compareSubtitle').textContent = subtitle;
-
-  const rv = ref ? ref.entry : {};
-  const hasRef = !!ref;
-
-  const rows = [
-    {label:'Gross',         calc:cv.gross,  ref:rv.gross,  tol:0.05, cls:''},
-    {label:'Federal',       calc:cv.fed,    ref:rv.fed,    tol:0.05, cls:'ref-red'},
-    {label:'Social Security',calc:cv.ss,   ref:rv.ss,     tol:0.05, cls:'ref-red'},
-    {label:'Medicare',      calc:cv.med,    ref:rv.med,    tol:0.05, cls:'ref-red'},
-    {label:'Take-home',     calc:cv.net,    ref:rv.net,    tol:0.10, cls:'ref-green'},
-  ];
-
-  const grid = `
-    <div class="ref-modal-grid">
-      <div class="ref-col-head">Calculator</div>
-      <div class="ref-col-head">${hasRef ? (ref.source==='history'?'Real paycheck':'Reference table') : 'Reference'}</div>
-      ${rows.map(r=>`
-        <div class="ref-field-label">${r.label}</div>
-        <div class="ref-cell ${r.cls} ref-total">
-          ${fmt(r.calc)}
-          ${hasRef ? badge(r.calc, parseFloat(r.ref), r.tol) : ''}
-        </div>
-        <div class="ref-cell ${r.cls} ref-total">${hasRef && r.ref!=null ? fmt(parseFloat(r.ref)) : '<span style="color:var(--text3)">—</span>'}</div>
-      `).join('')}
-    </div>
-    ${!hasRef ? `<div style="padding:16px;font-size:13px;color:var(--text3);text-align:center;line-height:1.6">
-      No matching reference found for rate $${cv.rate.toFixed(2)}/hr, ${cv.reg}h reg${cv.ot>0?', '+cv.ot+'h OT':''}, gross ${fmt(cv.gross)}.<br>
-      Add an entry in Settings → Paycheck Reference Table, or log a paycheck with these hours.
-    </div>` : ''}
-    <div style="padding:12px 14px;border-top:1px solid var(--border);background:var(--bg3)">
-      <div style="font-size:11px;color:var(--text3);line-height:1.6">
-        ${hasRef && ref.source==='history' ? '✓ Matched from a logged paycheck with identical gross at this rate.' : ''}
-        ${hasRef && ref.source==='manual' ? '✓ Matched from your reference table.' : ''}
-        Differences ≤ $0.05 on taxes are within rounding tolerance.
-      </div>
-    </div>`;
-
-  document.getElementById('compareBody').innerHTML = grid;
-  document.getElementById('compareModal').classList.add('open');
-}
 
 // ===== CALCULATOR EXPAND/COLLAPSE =====
 let _calcMoreOpen = false;
@@ -5338,8 +4788,6 @@ function showSettingsTab(tab, btn) {
 }
 
 function buildSettingsUI() {
-  loadRefTableFromSettings();
-  loadRefTable();
   if(appSettings.defaultRate != null) document.getElementById('sRate').value=parseFloat(appSettings.defaultRate).toFixed(2);
   if(appSettings.den != null) document.getElementById('sDen').value=parseFloat(appSettings.den).toFixed(2);
   if(appSettings.medI != null) document.getElementById('sMedI').value=parseFloat(appSettings.medI).toFixed(2);
