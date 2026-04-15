@@ -1608,13 +1608,15 @@ html{transition:background 300ms ease,color 300ms ease}
                   <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Federal</th>
                   <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Soc Sec</th>
                   <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Medicare</th>
-                  <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);color:var(--green)">Net</th>
+                  <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Benefits</th>
+                  <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">401k</th>
+                  <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green)">Net</th>
                   <th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Source</th>
-                  <th style="padding:8px 8px;width:28px"></th>
+                  <th style="padding:8px 8px;width:52px"></th>
                 </tr>
               </thead>
               <tbody id="refTableRows">
-                <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text3);font-family:var(--sans);font-size:12px" id="refTableEmpty">No entries yet — click Add entry to get started</td></tr>
+                <tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text3);font-family:var(--sans);font-size:12px" id="refTableEmpty">No entries yet — click Add entry to get started</td></tr>
               </tbody>
             </table>
           </div>
@@ -2764,54 +2766,160 @@ function renderRefTable() {
       const s=g.stubs.sort((a,b)=>b.date.localeCompare(a.date))[0];
       const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);
       const net=s.net!=null?s.net:parseFloat((s.gross-ded).toFixed(2));
-      rows.push({rate:fr,reg:g.reg,ot:g.ot,gross:s.gross,fed:s.fed,ss:s.ss,med:s.med,net,_src:'history',_count:g.stubs.length});
+      rows.push({rate:fr,reg:g.reg,ot:g.ot,gross:s.gross,fed:s.fed,ss:s.ss,med:s.med,
+        den:s.den,medI:s.medI,vis:s.vis,
+        retirePretax:s.retirePretax!=null?s.retirePretax:null,
+        retireRoth:s.retireRoth!=null?s.retireRoth:null,
+        net,_src:'history',_count:g.stubs.length,
+        _stubId:g.stubs.sort((a,b)=>b.date.localeCompare(a.date))[0].id,
+        _allIds:g.stubs.map(s=>s.id)});
     });
   }
   rows.sort((a,b)=>(a.reg+(a.ot||0)*1.5)-(b.reg+(b.ot||0)*1.5));
   if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text3);font-family:var(--sans);font-size:12px">'+
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text3);font-family:var(--sans);font-size:12px">'+
       (!isNaN(fr)&&fr>0?'No entries for $'+fr.toFixed(2)+'/hr':'Enter your rate above to see matching history')+'</td></tr>';
     return;
   }
   tbody.innerHTML=rows.map(r=>{
     const h=(r.ot||0)>0?parseFloat(r.reg)+'h reg + '+parseFloat(r.ot)+'h OT':parseFloat(r.reg)+'h';
+    const benTotal=(r.den||0)+(r.medI||0)+(r.vis||0);
+    const retTotal=(r.retirePretax||0)+(r.retireRoth||0);
+    const benStr=benTotal>0?'$'+benTotal.toFixed(2):'<span style="color:var(--text3)">—</span>';
+    const retStr=retTotal>0?'$'+retTotal.toFixed(2):'<span style="color:var(--text3)">—</span>';
     const src=r._src==='history'
-      ?'<span style="font-size:10px;background:var(--blue-dim);color:var(--blue);border-radius:4px;padding:1px 6px;font-weight:600;font-family:var(--sans)">history'+(r._count>1?' \xd7'+r._count:'')+'</span>'
+      ?'<span style="font-size:10px;background:var(--blue-dim);color:var(--blue);border-radius:4px;padding:1px 6px;font-weight:600;font-family:var(--sans)">history'+(r._count>1?' ×'+r._count:'')+'</span>'
       :'<span style="font-size:10px;background:var(--bg4);color:var(--text3);border-radius:4px;padding:1px 6px;font-weight:600;font-family:var(--sans)">manual</span>';
-    const del=r._src==='manual'
-      ?'<button onclick="deleteRefEntry('+r._idx+')" title="Remove" style="width:22px;height:22px;border-radius:5px;border:none;background:var(--red-dim);color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">\xd7</button>'
-      :'<div style="width:22px"></div>';
+    // History rows: edit opens modal pre-filled (creates a manual override)
+    // Manual rows: edit + delete
+    const editBtn='<button onclick="editRefRow('+JSON.stringify(r)+')" title="Edit" style="width:22px;height:22px;border-radius:5px;border:none;background:var(--bg4);color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✎</button>';
+    const delBtn=r._src==='manual'
+      ?'<button onclick="deleteRefEntry('+r._idx+')" title="Remove" style="width:22px;height:22px;border-radius:5px;border:none;background:var(--red-dim);color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>'
+      :'';
+    const actions='<div style="display:flex;gap:3px;justify-content:center">'+editBtn+delBtn+'</div>';
     return '<tr style="border-bottom:1px solid var(--border)">'
       +'<td style="padding:8px 12px;white-space:nowrap;color:var(--text2)">'+h+'</td>'
       +'<td style="padding:8px 10px;text-align:right">$'+parseFloat(r.gross).toFixed(2)+'</td>'
       +'<td style="padding:8px 10px;text-align:right;color:var(--red)">$'+parseFloat(r.fed).toFixed(2)+'</td>'
       +'<td style="padding:8px 10px;text-align:right;color:var(--red)">$'+parseFloat(r.ss).toFixed(2)+'</td>'
       +'<td style="padding:8px 10px;text-align:right;color:var(--red)">$'+parseFloat(r.med).toFixed(2)+'</td>'
+      +'<td style="padding:8px 10px;text-align:right;color:var(--red)">'+benStr+'</td>'
+      +'<td style="padding:8px 10px;text-align:right;color:var(--text3)">'+retStr+'</td>'
       +'<td style="padding:8px 10px;text-align:right;color:var(--green);font-weight:600">$'+parseFloat(r.net).toFixed(2)+'</td>'
       +'<td style="padding:8px 10px;text-align:right">'+src+'</td>'
-      +'<td style="padding:8px 8px;text-align:center">'+del+'</td>'
+      +'<td style="padding:8px 8px;text-align:center">'+actions+'</td>'
       +'</tr>';
   }).join('');
 }
 
+function editRefRow(r) {
+  // Works for both history and manual rows.
+  // For history: pre-fills the modal with real values, creates a manual override on save.
+  // For manual: opens the existing entry for editing by its index.
+  const sv = (id,v) => {
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(v!=null && v!==undefined && v!=='' && !isNaN(parseFloat(v))) el.value=parseFloat(v).toFixed(2);
+    else el.value='';
+  };
+  // Clear all fields first
+  ['refRate','refReg','refOT','refDT','refHol','refSick','refVac',
+   'refGross','refRegPay','refOTPay','refFed','refSS','refMed',
+   'refDen','refMedI','refVis','refRetirePretax','refRetireRoth','refNet']
+    .forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const lblEl=document.getElementById('refLabel');
+  if(lblEl) lblEl.value='';
+
+  // Populate from the row data
+  sv('refRate', r.rate); sv('refReg', r.reg); sv('refOT', r.ot||0);
+  sv('refDT',   r.dt||0); sv('refHol', r.hol||0);
+  sv('refSick', r.sick||0); sv('refVac', r.vac||0);
+  sv('refGross', r.gross); sv('refRegPay', r.regPay); sv('refOTPay', r.otPay);
+  sv('refFed',   r.fed);   sv('refSS', r.ss); sv('refMed', r.med);
+  sv('refDen',   r.den||0); sv('refMedI', r.medI||0); sv('refVis', r.vis||0);
+  sv('refRetirePretax', r.retirePretax||0); sv('refRetireRoth', r.retireRoth||0);
+  sv('refNet',   r.net);
+  if(lblEl && r.label) lblEl.value = r.label;
+
+  // Set edit context
+  const modal = document.getElementById('addRefModal');
+  if(r._src === 'manual' && r._idx != null) {
+    modal.dataset.editIdx = r._idx;
+    const title = document.getElementById('addRefModalTitle');
+    if(title) title.textContent = 'Edit Reference Entry';
+    const btn = document.getElementById('addRefBtnLabel');
+    if(btn) btn.textContent = 'Update entry';
+  } else {
+    // History row: navigate to the real paycheck and open it in edit mode
+    modal.classList.remove('open'); // don't open ref modal for history
+    if(r._stubId) {
+      _openStubInEditMode(r._stubId, r._allIds);
+    } else {
+      // Fallback: open as manual override if no stubId stored
+      delete modal.dataset.editIdx;
+      const title = document.getElementById('addRefModalTitle');
+      if(title) title.textContent = 'Edit from History (override)';
+      const btn = document.getElementById('addRefBtnLabel');
+      if(btn) btn.textContent = 'Save as manual entry';
+      modal.classList.add('open');
+    }
+  }
+}
+
 function addRefEntry() {
-  const rate=parseFloat(document.getElementById('refRate')?.value);
-  const reg=parseFloat(document.getElementById('refReg')?.value);
-  const ot=parseFloat(document.getElementById('refOT')?.value)||0;
-  const gross=parseFloat(document.getElementById('refGross')?.value);
-  const fed=parseFloat(document.getElementById('refFed')?.value);
-  const ss=parseFloat(document.getElementById('refSS')?.value);
-  const med=parseFloat(document.getElementById('refMed')?.value);
-  const net=parseFloat(document.getElementById('refNet')?.value);
-  if([rate,reg,gross,fed,ss,med,net].some(isNaN)){showToast('Fill all fields',true);return;}
-  const idx=paycheckRef.findIndex(r=>Math.abs((r.rate||0)-rate)<0.005&&Math.abs(r.reg-reg)<0.01&&Math.abs((r.ot||0)-ot)<0.01);
-  if(idx>=0)paycheckRef[idx]={rate,reg,ot,gross,fed,ss,med,net};else paycheckRef.push({rate,reg,ot,gross,fed,ss,med,net});
+  const gv = id => { const el=document.getElementById(id); return el ? el.value : ''; };
+  const pf = (id, def=null) => { const v=parseFloat(gv(id)); return isNaN(v) ? def : v; };
+  const rate  = pf('refRate');
+  const reg   = pf('refReg');
+  const ot    = pf('refOT',   0);
+  const gross = pf('refGross');
+  const fed   = pf('refFed');
+  const ss    = pf('refSS');
+  const med   = pf('refMed');
+  const net   = pf('refNet');
+  if([rate,reg,gross,fed,ss,med,net].some(v=>v==null)){
+    showToast('Rate, Reg hrs, Gross, Federal, SS, Medicare and Net are required', true); return;
+  }
+  const entry = {
+    rate, reg, ot,
+    dt:           pf('refDT',   0),
+    hol:          pf('refHol',  0),
+    sick:         pf('refSick', 0),
+    vac:          pf('refVac',  0),
+    gross,
+    regPay:       pf('refRegPay'),
+    otPay:        pf('refOTPay'),
+    fed, ss, med,
+    den:          pf('refDen',  0),
+    medI:         pf('refMedI', 0),
+    vis:          pf('refVis',  0),
+    retirePretax: pf('refRetirePretax', 0),
+    retireRoth:   pf('refRetireRoth',   0),
+    net,
+  };
+  const labelVal = (gv('refLabel')||'').trim();
+  if(labelVal) entry.label = labelVal;
+  // Remove null optional fields
+  if(entry.regPay == null) delete entry.regPay;
+  if(entry.otPay  == null) delete entry.otPay;
+
+  const modal = document.getElementById('addRefModal');
+  const editIdx = modal.dataset.editIdx != null ? parseInt(modal.dataset.editIdx) : -1;
+  const matchIdx = editIdx >= 0 ? editIdx
+    : paycheckRef.findIndex(r => Math.abs((r.rate||0)-rate)<0.005 && Math.abs(r.reg-reg)<0.01 && Math.abs((r.ot||0)-ot)<0.01);
+  if(matchIdx >= 0) paycheckRef[matchIdx] = entry; else paycheckRef.push(entry);
+  delete modal.dataset.editIdx;
+
   saveRefToSettings();
-  const fEl=document.getElementById('refRateFilter');if(fEl)fEl.value=rate.toFixed(2);
+  const fEl = document.getElementById('refRateFilter');
+  if(fEl) fEl.value = rate.toFixed(2);
   renderRefTable();
-  ['refRate','refReg','refOT','refGross','refFed','refSS','refMed','refNet'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['refRate','refReg','refOT','refDT','refHol','refSick','refVac',
+   'refGross','refRegPay','refOTPay','refFed','refSS','refMed',
+   'refDen','refMedI','refVis','refRetirePretax','refRetireRoth','refNet','refLabel']
+    .forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   closeModal('addRefModal');
-  showToast('Entry saved');
+  showToast(editIdx >= 0 ? 'Entry updated' : 'Entry saved');
 }
 
 function deleteRefEntry(i){paycheckRef.splice(i,1);saveRefToSettings();renderRefTable();showToast('Entry removed');}
@@ -2833,6 +2941,58 @@ window.addEventListener('resize', updateDashEmptyText);
 
 // ===== PAYCHECK COMPARISON SYSTEM =====
 let _cmpCalc = {};  // current calculator state captured for comparison
+
+// Open a paycheck in edit mode from the Reference tab
+// If multiple stubs match, show a picker
+function _openStubInEditMode(primaryId, allIds) {
+  const ids = Array.isArray(allIds) ? allIds : [primaryId];
+  const matchedStubs = ids.map(id => stubs.find(s=>s.id===id)).filter(Boolean)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  const doOpen = (stubId) => {
+    // Navigate to history
+    const histBtn = document.querySelector('.sidebar-nav-btn[onclick*="'history'"]')
+                 || document.querySelector('.nav-btn[onclick*="'history'"]');
+    if(histBtn) histBtn.click(); else showPage('history', null, null);
+    setTimeout(() => {
+      openDetail(stubId);
+      setTimeout(() => {
+        const ev = document.getElementById('dEditView');
+        if(ev && ev.style.display === 'none') toggleEditMode();
+      }, 100);
+    }, 150);
+  };
+
+  if(matchedStubs.length <= 1) {
+    doOpen(primaryId);
+    return;
+  }
+
+  // Multiple matches — show a picker
+  let picker = document.getElementById('refPickerModal');
+  if(!picker) {
+    picker = document.createElement('div');
+    picker.id = 'refPickerModal';
+    picker.className = 'modal-overlay';
+    picker.innerHTML = '<div class="modal" style="max-width:360px">'
+      +'<div class="modal-title">Choose paycheck to edit'
+      +'<button class="modal-close" onclick="closeModal('refPickerModal')">Close</button></div>'
+      +'<div id="refPickerList" style="padding-bottom:4px"></div></div>';
+    document.getElementById('appShell').appendChild(picker);
+  }
+  document.getElementById('refPickerList').innerHTML = matchedStubs.map(s => {
+    const d = new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const ded = s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);
+    const net = s.net!=null ? s.net : parseFloat((s.gross-ded).toFixed(2));
+    return '<button onclick="closeModal('refPickerModal');_openStubInEditMode(''+s.id+'')" '
+      +'style="width:100%;text-align:left;background:var(--bg3);border:1.5px solid var(--border2);'
+      +'border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;cursor:pointer;font-family:var(--sans);">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--text)">'+d+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:2px">Gross '+fmt(s.gross)+' &nbsp;·&nbsp; Net '+fmt(net)+'</div>'
+      +'</button>';
+  }).join('');
+  picker.classList.add('open');
+}
 
 // Find best match from history or manual ref table
 // Returns {match:{gross,fed,ss,med,den,medI,vis,retirePretax,retireRoth,net}, source, label, count?} or null
