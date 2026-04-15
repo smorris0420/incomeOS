@@ -2350,7 +2350,9 @@ async function loadAll() {
   try {
     if(isOnline) {
       const [sd,st,dc] = await Promise.all([apiFetch('/api/stubs'), apiFetch('/api/settings'), apiFetch('/api/dashboard').catch(()=>null)]);
-      stubs=sd; appSettings=st;
+      // Defensive: API should return arrays/objects but guard against null
+      stubs = Array.isArray(sd) ? sd : [];
+      appSettings = (st && typeof st === 'object') ? st : {};
       // Pre-load dashboard config so renderDashboard has data immediately
       if(dc?.config?.length) {
         dashConfig = dc.config;
@@ -2393,13 +2395,12 @@ async function loadAll() {
     const pending = window._idb && userId ? await window._idb.idbOutboxCount(userId) : 0;
     if(pending > 0) setSyncDot('pending', pending);
     else setSyncDot(isOnline?'ok':'offline');
-    calc(); buildYTDTabs(); buildYTD();
-    // Dashboard config already fetched above — just compute and render
-    // Load reference table from settings
-      // Set dashYear to most recent year with data before computing
+    try { calc(); } catch(e) { console.warn('[loadAll] calc() error:', e); }
+    try { buildYTDTabs(); buildYTD(); } catch(e) { console.warn('[loadAll] YTD error:', e); }
+    // Set dashYear to most recent year with data before computing
     const _dashYears = [...new Set(stubs.map(s=>parseInt(s.date.slice(0,4))))].sort((a,b)=>b-a);
     if(_dashYears.length) dashYear = _dashYears[0];
-    computeDashData(); renderDashboard(); buildDashPanel();
+    try { computeDashData(); renderDashboard(); buildDashPanel(); } catch(e) { console.warn('[loadAll] dashboard error:', e); }
     // Hide splash AFTER the full rAF rendering chain completes (triple-nested for chart resize)
     requestAnimationFrame(()=>{
       initCanvasDrop(); initDashResizeObserver();
@@ -2414,9 +2415,12 @@ async function loadAll() {
     }
     if(isOnline) subscribeRealtime(currentUser.id);
   } catch(e) {
-    hideSplash(); // always hide splash on error too
     setSyncDot('err');
-    if(e.message!=='Session expired') showToast('Could not load data',true);
+    if(e.message!=='Session expired') {
+      console.error('[loadAll] error:', e.message, e);
+    }
+    hideSplash();
+    throw e; // re-throw so caller retry loop works
   }
 }
 
@@ -5481,18 +5485,22 @@ async function _onLoginSuccess(data) {
   const firstMb=document.querySelector('.nav-btn');
   if(firstSb) firstSb.classList.add('active');
   if(firstMb) firstMb.classList.add('active');
-  // Show splash — loadAll() hides it internally after rendering completes
+  // Show splash — loadAll() hides it after rendering completes
   showSplash('Loading your paychecks…');
-  let loadAttempts = 0;
-  while(loadAttempts < 3) {
+  for(let attempt = 1; attempt <= 3; attempt++) {
     try {
-      await loadAll();
-      break;
+      await loadAll(); // success — loadAll hides splash internally
+      return;
     } catch(e) {
-      loadAttempts++;
-      if(loadAttempts >= 3) { hideSplash(); setSyncDot('err'); showToast('Could not load data — check your connection', true); break; }
-      setSplashLabel('Retrying…');
-      await new Promise(r => setTimeout(r, 800 * loadAttempts));
+      if(e.message === 'Session expired') { hideSplash(); return; }
+      if(attempt < 3) {
+        setSplashLabel('Retrying (' + attempt + '/3)…');
+        await new Promise(r => setTimeout(r, 600 * attempt));
+      } else {
+        hideSplash();
+        setSyncDot('err');
+        showToast('Could not load data — please refresh', true);
+      }
     }
   }
 }
@@ -7034,7 +7042,7 @@ if(token&&currentUser) {
     if(mbBtns[idx]) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); mbBtns[idx].classList.add('active'); }
   }
   showSplash('Loading…');
-  loadAll().catch(()=>hideSplash()); // loadAll hides on success; catch hides on failure
+  loadAll().catch((e)=>{ hideSplash(); if(e?.message!=='Session expired') showToast('Could not load data — please refresh', true); });
 }
 </script>
 <script type="module">
