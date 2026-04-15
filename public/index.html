@@ -391,6 +391,14 @@ html{transition:background 300ms ease,color 300ms ease}
 .calc-compare-hint{font-size:11px;color:var(--text3);padding:5px 0 2px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
 .calc-compare-hint:hover{color:var(--green)}
 
+/* ── App loading splash ── */
+#appSplash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 400ms ease}
+#appSplash.fade-out{opacity:0;pointer-events:none}
+.splash-logo{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#16A34A,#14532D);display:flex;align-items:center;justify-content:center}
+.splash-spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+.splash-label{font-size:13px;color:var(--text3);font-family:var(--sans);font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
@@ -844,6 +852,20 @@ html{transition:background 300ms ease,color 300ms ease}
 <div id="appShell">
   <div id="toast" class="toast">Saved</div>
 
+  <!-- App loading splash — shown until loadAll() completes -->
+  <div id="appSplash" style="display:none">
+    <div class="splash-logo">
+      <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="29" height="29" rx="6" fill="#14532D"/>
+        <rect x="35" y="0" width="29" height="29" rx="6" fill="#4ADE80"/>
+        <rect x="0" y="35" width="29" height="29" rx="6" fill="#16A34A" opacity="0.8"/>
+        <rect x="35" y="35" width="29" height="29" rx="6" fill="#16A34A" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="splash-spinner"></div>
+    <div class="splash-label" id="splashLabel">Loading…</div>
+  </div>
+
     <!-- PAYCHECK COMPARE MODAL -->
     <div id="compareModal" class="modal-overlay">
       <div class="modal" style="max-width:540px">
@@ -1053,6 +1075,11 @@ html{transition:background 300ms ease,color 300ms ease}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
             <span id="compareHintText">Tap to compare with real paycheck</span>
           </div>
+        </div>
+        <!-- Match banner — shows when ref match overlays calculator values -->
+        <div id="calcRefMatchBanner" style="display:none;background:var(--green-dim);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:7px 12px;margin-bottom:4px;font-size:11px;color:var(--green);align-items:center;gap:6px;flex-wrap:wrap">
+          <span id="calcRefMatchSrc"></span>
+          <button onclick="openCompareModal()" style="margin-left:auto;background:none;border:1px solid var(--green-border);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:600;color:var(--green);cursor:pointer;font-family:var(--sans)">Compare</button>
         </div>
         <div class="calc-compare-hint" id="calcCompareHint" onclick="openCompareModal()" style="display:none">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -2639,6 +2666,8 @@ function calc() {
   document.getElementById('rowFltHol').style.display=fltHol>0?'flex':'none';
   document.getElementById('rowPrem').style.display=premPay>0?'flex':'none';
   document.getElementById('rowAddl').style.display=addl>0?'flex':'none';
+  // After calculating, check for a reference match and overlay exact values
+  requestAnimationFrame(_applyRefMatchToCalc);
 }
 document.getElementById('iDate').value=new Date().toISOString().slice(0,10);
 
@@ -2940,6 +2969,45 @@ function updateDashEmptyText() {
 }
 window.addEventListener('resize', updateDashEmptyText);
 
+// Apply reference match values to calculator display when an exact match exists
+function _applyRefMatchToCalc() {
+  if(typeof findPaycheckMatch !== 'function') return;
+  const rate = parseFloat(document.getElementById('iRate').value)||0;
+  const reg  = parseFloat(document.getElementById('iReg').value)||0;
+  const ot   = parseFloat(document.getElementById('iOT').value)||0;
+  const result = findPaycheckMatch(rate, reg, ot);
+  const banner = document.getElementById('calcRefMatchBanner');
+  if(!result) {
+    if(banner) banner.style.display = 'none';
+    return;
+  }
+  const a = result.match;
+  // Overlay gross, taxes, net with actual values
+  if(a.gross != null) {
+    document.getElementById('mGross').textContent = fmt(a.gross);
+    document.getElementById('mNet').textContent   = fmt(a.net);
+    document.getElementById('bNet').textContent   = fmt(a.net);
+  }
+  if(a.fed != null)  document.getElementById('bFed').textContent  = fmt(a.fed);
+  if(a.ss  != null)  document.getElementById('bSS').textContent   = fmt(a.ss);
+  if(a.med != null)  document.getElementById('bMed').textContent  = fmt(a.med);
+  if(a.den != null)  document.getElementById('bDen').textContent  = fmt(a.den);
+  if(a.medI != null) document.getElementById('bMedI').textContent = fmt(a.medI);
+  if(a.vis != null)  document.getElementById('bVis').textContent  = fmt(a.vis);
+  // Update deducted metric
+  const gross = a.gross || parseFloat((document.getElementById('mGross').textContent||'').replace(/[$,]/g,''))||0;
+  const net   = a.net   || 0;
+  document.getElementById('mDeduct').textContent = fmt(gross - net);
+  // Show match banner below results card
+  if(banner) {
+    banner.style.display = 'flex';
+    const srcEl = document.getElementById('calcRefMatchSrc');
+    if(srcEl) srcEl.textContent = result.source === 'history'
+      ? '✓ Showing actual values from ' + result.label + (result.count>1?' ('+result.count+' matches)':'')
+      : '✓ Showing actual values from reference table' + (result.label&&result.label!=='Manual entry'?' — '+result.label:'');
+  }
+}
+
 // ===== PAYCHECK COMPARISON SYSTEM =====
 let _cmpCalc = {};  // current calculator state captured for comparison
 
@@ -3181,6 +3249,26 @@ function saveRefEntry() {
   const result = findPaycheckMatch(rate, reg, ot);
   _renderCompareRows(result);
   updateCompareHint(result);
+}
+
+// ===== APP SPLASH =====
+function showSplash(label) {
+  const el = document.getElementById('appSplash');
+  const lb = document.getElementById('splashLabel');
+  if(!el) return;
+  if(lb) lb.textContent = label || 'Loading…';
+  el.style.display = 'flex';
+  el.classList.remove('fade-out');
+}
+function setSplashLabel(label) {
+  const lb = document.getElementById('splashLabel');
+  if(lb) lb.textContent = label;
+}
+function hideSplash() {
+  const el = document.getElementById('appSplash');
+  if(!el) return;
+  el.classList.add('fade-out');
+  setTimeout(() => { el.style.display = 'none'; el.classList.remove('fade-out'); }, 420);
 }
 
 // ===== CALCULATOR EXPAND/COLLAPSE =====
@@ -5381,7 +5469,21 @@ async function _onLoginSuccess(data) {
   const firstMb=document.querySelector('.nav-btn');
   if(firstSb) firstSb.classList.add('active');
   if(firstMb) firstMb.classList.add('active');
-  await loadAll();
+  // Show splash while data loads
+  showSplash('Loading your paychecks…');
+  let loadAttempts = 0;
+  while(loadAttempts < 3) {
+    try {
+      await loadAll();
+      break;
+    } catch(e) {
+      loadAttempts++;
+      if(loadAttempts >= 3) { setSyncDot('err'); showToast('Could not load data — check your connection', true); break; }
+      setSplashLabel('Retrying…');
+      await new Promise(r => setTimeout(r, 800 * loadAttempts));
+    }
+  }
+  hideSplash();
 }
 
 // ── Registration (from Settings) ──────────────────────────────────────────────
@@ -6920,7 +7022,8 @@ if(token&&currentUser) {
     if(sbBtns[idx]) { document.querySelectorAll('.sidebar-nav-btn').forEach(b=>b.classList.remove('active')); sbBtns[idx].classList.add('active'); }
     if(mbBtns[idx]) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); mbBtns[idx].classList.add('active'); }
   }
-  loadAll();
+  showSplash('Loading…');
+  loadAll().catch(()=>{}).finally(()=>hideSplash());
 }
 </script>
 <script type="module">
