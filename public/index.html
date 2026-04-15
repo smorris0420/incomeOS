@@ -2400,12 +2400,24 @@ async function loadAll() {
     const _dashYears = [...new Set(stubs.map(s=>parseInt(s.date.slice(0,4))))].sort((a,b)=>b-a);
     if(_dashYears.length) dashYear = _dashYears[0];
     computeDashData(); renderDashboard(); buildDashPanel();
-    requestAnimationFrame(()=>{ initCanvasDrop(); initDashResizeObserver(); });
+    // Hide splash AFTER the full rAF rendering chain completes (triple-nested for chart resize)
+    requestAnimationFrame(()=>{
+      initCanvasDrop(); initDashResizeObserver();
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          hideSplash();
+        });
+      });
+    });
     if(currentUser?.role==='admin' && isOnline) {
       try { allUsers=await apiFetch('/api/users'); } catch {}
     }
     if(isOnline) subscribeRealtime(currentUser.id);
-  } catch(e) { setSyncDot('err'); if(e.message!=='Session expired') showToast('Could not load data',true); }
+  } catch(e) {
+    hideSplash(); // always hide splash on error too
+    setSyncDot('err');
+    if(e.message!=='Session expired') showToast('Could not load data',true);
+  }
 }
 
 // ===== OUTBOX FLUSH =====
@@ -5469,7 +5481,7 @@ async function _onLoginSuccess(data) {
   const firstMb=document.querySelector('.nav-btn');
   if(firstSb) firstSb.classList.add('active');
   if(firstMb) firstMb.classList.add('active');
-  // Show splash while data loads
+  // Show splash — loadAll() hides it internally after rendering completes
   showSplash('Loading your paychecks…');
   let loadAttempts = 0;
   while(loadAttempts < 3) {
@@ -5478,12 +5490,11 @@ async function _onLoginSuccess(data) {
       break;
     } catch(e) {
       loadAttempts++;
-      if(loadAttempts >= 3) { setSyncDot('err'); showToast('Could not load data — check your connection', true); break; }
+      if(loadAttempts >= 3) { hideSplash(); setSyncDot('err'); showToast('Could not load data — check your connection', true); break; }
       setSplashLabel('Retrying…');
       await new Promise(r => setTimeout(r, 800 * loadAttempts));
     }
   }
-  hideSplash();
 }
 
 // ── Registration (from Settings) ──────────────────────────────────────────────
@@ -7023,7 +7034,7 @@ if(token&&currentUser) {
     if(mbBtns[idx]) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); mbBtns[idx].classList.add('active'); }
   }
   showSplash('Loading…');
-  loadAll().catch(()=>{}).finally(()=>hideSplash());
+  loadAll().catch(()=>hideSplash()); // loadAll hides on success; catch hides on failure
 }
 </script>
 <script type="module">
