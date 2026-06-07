@@ -2942,12 +2942,12 @@ function calc() {
   // Store for comparison modal
   _lastCalcValues={rate,reg,ot,dt,hol,sick,vac,fltHol,den,medI,vis,gross,fed,ss,med,net,retirePretax,retireRoth};
   // Check if a reference match exists and show/update hint
-  const _ref = gross>0 ? findBestRef(rate,reg,ot,gross) : null;
+  const _ref = gross>0 ? findPaycheckMatch(rate,reg,ot) : null;
   const hint = document.getElementById('compareHint');
   const hintText = document.getElementById('compareHintText');
   if(hint) hint.style.display = gross>0 ? 'flex' : 'none';
   if(hintText && _ref) {
-    const src = _ref.source==='history' ? 'real paycheck ('+_ref.entry.label+')' : 'reference table';
+    const src = _ref.source==='history' ? 'real paycheck ('+_ref.label+')' : 'reference table';
     hintText.textContent = 'Compare with '+src+' →';
     hint.style.color='var(--green)';
   } else if(hintText) {
