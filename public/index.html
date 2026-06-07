@@ -2591,9 +2591,14 @@ async function loadAllAsUser(userId, displayName) {
     if(appSettings.retirePretax != null) document.getElementById('iRetirePretax').value=parseFloat(appSettings.retirePretax);
     if(appSettings.retireRoth != null) document.getElementById('iRetireRoth').value=parseFloat(appSettings.retireRoth);
     if(appSettings.defaultHours != null) document.getElementById('iReg').value=appSettings.defaultHours;
+    // Load the viewed user's paycheck reference table entries into the paycheckRef variable
+    // so the calc auto-fill and ref table both reflect their data immediately
+    loadRefTable();
     // Set dashYear for this user
     const _vy=[...new Set(stubs.map(s=>parseInt(s.date.slice(0,4))))].sort((a,b)=>b-a);
     if(_vy.length) dashYear=_vy[0];
+    // Switch realtime subscription to the viewed user so changes from other sessions are received
+    if(window.SUPABASE_URL && window.SUPABASE_ANON_KEY) subscribeRealtime(userId);
     showViewAsBanner(displayName);
     showToast('Viewing as '+displayName);
     setSyncDot('ok');
@@ -2610,6 +2615,8 @@ function exitViewAs() {
   // Restore admin's own theme
   const adminTheme=localStorage.getItem('payday-theme-pref')||'light';
   applyTheme(adminTheme);
+  // Restore realtime subscription to admin's own channel
+  if(window.SUPABASE_URL && window.SUPABASE_ANON_KEY && currentUser) subscribeRealtime(currentUser.id);
   loadAll(); showToast('Back to your account');
 }
 function viewAsFromList(userId, displayName) {
@@ -3070,22 +3077,22 @@ function renderRefTable() {
     rows.push({...r,_idx:i,_src:'manual'});
   });
   if(!isNaN(fr) && fr>0) {
-    const seen = new Set(rows.map(r=>r.reg+','+(r.ot||0)));
+    const seen = new Set(rows.map(r=>r.reg+','+(r.ot||0)+','+(r.dt||0)));
     const grp = {};
     stubs.forEach(s => {
       if(Math.abs(parseFloat(s.rate)-fr)>0.005) return;
       if(s.payType&&s.payType!=='regular') return;
       if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.premHrs||0)+(s.addl||0)>0) return;
-      const k = parseFloat(s.reg).toFixed(2)+','+parseFloat(s.ot||0).toFixed(2);
+      const k = parseFloat(s.reg).toFixed(2)+','+parseFloat(s.ot||0).toFixed(2)+','+parseFloat(s.dt||0).toFixed(2);
       if(seen.has(k)) return;
-      if(!grp[k]) grp[k]={reg:parseFloat(s.reg),ot:parseFloat(s.ot||0),stubs:[]};
+      if(!grp[k]) grp[k]={reg:parseFloat(s.reg),ot:parseFloat(s.ot||0),dt:parseFloat(s.dt||0),stubs:[]};
       grp[k].stubs.push(s);
     });
     Object.values(grp).forEach(g => {
       const s=g.stubs.sort((a,b)=>b.date.localeCompare(a.date))[0];
       const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);
       const net=s.net!=null?s.net:parseFloat((s.gross-ded).toFixed(2));
-      rows.push({rate:fr,reg:g.reg,ot:g.ot,gross:s.gross,fed:s.fed,ss:s.ss,med:s.med,
+      rows.push({rate:fr,reg:g.reg,ot:g.ot,dt:g.dt||0,gross:s.gross,fed:s.fed,ss:s.ss,med:s.med,
         den:s.den,medI:s.medI,vis:s.vis,
         retirePretax:s.retirePretax!=null?s.retirePretax:null,
         retireRoth:s.retireRoth!=null?s.retireRoth:null,
@@ -3094,7 +3101,7 @@ function renderRefTable() {
         _allIds:g.stubs.map(s=>s.id)});
     });
   }
-  rows.sort((a,b)=>(a.reg+(a.ot||0)*1.5)-(b.reg+(b.ot||0)*1.5));
+  rows.sort((a,b)=>(a.reg+(a.ot||0)*1.5+(a.dt||0)*2)-(b.reg+(b.ot||0)*1.5+(b.dt||0)*2));
   if(!rows.length){
     tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text3);font-family:var(--sans);font-size:12px">'+
       (!isNaN(fr)&&fr>0?'No entries for $'+fr.toFixed(2)+'/hr':'Enter your rate above to see matching history')+'</td></tr>';
@@ -3102,7 +3109,9 @@ function renderRefTable() {
   }
   _refRowCache = rows;
   tbody.innerHTML=rows.map((r,_ri)=>{
-    const h=(r.ot||0)>0?parseFloat(r.reg)+'h reg + '+parseFloat(r.ot)+'h OT':parseFloat(r.reg)+'h';
+    const h=(r.dt||0)>0
+      ? parseFloat(r.reg)+'h reg'+(((r.ot||0)>0)?' + '+parseFloat(r.ot)+'h OT':'')+' + '+parseFloat(r.dt)+'h DT'
+      : (r.ot||0)>0?parseFloat(r.reg)+'h reg + '+parseFloat(r.ot)+'h OT':parseFloat(r.reg)+'h';
     const benTotal=(r.den||0)+(r.medI||0)+(r.vis||0);
     const retTotal=(r.retirePretax||0)+(r.retireRoth||0);
     const benStr=benTotal>0?'$'+benTotal.toFixed(2):'<span style="color:var(--text3)">—</span>';
@@ -4972,17 +4981,20 @@ function computeDashData(yr) {
 
 // ── Load / Save ──────────────────────────────────────────────────────────────
 async function loadDashboard() {
-  // Fetch fresh config (used for manual refresh or when called standalone)
-  try {
-    const r = await apiFetch('/api/dashboard');
-    if(r.config && r.config.length) {
-      dashConfig = r.config;
-    } else if(!dashConfig?.length) {
-      dashConfig = getDefaultDashConfig();
-      apiFetch('/api/dashboard',{method:'POST',body:JSON.stringify({config:dashConfig})}).catch(()=>{});
+  // When viewing as another user, skip re-fetching config — it was already loaded
+  // for that user by loadAllAsUser. Fetching here would return the admin's own config.
+  if(!viewAsUser) {
+    try {
+      const r = await apiFetch('/api/dashboard');
+      if(r.config && r.config.length) {
+        dashConfig = r.config;
+      } else if(!dashConfig?.length) {
+        dashConfig = getDefaultDashConfig();
+        apiFetch('/api/dashboard',{method:'POST',body:JSON.stringify({config:dashConfig})}).catch(()=>{});
+      }
+    } catch(e) {
+      if(!dashConfig?.length) dashConfig = getDefaultDashConfig();
     }
-  } catch(e) {
-    if(!dashConfig?.length) dashConfig = getDefaultDashConfig();
   }
   computeDashData();
   renderDashboard(); buildDashPanel();
@@ -6502,7 +6514,7 @@ async function saveSettings() {
   if(s.defaultHours) document.getElementById('iReg').value=s.defaultHours;
   if(rateVal > 0) document.getElementById('iRate').value=rateVal;
   calc();
-  if(window._idb && currentUser) window._idb.idbSaveSettings({...appSettings}, currentUser.id).catch(()=>{});
+  if(window._idb && currentUser) window._idb.idbSaveSettings({...appSettings}, viewAsUser?.id || currentUser.id).catch(()=>{});
   try {
     setSyncDot('syncing');
     await syncOp('/api/settings','POST',s);
@@ -6649,10 +6661,11 @@ async function saveLog() {
   appSettings.defaultRate=rate;
   calc();
 
-  // Persist to IndexedDB immediately
-  if(window._idb && currentUser) {
-    window._idb.idbPutStub(stub, currentUser.id).catch(()=>{});
-    window._idb.idbSaveSettings({...appSettings}, currentUser.id).catch(()=>{});
+  // Persist to IndexedDB immediately (use viewed user's id when admin is in viewAs mode)
+  const _idbUserId = viewAsUser?.id || currentUser?.id;
+  if(window._idb && _idbUserId) {
+    window._idb.idbPutStub(stub, _idbUserId).catch(()=>{});
+    window._idb.idbSaveSettings({...appSettings}, _idbUserId).catch(()=>{});
   }
   // Sync to server (or queue if offline)
   try {
@@ -6843,8 +6856,8 @@ async function saveEdit() {
   const d=new Date(s.date+'T12:00:00');
   document.getElementById('dTitle').textContent=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   buildHistory(); buildYTDTabs(); buildYTD();
-  // Update IndexedDB
-  if(window._idb && currentUser) window._idb.idbPutStub(s, currentUser.id).catch(()=>{});
+  // Update IndexedDB (use viewed user's id when admin is in viewAs mode)
+  if(window._idb && currentUser) window._idb.idbPutStub(s, viewAsUser?.id || currentUser.id).catch(()=>{});
   try {
     setSyncDot('syncing');
     // Send finalGross so API stores exactly what we computed
@@ -7177,7 +7190,7 @@ async function bulkSave() {
       markRecentlySaved(stub.id);
       await syncOp('/api/stubs','POST',stub);
       stubs.unshift(stub);
-      if(window._idb && currentUser) window._idb.idbPutStub(stub, currentUser.id).catch(()=>{});
+      if(window._idb && currentUser) window._idb.idbPutStub(stub, viewAsUser?.id || currentUser.id).catch(()=>{});
       saved++;
     } catch { failed++; }
   }

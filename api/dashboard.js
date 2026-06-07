@@ -11,12 +11,16 @@ export default async function handler(req, res) {
   if(!user) return;
 
   const supabase = db();
+  const viewAs = req.headers['x-view-as'];
+  const isAdmin = user.role === 'admin';
+  // Admins can read/write another user's dashboard via X-View-As
+  const targetUserId = (isAdmin && viewAs) ? viewAs : user.username;
 
   if(req.method==='GET') {
     const { data, error } = await supabase
       .from('dashboards')
       .select('config')
-      .eq('user_id', user.username)
+      .eq('user_id', targetUserId)
       .maybeSingle();
     if(error) { console.error('Dashboard GET:', error.message); return res.status(500).json({ error: error.message }); }
     return res.status(200).json({ config: data?.config || null });
@@ -27,7 +31,7 @@ export default async function handler(req, res) {
     if(!Array.isArray(config)) return res.status(400).json({ error: 'config must be array' });
     const { error } = await supabase
       .from('dashboards')
-      .upsert({ user_id: user.username, config, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      .upsert({ user_id: targetUserId, config, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
     if(error) { console.error('Dashboard POST:', error.message); return res.status(500).json({ error: error.message }); }
     return res.status(200).json({ ok: true });
   }
