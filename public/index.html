@@ -1217,13 +1217,13 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="input-row"><label>Regular hours</label><div class="input-wrap"><input type="number" id="iReg" value="40" step="0.25" min="0" class="no-prefix"></div></div>
           <div class="input-row"><label>Overtime hours (1.5×)</label><div class="input-wrap"><input type="number" id="iOT" value="" placeholder="0" step="0.25" class="no-prefix"></div></div>
           <div class="input-row"><label>Double time hours (2×)</label><div class="input-wrap"><input type="number" id="iDT" value="" placeholder="0" step="0.25" class="no-prefix"></div></div>
-          <div class="input-row"><label>Holiday hours</label><div class="input-wrap"><input type="number" id="iHol" value="" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+          <div class="input-row" id="iHolRow"><label>Holiday hours</label><div class="input-wrap"><input type="number" id="iHol" value="" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
           <!-- Expandable extra fields -->
           <div id="calcMoreWrap" style="display:none">
-            <div class="input-row"><label>Sick / Care hours</label><div class="input-wrap"><input type="number" id="iSick" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
-            <div class="input-row"><label>Vacation hours</label><div class="input-wrap"><input type="number" id="iVac" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
-            <div class="input-row"><label>Float Holiday hours</label><div class="input-wrap"><input type="number" id="iFltHol" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
-            <div class="input-row"><label>PTO hours</label><div class="input-wrap"><input type="number" id="iPTO" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+            <div class="input-row" id="iSickRow"><label>Sick / Care hours</label><div class="input-wrap"><input type="number" id="iSick" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+            <div class="input-row" id="iVacRow"><label>Vacation hours</label><div class="input-wrap"><input type="number" id="iVac" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+            <div class="input-row" id="iFltHolRow"><label>Float Holiday hours</label><div class="input-wrap"><input type="number" id="iFltHol" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+            <div class="input-row" id="iPTORow"><label>PTO hours</label><div class="input-wrap"><input type="number" id="iPTO" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Shift premium ($/hr)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iPremRate" placeholder="0" step="0.01" min="0"></div></div>
             <div class="input-row"><label>Premium hours</label><div class="input-wrap"><input type="number" id="iPremHrs" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Additional pay</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iAddl" placeholder="0" step="0.01"></div></div>
@@ -2265,6 +2265,7 @@ html{transition:background 300ms ease,color 300ms ease}
     <div id="dReadView"></div>
     <div id="dEditView" style="display:none">
 
+      <!-- Pay info always visible -->
       <div class="modal-section">
         <div class="modal-section-label">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -2291,66 +2292,94 @@ html{transition:background 300ms ease,color 300ms ease}
         </div>
       </div>
 
-      <div class="modal-section">
-        <div class="modal-section-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Hours
+      <!-- Tab bar -->
+      <div style="display:flex;gap:2px;margin:0 0 2px;border-bottom:1.5px solid var(--border)">
+        <button id="eTab-hours" onclick="switchEditTab('hours')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid var(--blue);background:none;color:var(--blue);cursor:pointer;transition:all .15s">Hours</button>
+        <button id="eTab-pay" onclick="switchEditTab('pay')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid transparent;background:none;color:var(--text3);cursor:pointer;transition:all .15s">Pay $</button>
+        <button id="eTab-deductions" onclick="switchEditTab('deductions')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid transparent;background:none;color:var(--text3);cursor:pointer;transition:all .15s">Deductions</button>
+      </div>
+
+      <!-- TAB: Hours -->
+      <div id="eTabPanel-hours">
+        <div class="modal-section" style="margin-top:10px">
+          <div class="modal-section-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Hours worked
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Regular hrs</label><input type="number" id="eReg" step="0.25" min="0"></div>
+            <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="eOT" step="0.25" min="0"></div>
+            <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="eDT" step="0.25" min="0"></div>
+            <div class="form-field" id="eHolRow"><label>Holiday hrs</label><input type="number" id="eHol" step="0.25" min="0"></div>
+            <div class="form-field" id="eSickRow"><label>Sick / Care hrs</label><input type="number" id="eSick" step="0.25" min="0"></div>
+            <div class="form-field" id="eVacRow"><label>Vacation hrs</label><input type="number" id="eVac" step="0.25" min="0"></div>
+            <div class="form-field" id="eFltHolRow"><label>Float Holiday hrs</label><input type="number" id="eFltHol" step="0.25" min="0"></div>
+            <div class="form-field" id="ePTORow"><label>PTO hrs</label><input type="number" id="ePTO" step="0.25" min="0"></div>
+          </div>
         </div>
-        <div class="form-grid">
-          <div class="form-field"><label>Regular hrs</label><input type="number" id="eReg" step="0.25" min="0"></div>
-          <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="eOT" step="0.25"></div>
-          <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="eDT" step="0.25"></div>
-          <div class="form-field"><label>Holiday hrs</label><input type="number" id="eHol" step="0.25" min="0"></div>
-          <div class="form-field"><label>Sick / Care hrs</label><input type="number" id="eSick" step="0.25" min="0"></div>
-          <div class="form-field"><label>Vacation hrs</label><input type="number" id="eVac" step="0.25" min="0"></div>
-          <div class="form-field"><label>Float Holiday hrs</label><input type="number" id="eFltHol" step="0.25" min="0"></div>
-          <div class="form-field"><label>PTO hrs</label><input type="number" id="ePTO" step="0.25" min="0"></div>
+        <div class="modal-section">
+          <div class="modal-section-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            Premiums &amp; additional
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="ePremRate" step="0.01" min="0"></div>
+            <div class="form-field"><label>Premium hrs</label><input type="number" id="ePremHrs" step="0.25" min="0"></div>
+            <div class="form-field"><label>Additional pay ($)</label><input type="number" id="eAddl" step="0.01"></div>
+          </div>
         </div>
       </div>
 
-      <div class="modal-section">
-        <div class="modal-section-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-          Premiums &amp; additional
-        </div>
-        <div class="form-grid">
-          <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="ePremRate" step="0.01" min="0"></div>
-          <div class="form-field"><label>Premium hrs</label><input type="number" id="ePremHrs" step="0.25" min="0"></div>
-          <div class="form-field"><label>Additional pay ($)</label><input type="number" id="eAddl" step="0.01"></div>
-        </div>
-      </div>
-
-      <div class="modal-section">
-        <div class="modal-section-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
-          Deductions
-        </div>
-        <div class="form-grid">
-          <div class="form-field"><label>Fed withholding ($)</label><input type="number" id="eFed" step="0.01" min="0"></div>
-          <div class="form-field"><label>Soc Security ($)</label><input type="number" id="eSS" step="0.01" min="0"></div>
-          <div class="form-field"><label>Medicare ($)</label><input type="number" id="eMed" step="0.01" min="0"></div>
-          <div class="form-field"><label>Dental ($)</label><input type="number" id="eDen" step="0.01" min="0"></div>
-          <div class="form-field"><label>Medical ($)</label><input type="number" id="eMedI" step="0.01" min="0"></div>
-          <div class="form-field"><label>Vision ($)</label><input type="number" id="eVis" step="0.01" min="0"></div>
-          <div class="form-field"><label>Pre-tax 401k ($)</label><input type="number" id="eRetirePretax" step="0.01" min="0" placeholder="0"></div>
-          <div class="form-field"><label>Roth 401k ($)</label><input type="number" id="eRetireRoth" step="0.01" min="0" placeholder="0"></div>
+      <!-- TAB: Pay $ -->
+      <div id="eTabPanel-pay" style="display:none">
+        <div class="modal-section" style="margin-top:10px">
+          <div class="modal-section-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            Pay amounts <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.7">&nbsp;— enter exact dollar amounts from paystub</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Regular pay ($)</label><input type="number" id="eRegPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field"><label>OT pay ($)</label><input type="number" id="eOTPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field" id="eHolPayRow"><label>Holiday pay ($)</label><input type="number" id="eHolPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field" id="eSickPayRow"><label>Sick pay ($)</label><input type="number" id="eSickPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field" id="eVacPayRow"><label>Vacation pay ($)</label><input type="number" id="eVacPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field" id="eFltHolPayRow"><label>Float Holiday pay ($)</label><input type="number" id="eFltHolPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field" id="ePTOPayRow"><label>PTO pay ($)</label><input type="number" id="ePTOPay" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field"><label>Actual gross ($)</label><input type="number" id="eGross" step="0.01" min="0" placeholder="auto"></div>
+            <div class="form-field"><label>Actual net ($)</label><input type="number" id="eNet" step="0.01" min="0" placeholder="auto"></div>
+          </div>
         </div>
       </div>
 
-      <div class="modal-section" style="border-color:var(--green-border);background:var(--green-dim)">
-        <div class="modal-section-label" style="color:var(--green)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          Paystub overrides <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.8">&nbsp;— enter exact values to match paystub</span>
+      <!-- TAB: Deductions -->
+      <div id="eTabPanel-deductions" style="display:none">
+        <div class="modal-section" style="margin-top:10px">
+          <div class="modal-section-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+            Taxes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.7">&nbsp;— leave blank to use stored values</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Fed withholding ($)</label><input type="number" id="eFed" step="0.01" min="0"></div>
+            <div class="form-field"><label>Soc Security ($)</label><input type="number" id="eSS" step="0.01" min="0"></div>
+            <div class="form-field"><label>Medicare ($)</label><input type="number" id="eMed" step="0.01" min="0"></div>
+          </div>
         </div>
-        <div class="form-grid">
-          <div class="form-field"><label>Regular pay ($)</label><input type="number" id="eRegPay" step="0.01" min="0" placeholder="optional"></div>
-          <div class="form-field"><label>OT pay ($)</label><input type="number" id="eOTPay" step="0.01" placeholder="optional"></div>
-          <div class="form-field"><label>Actual gross ($)</label><input type="number" id="eGross" step="0.01" min="0" placeholder="optional"></div>
-          <div class="form-field"><label>Actual net ($)</label><input type="number" id="eNet" step="0.01" min="0" placeholder="optional"></div>
+        <div class="modal-section">
+          <div class="modal-section-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+            Benefits &amp; retirement
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Dental ($)</label><input type="number" id="eDen" step="0.01" min="0"></div>
+            <div class="form-field"><label>Medical ($)</label><input type="number" id="eMedI" step="0.01" min="0"></div>
+            <div class="form-field"><label>Vision ($)</label><input type="number" id="eVis" step="0.01" min="0"></div>
+            <div class="form-field"><label>Pre-tax 401k ($)</label><input type="number" id="eRetirePretax" step="0.01" min="0" placeholder="0"></div>
+            <div class="form-field"><label>Roth 401k ($)</label><input type="number" id="eRetireRoth" step="0.01" min="0" placeholder="0"></div>
+          </div>
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="saveEdit()">Save changes</button>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="saveEdit()">Save changes</button>
     </div>
     <button class="btn btn-danger" style="margin-top:10px" onclick="deleteStub()">Delete this paycheck</button>
   </div>
@@ -2648,6 +2677,7 @@ async function loadAllAsUser(userId, displayName) {
     showToast('Viewing as '+displayName);
     setSyncDot('ok');
     calc();
+    applyEmploymentTypeUI();
     buildHistory(); buildYTDTabs(); buildYTD();
     computeDashData(); renderDashboard(); buildDashPanel();
     // Navigate to history so admin sees the user's paychecks immediately
@@ -2721,6 +2751,7 @@ async function loadAll() {
     if(pending > 0) setSyncDot('pending', pending);
     else setSyncDot(isOnline?'ok':'offline');
     try { calc(); } catch(e) { console.warn('[loadAll] calc() error:', e); }
+    try { applyEmploymentTypeUI(); } catch(e) { console.warn('[loadAll] applyEmploymentTypeUI error:', e); }
     try { buildYTDTabs(); buildYTD(); } catch(e) { console.warn('[loadAll] YTD error:', e); }
     // Set dashYear to most recent year with data before computing
     const _dashYears = [...new Set(stubs.map(s=>parseInt(s.date.slice(0,4))))].sort((a,b)=>b-a);
@@ -2792,7 +2823,7 @@ function fromRealtimeRow(r) {
     hol: parseFloat(r.hol),
     premHrs: parseFloat(r.prem_hrs||0), premRate: parseFloat(r.prem_rate||0),
     sick: parseFloat(r.sick||0), vac: parseFloat(r.vac||0), fltHol: parseFloat(r.flt_hol||0),
-    pto: parseFloat(r.pto||0), pto: parseFloat(r.pto||0),
+    pto: parseFloat(r.pto||0),
     addl: parseFloat(r.addl||0),
     gross: parseFloat(r.gross), fed: parseFloat(r.fed),
     ss: parseFloat(r.ss), med: parseFloat(r.med),
@@ -3038,7 +3069,7 @@ document.getElementById('iDate').value=new Date().toISOString().slice(0,10);
     });
   };
 })();
-['iDate','iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetirePretax','iRetireRoth'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+['iDate','iRate','iReg','iOT','iDT','iHol','iSick','iVac','iFltHol','iPTO','iPremRate','iPremHrs','iAddl','iDen','iMedI','iVis','iRetirePretax','iRetireRoth'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',calc); });
 
 // ===== NAVIGATION =====
 const pageOrder = ['calc','history','ytd','bulk','planner','settings','admin'];
@@ -3955,12 +3986,58 @@ function toggleCalcMore() {
   _calcMoreOpen = !_calcMoreOpen;
   const wrap  = document.getElementById('calcMoreWrap');
   const chev  = document.getElementById('calcMoreChev');
-  const label = document.getElementById('calcMoreLabel');
   const btn   = document.getElementById('calcMoreBtn');
   if (wrap)  wrap.style.display = _calcMoreOpen ? 'block' : 'none';
   if (chev)  chev.style.transform = _calcMoreOpen ? 'rotate(180deg)' : '';
-  if (label) label.textContent = _calcMoreOpen ? 'Hide extra fields' : 'Sick · Vac · Float · Premium · Additional';
   if (btn)   btn.style.color = _calcMoreOpen ? 'var(--text2)' : 'var(--text3)';
+  _updateCalcMoreLabel();
+}
+
+function _updateCalcMoreLabel() {
+  const label = document.getElementById('calcMoreLabel');
+  if (!label) return;
+  if (_calcMoreOpen) { label.textContent = 'Hide extra fields'; return; }
+  const isPartTime = appSettings.employmentType === 'part_time';
+  label.textContent = isPartTime ? 'PTO · Premium · Additional' : 'Sick · Vac · Float · PTO · Premium · Additional';
+}
+
+// Central function — call after loadAll/loadAllAsUser to apply FT/PT UI rules everywhere.
+// Also called by openLogModal and toggleEditMode so it always reflects current appSettings.
+function applyEmploymentTypeUI() {
+  const isPartTime = appSettings.employmentType === 'part_time';
+
+  // ── Calculator ──────────────────────────────────────────────────────────────
+  // FT: Holiday visible always; Sick/Vac/FltHol/PTO in the expand section
+  // PT: Holiday hidden always; PTO in the expand section; Sick/Vac/FltHol hidden
+  const iHolRow    = document.getElementById('iHolRow');
+  const iSickRow   = document.getElementById('iSickRow');
+  const iVacRow    = document.getElementById('iVacRow');
+  const iFltHolRow = document.getElementById('iFltHolRow');
+  const iPTORow    = document.getElementById('iPTORow');
+  if (iHolRow)    iHolRow.style.display    = isPartTime ? 'none' : '';
+  if (iSickRow)   iSickRow.style.display   = isPartTime ? 'none' : '';
+  if (iVacRow)    iVacRow.style.display    = isPartTime ? 'none' : '';
+  if (iFltHolRow) iFltHolRow.style.display = isPartTime ? 'none' : '';
+  if (iPTORow)    iPTORow.style.display    = '';   // always visible in expanded section
+  _updateCalcMoreLabel();
+
+  // ── Log modal ───────────────────────────────────────────────────────────────
+  const ftOnlyLogRows    = ['lHolRow','lSickRow','lVacRow','lFltHolRow'];
+  const ftOnlyLogPayRows = ['lHolPayRow','lSickPayRow','lVacPayRow','lFltHolPayRow'];
+  ftOnlyLogRows.forEach(id    => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
+  ftOnlyLogPayRows.forEach(id => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
+  const lPTORow    = document.getElementById('lPTORow');
+  const lPTOPayRow = document.getElementById('lPTOPayRow');
+  if (lPTORow)    lPTORow.style.display    = isPartTime ? '' : 'none';
+  if (lPTOPayRow) lPTOPayRow.style.display = isPartTime ? '' : 'none';
+
+  // ── Edit modal ──────────────────────────────────────────────────────────────
+  const ftOnlyEditRows = ['eHolRow','eSickRow','eVacRow','eFltHolRow','eHolPayRow','eSickPayRow','eVacPayRow','eFltHolPayRow'];
+  ftOnlyEditRows.forEach(id => { const el=document.getElementById(id); if(el) el.style.display=isPartTime?'none':''; });
+  const ePTORow    = document.getElementById('ePTORow');
+  const ePTOPayRow = document.getElementById('ePTOPayRow');
+  if (ePTORow)    ePTORow.style.display    = isPartTime ? '' : 'none';
+  if (ePTOPayRow) ePTOPayRow.style.display = isPartTime ? '' : 'none';
 }
 
 // _retireMode tracks $ vs % per field: {pretax: 'flat'|'pct', roth: 'flat'|'pct'}
@@ -6639,7 +6716,6 @@ function switchLogTab(tab) {
 function openLogModal() {
   const today=new Date().toISOString().slice(0,10);
   const rate=parseFloat(appSettings.defaultRate)||mostRecentRate()||0;
-  const isPartTime = appSettings.employmentType === 'part_time';
   document.getElementById('lDate').value=today;
   document.getElementById('lRate').value=rate||'';
   document.getElementById('lReg').value='';
@@ -6678,18 +6754,8 @@ function openLogModal() {
   document.getElementById('lPayType').onchange=function(){
     document.getElementById('lNoteField').style.display=this.value==='regular'?'none':'block';
   };
-  // Show/hide benefit fields based on employment type
-  // Full-time:  Holiday ✓ | Sick/Care ✓ | Vacation ✓ | Float Holiday ✓ | PTO ✗
-  // Part-time:  Holiday ✗ | Sick/Care ✗ | Vacation ✗ | Float Holiday ✗  | PTO ✓
-  const ftOnlyRows    = ['lHolRow','lSickRow','lVacRow','lFltHolRow'];
-  const ftOnlyPayRows = ['lHolPayRow','lSickPayRow','lVacPayRow','lFltHolPayRow'];
-  ftOnlyRows.forEach(id    => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
-  ftOnlyPayRows.forEach(id => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
-  // PTO is part-time only
-  const ptoRow    = document.getElementById('lPTORow');
-  const ptoPayRow = document.getElementById('lPTOPayRow');
-  if(ptoRow)    ptoRow.style.display    = isPartTime ? '' : 'none';
-  if(ptoPayRow) ptoPayRow.style.display = isPartTime ? '' : 'none';
+  // Apply FT/PT field visibility (also updates calculator and edit modal)
+  applyEmploymentTypeUI();
   // Always start on hours tab
   switchLogTab('hours');
   document.getElementById('logModal').classList.add('open');
@@ -6860,6 +6926,15 @@ function openDetail(id) {
   document.getElementById('dEditBtn').textContent='Edit';
   document.getElementById('detailModal').classList.add('open');
 }
+function switchEditTab(tab) {
+  ['hours','pay','deductions'].forEach(t => {
+    document.getElementById('eTabPanel-'+t).style.display = t===tab ? '' : 'none';
+    const btn = document.getElementById('eTab-'+t);
+    btn.style.borderBottomColor = t===tab ? 'var(--blue)' : 'transparent';
+    btn.style.color = t===tab ? 'var(--blue)' : 'var(--text3)';
+  });
+}
+
 function toggleEditMode() {
   const s=stubs.find(x=>x.id===activeDetailId); if(!s) return;
   const ev=document.getElementById('dEditView');
@@ -6879,7 +6954,6 @@ function toggleEditMode() {
     document.getElementById('eVac').value=s.vac||0;
     document.getElementById('eFltHol').value=s.fltHol||0;
     document.getElementById('ePTO').value=s.pto||0;
-    document.getElementById('ePTO').value=s.pto||0;
     document.getElementById('ePremRate').value=s.premRate||0;
     document.getElementById('ePremHrs').value=s.premHrs||0;
     document.getElementById('eAddl').value=s.addl||0;
@@ -6891,6 +6965,23 @@ function toggleEditMode() {
     document.getElementById('eVis').value=s.vis;
     document.getElementById('eRetirePretax').value=s.retirePretax!=null?s.retirePretax:(s.retire||0);
     document.getElementById('eRetireRoth').value=s.retireRoth||0;
+    // Pay $ tab — populate stored overrides or leave blank for auto
+    document.getElementById('eRegPay').value=s.regPay!=null&&s.regPay>0?s.regPay:'';
+    document.getElementById('eOTPay').value=s.otPay!=null&&s.otPay>0?s.otPay:'';
+    document.getElementById('eHolPay').value='';
+    document.getElementById('eSickPay').value='';
+    document.getElementById('eVacPay').value='';
+    document.getElementById('eFltHolPay').value='';
+    document.getElementById('ePTOPay').value='';
+    document.getElementById('eGross').value=s.gross||'';
+    document.getElementById('eNet').value=s.net!=null?s.net:'';
+    // Paycheck type & note
+    document.getElementById('ePayType').value=s.payType||'regular';
+    document.getElementById('eNote').value=s.note||'';
+    // FT/PT field visibility — delegate to central function
+    applyEmploymentTypeUI();
+    // Always open on Hours tab
+    switchEditTab('hours');
     // Pre-fill reg/OT pay from stored gross (back-derived)
     const _eRr=rateRound(s.rate);
     const _eRegP=payRound(_eRr*s.reg);
@@ -6918,6 +7009,7 @@ function toggleEditMode() {
 }
 async function saveEdit() {
   const s=stubs.find(x=>x.id===activeDetailId); if(!s) return;
+  const pf_ = id => { const v=parseFloat(document.getElementById(id)?.value); return isNaN(v)||v<=0?null:v; };
   const eGrossVal = parseFloat(document.getElementById('eGross').value);
   const updated={
     date:document.getElementById('eDate').value,
@@ -6929,7 +7021,6 @@ async function saveEdit() {
     sick:parseFloat(document.getElementById('eSick').value)||0,
     vac:parseFloat(document.getElementById('eVac').value)||0,
     fltHol:parseFloat(document.getElementById('eFltHol').value)||0,
-    pto:parseFloat(document.getElementById('ePTO').value)||0,
     pto:parseFloat(document.getElementById('ePTO').value)||0,
     premRate:parseFloat(document.getElementById('ePremRate').value)||0,
     premHrs:parseFloat(document.getElementById('ePremHrs').value)||0,
@@ -6943,25 +7034,34 @@ async function saveEdit() {
     retirePretax:parseFloat(document.getElementById('eRetirePretax').value)||0,
     retireRoth:parseFloat(document.getElementById('eRetireRoth').value)||0,
     retire:(parseFloat(document.getElementById('eRetirePretax').value)||0)+(parseFloat(document.getElementById('eRetireRoth').value)||0),
-    regPay:parseFloat(document.getElementById('eRegPay').value)||null,
-    otPay:parseFloat(document.getElementById('eOTPay').value)||null,
+    regPay:pf_('eRegPay'),
+    otPay:pf_('eOTPay'),
     // Only treat Gross as a manual override if user changed it from the stored value
     grossOverride: (!isNaN(eGrossVal) && eGrossVal > 0 && Math.abs(eGrossVal - s.gross) > 0.001) ? eGrossVal : null,
     net:parseFloat(document.getElementById('eNet').value)||null,
     payType:(document.getElementById('ePayType').value||'regular')==='regular'?null:document.getElementById('ePayType').value,
     note:(document.getElementById('eNote').value||'').trim()||null,
   };
-  // Compute correct gross from pay overrides or hours
+  // Compute correct gross using per-pay-type dollar overrides where entered
   const _eRegR=rateRound(updated.rate),_eOtRate=rateRound(updated.rate*1.5),_eDtRate=rateRound(updated.rate*2);
+  const holPayOvr  = pf_('eHolPay');
+  const sickPayOvr = pf_('eSickPay');
+  const vacPayOvr  = pf_('eVacPay');
+  const fltPayOvr  = pf_('eFltHolPay');
+  const ptoPayOvr  = pf_('ePTOPay');
   const _eRegPay = (updated.regPay&&updated.regPay>0) ? updated.regPay : payRound(_eRegR*updated.reg);
   const _eOTPay  = (updated.otPay&&updated.otPay>0)   ? updated.otPay  : payRound(_eOtRate*updated.ot);
   const _calcGross=parseFloat((
     _eRegPay+_eOTPay+
-    payRound(_eDtRate*updated.dt)+payRound(_eRegR*updated.hol)+
-    payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+payRound(_eRegR*(updated.pto||0))+
+    payRound(_eDtRate*updated.dt)+
+    (holPayOvr  ?? payRound(_eRegR*updated.hol))+
+    (sickPayOvr ?? payRound(_eRegR*(updated.sick||0)))+
+    (vacPayOvr  ?? payRound(_eRegR*(updated.vac||0)))+
+    (fltPayOvr  ?? payRound(_eRegR*(updated.fltHol||0)))+
+    (ptoPayOvr  ?? payRound(_eRegR*(updated.pto||0)))+
     payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
-  // Priority: explicit gross change > pay overrides calc > stored gross
+  // Priority: explicit gross entry > per-pay-type calc > stored gross
   const finalGross = updated.grossOverride || _calcGross;
   // Apply everything to the stub
   Object.assign(s, updated);
