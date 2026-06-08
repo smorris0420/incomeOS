@@ -1213,7 +1213,7 @@ html{transition:background 300ms ease,color 300ms ease}
         <div class="section-title">Hours &amp; Pay</div>
         <div class="card card-pad">
           <div class="input-row"><label>Pay date</label><div class="input-wrap"><input type="date" id="iDate" class="no-prefix" style="font-size:13px"></div></div>
-          <div class="input-row"><label>Hourly rate</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iRate" value="21.90" step="0.01" min="0"></div></div>
+          <div class="input-row"><label>Hourly rate</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iRate" value="" step="0.01" min="0"></div></div>
           <div class="input-row"><label>Regular hours</label><div class="input-wrap"><input type="number" id="iReg" value="40" step="0.25" min="0" class="no-prefix"></div></div>
           <div class="input-row"><label>Overtime hours (1.5×)</label><div class="input-wrap"><input type="number" id="iOT" value="" placeholder="0" step="0.25" class="no-prefix"></div></div>
           <div class="input-row"><label>Double time hours (2×)</label><div class="input-wrap"><input type="number" id="iDT" value="" placeholder="0" step="0.25" class="no-prefix"></div></div>
@@ -1594,7 +1594,7 @@ html{transition:background 300ms ease,color 300ms ease}
                 <label style="font-size:11px;color:var(--text3)">Pay rate</label>
                 <div style="display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:5px 10px;gap:4px">
                   <span style="font-size:12px;color:var(--text3)">$</span>
-                  <input type="number" id="spRate" step="0.01" min="0" placeholder="21.90" oninput="calcWeek()"
+                  <input type="number" id="spRate" step="0.01" min="0" placeholder="0.00" oninput="calcWeek()"
                     style="border:none;background:transparent;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:64px;-moz-appearance:textfield">
                   <span style="font-size:11px;color:var(--text3)">/hr</span>
                 </div>
@@ -1656,7 +1656,7 @@ html{transition:background 300ms ease,color 300ms ease}
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">
             <div class="form-field">
               <label>Hourly rate ($)</label>
-              <input type="number" id="btoRate" step="0.01" min="0" placeholder="21.90" oninput="runBTO()">
+              <input type="number" id="btoRate" step="0.01" min="0" placeholder="0.00" oninput="runBTO()">
             </div>
             <div class="form-field">
               <label>Regular hours</label>
@@ -1729,7 +1729,7 @@ html{transition:background 300ms ease,color 300ms ease}
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">
             <div class="form-field">
               <label>Hourly rate ($)</label>
-              <input type="number" id="pbRate" step="0.01" min="0" placeholder="21.90" oninput="runPB()">
+              <input type="number" id="pbRate" step="0.01" min="0" placeholder="0.00" oninput="runPB()">
             </div>
             <div class="form-field">
               <label>Normal week hrs</label>
@@ -1842,7 +1842,7 @@ html{transition:background 300ms ease,color 300ms ease}
         <div id="stab-pay" class="settings-tab">
           <div class="section-title">Default pay rate &amp; deductions</div>
           <div class="card card-pad">
-            <div class="input-row"><label>Hourly rate</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="sRate" step="0.01" min="0" placeholder="e.g. 21.90"></div></div>
+            <div class="input-row"><label>Hourly rate</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="sRate" step="0.01" min="0" placeholder="e.g. 22.00"></div></div>
             <div class="input-row" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border)"><label>Dental</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="sDen" placeholder="2.00" step="0.01" min="0"></div></div>
             <div class="input-row"><label>Medical</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="sMedI" placeholder="17.00" step="0.01" min="0"></div></div>
             <div class="input-row"><label>Vision</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="sVis" placeholder="0.50" step="0.01" min="0"></div></div>
@@ -1889,7 +1889,7 @@ html{transition:background 300ms ease,color 300ms ease}
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
             <div class="input-wrap" style="width:auto">
               <span class="prefix">$</span>
-              <input type="number" id="refRateFilter" step="0.01" min="0" placeholder="21.90" style="width:90px" oninput="renderRefTable()" title="Filter by rate">
+              <input type="number" id="refRateFilter" step="0.01" min="0" placeholder="0.00" style="width:90px" oninput="renderRefTable()" title="Filter by rate">
             </div>
             <span style="font-size:12px;color:var(--text3)">/hr — showing entries for this rate</span>
             <button class="btn btn-secondary btn-sm" onclick="showAddRefModal()" style="margin-left:auto">
@@ -1941,7 +1941,7 @@ html{transition:background 300ms ease,color 300ms ease}
                 Hours template
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-                <div class="form-field"><label>Rate ($/hr)</label><input type="number" id="refRate" step="0.01" min="0" placeholder="21.90" style="font-family:var(--mono)"></div>
+                <div class="form-field"><label>Rate ($/hr)</label><input type="number" id="refRate" step="0.01" min="0" placeholder="0.00" style="font-family:var(--mono)"></div>
                 <div class="form-field"><label>Reg hours</label><input type="number" id="refReg" step="0.25" min="0" placeholder="40" style="font-family:var(--mono)"></div>
                 <div class="form-field"><label>OT hours</label><input type="number" id="refOT" step="0.25" min="0" placeholder="0" style="font-family:var(--mono)"></div>
               </div>
@@ -2129,9 +2129,10 @@ html{transition:background 300ms ease,color 300ms ease}
 
 
 <div id="logModal" class="modal-overlay">
-  <div class="modal">
+  <div class="modal" style="max-width:560px">
     <div class="modal-title">Log paycheck <button class="modal-close" onclick="closeModal('logModal')">Close</button></div>
 
+    <!-- Pay info always visible -->
     <div class="modal-section">
       <div class="modal-section-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -2139,7 +2140,7 @@ html{transition:background 300ms ease,color 300ms ease}
       </div>
       <div class="form-grid">
         <div class="form-field"><label>Pay date</label><input type="date" id="lDate"></div>
-        <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="lRate" step="0.01" min="0"></div>
+        <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="lRate" step="0.01" min="0" placeholder="0.00"></div>
         <div class="form-field" style="grid-column:1/-1">
           <label>Paycheck type</label>
           <select id="lPayType" style="width:100%;padding:10px 12px;font-family:var(--sans);font-size:14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none">
@@ -2158,65 +2159,93 @@ html{transition:background 300ms ease,color 300ms ease}
       </div>
     </div>
 
-    <div class="modal-section">
-      <div class="modal-section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Hours
+    <!-- Tab bar -->
+    <div style="display:flex;gap:2px;margin:0 0 2px;border-bottom:1.5px solid var(--border)">
+      <button id="lTab-hours" onclick="switchLogTab('hours')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid var(--blue);background:none;color:var(--blue);cursor:pointer;transition:all .15s">Hours</button>
+      <button id="lTab-pay" onclick="switchLogTab('pay')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid transparent;background:none;color:var(--text3);cursor:pointer;transition:all .15s">Pay $</button>
+      <button id="lTab-deductions" onclick="switchLogTab('deductions')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:600;font-family:var(--sans);border:none;border-bottom:2px solid transparent;background:none;color:var(--text3);cursor:pointer;transition:all .15s">Deductions</button>
+    </div>
+
+    <!-- TAB: Hours -->
+    <div id="lTabPanel-hours">
+      <div class="modal-section" style="margin-top:10px">
+        <div class="modal-section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Hours worked
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Regular hrs</label><input type="number" id="lReg" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="lOT" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="lDT" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field"><label>Holiday hrs</label><input type="number" id="lHol" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field" id="lSickRow"><label>Sick / Care hrs</label><input type="number" id="lSick" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field" id="lVacRow"><label>Vacation hrs</label><input type="number" id="lVac" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field" id="lFltHolRow"><label>Float Holiday hrs</label><input type="number" id="lFltHol" step="0.25" min="0" placeholder="0"></div>
+        </div>
       </div>
-      <div class="form-grid">
-        <div class="form-field"><label>Regular hrs</label><input type="number" id="lReg" step="0.25" min="0"></div>
-        <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="lOT" value="0" step="0.25"></div>
-        <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="lDT" value="0" step="0.25"></div>
-        <div class="form-field"><label>Holiday hrs</label><input type="number" id="lHol" value="0" step="0.25" min="0"></div>
-        <div class="form-field"><label>Sick / Care hrs</label><input type="number" id="lSick" value="0" step="0.25" min="0"></div>
-        <div class="form-field"><label>Vacation hrs</label><input type="number" id="lVac" value="0" step="0.25" min="0"></div>
-        <div class="form-field"><label>Float Holiday hrs</label><input type="number" id="lFltHol" value="0" step="0.25" min="0"></div>
+      <div class="modal-section">
+        <div class="modal-section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Premiums &amp; additional
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="lPremRate" step="0.01" min="0" placeholder="0.00"></div>
+          <div class="form-field"><label>Premium hrs</label><input type="number" id="lPremHrs" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field"><label>Additional pay ($)</label><input type="number" id="lAddl" step="0.01" placeholder="0.00"></div>
+        </div>
       </div>
     </div>
 
-    <div class="modal-section">
-      <div class="modal-section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        Premiums &amp; additional
-      </div>
-      <div class="form-grid">
-        <div class="form-field"><label>Shift premium ($/hr)</label><input type="number" id="lPremRate" value="0" step="0.01" min="0"></div>
-        <div class="form-field"><label>Premium hrs</label><input type="number" id="lPremHrs" value="0" step="0.25" min="0"></div>
-        <div class="form-field"><label>Additional pay ($)</label><input type="number" id="lAddl" value="0" step="0.01"></div>
-      </div>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
-        Deductions <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.7">&nbsp;— leave blank to auto-calculate</span>
-      </div>
-      <div class="form-grid">
-        <div class="form-field"><label>Fed withholding ($)</label><input type="number" id="lFed" step="0.01" min="0" placeholder="auto"></div>
-        <div class="form-field"><label>Soc Security ($)</label><input type="number" id="lSS" step="0.01" min="0" placeholder="auto"></div>
-        <div class="form-field"><label>Medicare ($)</label><input type="number" id="lMed" step="0.01" min="0" placeholder="auto"></div>
-        <div class="form-field"><label>Dental ($)</label><input type="number" id="lDen" step="0.01" min="0"></div>
-        <div class="form-field"><label>Medical ($)</label><input type="number" id="lMedI" step="0.01" min="0"></div>
-        <div class="form-field"><label>Vision ($)</label><input type="number" id="lVis" step="0.01" min="0"></div>
-      <div class="form-field"><label>Pre-tax 401k ($)</label><input type="number" id="lRetirePretax" step="0.01" min="0" placeholder="0"></div>
-      <div class="form-field"><label>Roth 401k ($)</label><input type="number" id="lRetireRoth" step="0.01" min="0" placeholder="0"></div>
+    <!-- TAB: Pay $ -->
+    <div id="lTabPanel-pay" style="display:none">
+      <div class="modal-section" style="margin-top:10px">
+        <div class="modal-section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Pay amounts <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.7">&nbsp;— enter exact dollar amounts from paystub</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Regular pay ($)</label><input type="number" id="lRegPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>OT pay ($)</label><input type="number" id="lOTPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Double time pay ($)</label><input type="number" id="lDTPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Holiday pay ($)</label><input type="number" id="lHolPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field" id="lSickPayRow"><label>Sick pay ($)</label><input type="number" id="lSickPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field" id="lVacPayRow"><label>Vacation pay ($)</label><input type="number" id="lVacPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field" id="lFltHolPayRow"><label>Float Holiday pay ($)</label><input type="number" id="lFltHolPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Actual gross ($)</label><input type="number" id="lGross" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Actual net ($)</label><input type="number" id="lNet" step="0.01" min="0" placeholder="auto"></div>
+        </div>
       </div>
     </div>
 
-    <div class="modal-section" style="border-color:var(--green-border);background:var(--green-dim)">
-      <div class="modal-section-label" style="color:var(--green)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Paystub overrides <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.8">&nbsp;— enter exact values to match paystub</span>
+    <!-- TAB: Deductions -->
+    <div id="lTabPanel-deductions" style="display:none">
+      <div class="modal-section" style="margin-top:10px">
+        <div class="modal-section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+          Taxes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;opacity:.7">&nbsp;— leave blank to auto-calculate</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Fed withholding ($)</label><input type="number" id="lFed" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Soc Security ($)</label><input type="number" id="lSS" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field"><label>Medicare ($)</label><input type="number" id="lMed" step="0.01" min="0" placeholder="auto"></div>
+        </div>
       </div>
-      <div class="form-grid">
-        <div class="form-field"><label>Regular pay ($)</label><input type="number" id="lRegPay" step="0.01" min="0" placeholder="optional"></div>
-        <div class="form-field"><label>OT pay ($)</label><input type="number" id="lOTPay" step="0.01" placeholder="optional"></div>
-        <div class="form-field"><label>Actual gross ($)</label><input type="number" id="lGross" step="0.01" min="0" placeholder="optional"></div>
-        <div class="form-field"><label>Actual net ($)</label><input type="number" id="lNet" step="0.01" min="0" placeholder="optional"></div>
+      <div class="modal-section">
+        <div class="modal-section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+          Benefits &amp; retirement
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Dental ($)</label><input type="number" id="lDen" step="0.01" min="0" placeholder="0.00"></div>
+          <div class="form-field"><label>Medical ($)</label><input type="number" id="lMedI" step="0.01" min="0" placeholder="0.00"></div>
+          <div class="form-field"><label>Vision ($)</label><input type="number" id="lVis" step="0.01" min="0" placeholder="0.00"></div>
+          <div class="form-field"><label>Pre-tax 401k ($)</label><input type="number" id="lRetirePretax" step="0.01" min="0" placeholder="0.00"></div>
+          <div class="form-field"><label>Roth 401k ($)</label><input type="number" id="lRetireRoth" step="0.01" min="0" placeholder="0.00"></div>
+        </div>
       </div>
     </div>
 
-    <button class="btn btn-primary" onclick="saveLog()">Save paycheck</button>
+    <button class="btn btn-primary" style="margin-top:14px" onclick="saveLog()">Save paycheck</button>
   </div>
 </div>
 
@@ -2341,6 +2370,12 @@ html{transition:background 300ms ease,color 300ms ease}
         <select id="nuRole"><option value="user">User</option><option value="admin">Admin</option></select>
       </div>
     </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Employment type</label>
+        <select id="nuEmpType"><option value="full_time">Full-time</option><option value="part_time">Part-time</option></select>
+      </div>
+      <div class="form-field"></div>
+    </div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="createUser()">Create user</button>
   </div>
 </div>
@@ -2358,7 +2393,7 @@ html{transition:background 300ms ease,color 300ms ease}
     </div>
     <div class="form-grid">
       <div class="form-field"><label>Email <span style="color:var(--text3);font-weight:400">(optional)</span></label><input type="email" id="euEmail" autocapitalize="none" placeholder="sam@disney.com"></div>
-      <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="euRate" step="0.01" min="0" placeholder="21.90"></div>
+      <div class="form-field"><label>Hourly rate ($)</label><input type="number" id="euRate" step="0.01" min="0" placeholder="0.00"></div>
     </div>
     <div class="form-grid">
       <div class="form-field"><label>Role</label>
@@ -2367,6 +2402,12 @@ html{transition:background 300ms ease,color 300ms ease}
       <div class="form-field"><label>Status</label>
         <select id="euActive"><option value="true">Active</option><option value="false">Inactive</option></select>
       </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Employment type</label>
+        <select id="euEmpType"><option value="full_time">Full-time</option><option value="part_time">Part-time</option></select>
+      </div>
+      <div class="form-field"></div>
     </div>
 
     <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:14px 0 8px">Default deductions</div>
@@ -2665,9 +2706,9 @@ async function loadAll() {
     const defaultRate=appSettings.defaultRate||mostRecentRate()||21.90;
     document.getElementById('iRate').value=defaultRate;
     if(appSettings.defaultHours != null) document.getElementById('iReg').value=appSettings.defaultHours;
-    // First login: no saved settings yet — auto-save sensible defaults so they're per-user from the start
+    // First login: no saved settings yet — save empty defaults so new users start clean
     if(isOnline && !Object.keys(appSettings).length) {
-      const firstDefaults={den:2,medI:17,vis:0.5,defaultRate:parseFloat(defaultRate)||21.90};
+      const firstDefaults={den:0,medI:0,vis:0,defaultRate:0};
       Object.assign(appSettings,firstDefaults);
       syncOp('/api/settings','POST',firstDefaults).catch(()=>{});
     }
@@ -6312,10 +6353,11 @@ async function buildAdminPage() {
       const isSelf = u.username === currentUser?.username;
       const adminBadge = u.role==='admin' ? '<span class="user-badge user-badge-admin">Admin</span>' : '<span class="user-badge" style="background:var(--blue-dim);color:var(--blue)">User</span>';
       const inactiveBadge = !u.active ? '<span class="user-badge user-badge-inactive">Inactive</span>' : '';
+      const empBadge = u.employmentType==='part_time' ? '<span class="user-badge" style="background:var(--bg4);color:var(--text3)">PT</span>' : '<span class="user-badge" style="background:var(--green-dim);color:var(--green)">FT</span>';
       return `<div class="user-row">
         <div class="user-avatar">${initials}</div>
         <div class="user-info">
-          <div class="user-name">${u.displayName||u.username} ${adminBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
+          <div class="user-name">${u.displayName||u.username} ${adminBadge}${empBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
           <div class="user-meta">@${u.username}${u.email?' &middot; '+u.email:''}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
         </div>
         <div class="user-actions">
@@ -6344,10 +6386,11 @@ async function buildUserList() {
     const isSelf = u.username === currentUser?.username;
     const adminBadge = u.role==='admin' ? '<span class="user-badge user-badge-admin">Admin</span>' : '<span class="user-badge" style="background:var(--blue-dim);color:var(--blue)">User</span>';
     const inactiveBadge = !u.active ? '<span class="user-badge user-badge-inactive">Inactive</span>' : '';
+    const empBadge = u.employmentType==='part_time' ? '<span class="user-badge" style="background:var(--bg4);color:var(--text3)">PT</span>' : '<span class="user-badge" style="background:var(--green-dim);color:var(--green)">FT</span>';
     return `<div class="user-row">
       <div class="user-avatar">${initials}</div>
       <div class="user-info">
-        <div class="user-name">${u.displayName||u.username} ${adminBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
+        <div class="user-name">${u.displayName||u.username} ${adminBadge}${empBadge}${inactiveBadge}${isSelf?'<span style="font-size:10px;color:var(--green);background:var(--green-dim);padding:1px 7px;border-radius:5px;font-weight:700;margin-left:4px">you</span>':''}</div>
         <div class="user-meta">@${u.username}${u.email?' &middot; '+u.email:''}${u.defaultRate?' &middot; $'+parseFloat(u.defaultRate).toFixed(2)+'/hr':''}</div>
       </div>
       <div class="user-actions">
@@ -6372,12 +6415,14 @@ async function openEditUserModal(userId) {
   document.getElementById('euDen').value='';
   document.getElementById('euMedI').value='';
   document.getElementById('euVis').value='';
+  document.getElementById('euEmpType').value='full_time';
   try {
     const settings = await apiFetch('/api/settings',{},userId);
     if(settings.defaultRate) document.getElementById('euRate').value=parseFloat(settings.defaultRate).toFixed(2);
     if(settings.den) document.getElementById('euDen').value=parseFloat(settings.den).toFixed(2);
     if(settings.medI) document.getElementById('euMedI').value=parseFloat(settings.medI).toFixed(2);
     if(settings.vis) document.getElementById('euVis').value=parseFloat(settings.vis).toFixed(2);
+    if(settings.employmentType) document.getElementById('euEmpType').value=settings.employmentType;
   } catch {}
   document.getElementById('editUserModal').classList.add('open');
 }
@@ -6388,13 +6433,14 @@ async function saveEditUser() {
   const displayName=document.getElementById('euDisplay').value.trim();
   const role=document.getElementById('euRole').value;
   const active=document.getElementById('euActive').value==='true';
+  const empType=document.getElementById('euEmpType').value;
   if(!username) { showToast('Username is required',true); return; }
   // Collect default settings
   const rateVal=parseFloat(document.getElementById('euRate').value);
   const denVal=parseFloat(document.getElementById('euDen').value);
   const medIVal=parseFloat(document.getElementById('euMedI').value);
   const visVal=parseFloat(document.getElementById('euVis').value);
-  const settingsUpdate={};
+  const settingsUpdate={employmentType:empType};
   if(!isNaN(rateVal)&&rateVal>0) settingsUpdate.defaultRate=rateVal;
   if(!isNaN(denVal)&&denVal>=0) settingsUpdate.den=denVal;
   if(!isNaN(medIVal)&&medIVal>=0) settingsUpdate.medI=medIVal;
@@ -6403,10 +6449,7 @@ async function saveEditUser() {
     setSyncDot('syncing');
     // Save account info and settings in parallel
     const ops=[apiFetch('/api/users?id='+id,{method:'PATCH',body:JSON.stringify({username,email,displayName,role,active})})];
-    if(Object.keys(settingsUpdate).length) {
-      // Use X-View-As to write settings as this user
-      ops.push(fetch('/api/settings',{method:'POST',headers:{...({'Content-Type':'application/json','Authorization':'Bearer '+token}),'X-View-As':id},body:JSON.stringify(settingsUpdate)}).then(r=>r.json()));
-    }
+    ops.push(fetch('/api/settings',{method:'POST',headers:{...({'Content-Type':'application/json','Authorization':'Bearer '+token}),'X-View-As':id},body:JSON.stringify(settingsUpdate)}).then(r=>r.json()));
     await Promise.all(ops);
     setSyncDot('ok');
     closeModal('editUserModal');
@@ -6450,6 +6493,7 @@ function openNewUserModal() {
   document.getElementById('nuDisplay').value='';
   document.getElementById('nuPassword').value='';
   document.getElementById('nuRole').value='user';
+  document.getElementById('nuEmpType').value='full_time';
   document.getElementById('newUserModal').classList.add('open');
 }
 async function createUser() {
@@ -6458,12 +6502,18 @@ async function createUser() {
   const displayName=document.getElementById('nuDisplay').value.trim();
   const password=document.getElementById('nuPassword').value;
   const role=document.getElementById('nuRole').value;
+  const empType=document.getElementById('nuEmpType').value;
   if(!username) { showToast('Username is required',true); return; }
   if(!password) { showToast('Password is required',true); return; }
   if(password.length<6) { showToast('Password must be at least 6 characters',true); return; }
   try {
     setSyncDot('syncing');
-    await apiFetch('/api/users',{method:'POST',body:JSON.stringify({username,email,displayName,password,role})});
+    const res=await apiFetch('/api/users',{method:'POST',body:JSON.stringify({username,email,displayName,password,role})});
+    // Save employment type to the new user's settings using their id
+    const newId=res?.id;
+    if(newId) {
+      await fetch('/api/settings',{method:'POST',headers:{...({'Content-Type':'application/json','Authorization':'Bearer '+token}),'X-View-As':newId},body:JSON.stringify({employmentType:empType,den:0,medI:0,vis:0,defaultRate:0})}).catch(()=>{});
+    }
     setSyncDot('ok'); closeModal('newUserModal');
     await buildUserList(); showToast('User @'+username+' created');
   } catch(e) { setSyncDot('err'); showToast(e.message||'Error creating user',true); }
@@ -6556,40 +6606,67 @@ async function confirmClear() {
   else { setSyncDot('ok'); showToast('All paychecks deleted'); }
 }
 
+// ===== LOG MODAL TAB SWITCHER =====
+function switchLogTab(tab) {
+  ['hours','pay','deductions'].forEach(t => {
+    document.getElementById('lTabPanel-'+t).style.display = t===tab ? '' : 'none';
+    const btn = document.getElementById('lTab-'+t);
+    btn.style.borderBottomColor = t===tab ? 'var(--blue)' : 'transparent';
+    btn.style.color = t===tab ? 'var(--blue)' : 'var(--text3)';
+  });
+}
+
 // ===== LOG MODAL =====
 function openLogModal() {
   const today=new Date().toISOString().slice(0,10);
-  const rate=parseFloat(document.getElementById('iRate').value)||appSettings.defaultRate||mostRecentRate()||21.90;
+  const rate=parseFloat(appSettings.defaultRate)||mostRecentRate()||0;
+  const isPartTime = appSettings.employmentType === 'part_time';
   document.getElementById('lDate').value=today;
-  document.getElementById('lRate').value=rate;
-  document.getElementById('lReg').value=40;
-  document.getElementById('lOT').value=0;
-  document.getElementById('lDT').value=0;
-  document.getElementById('lHol').value=0;
-  document.getElementById('lSick').value=0;
-  document.getElementById('lVac').value=0;
-  document.getElementById('lFltHol').value=0;
-  document.getElementById('lPremRate').value=0;
-  document.getElementById('lPremHrs').value=0;
-  document.getElementById('lAddl').value=0;
+  document.getElementById('lRate').value=rate||'';
+  document.getElementById('lReg').value='';
+  document.getElementById('lOT').value='';
+  document.getElementById('lDT').value='';
+  document.getElementById('lHol').value='';
+  document.getElementById('lSick').value='';
+  document.getElementById('lVac').value='';
+  document.getElementById('lFltHol').value='';
+  document.getElementById('lPremRate').value='';
+  document.getElementById('lPremHrs').value='';
+  document.getElementById('lAddl').value='';
   document.getElementById('lRegPay').value='';
   document.getElementById('lOTPay').value='';
+  document.getElementById('lDTPay').value='';
+  document.getElementById('lHolPay').value='';
+  document.getElementById('lSickPay').value='';
+  document.getElementById('lVacPay').value='';
+  document.getElementById('lFltHolPay').value='';
   document.getElementById('lGross').value='';
   document.getElementById('lNet').value='';
-  document.getElementById('lRetirePretax').value='';
-  document.getElementById('lRetireRoth').value='';
   document.getElementById('lFed').value='';
   document.getElementById('lSS').value='';
   document.getElementById('lMed').value='';
-  document.getElementById('lDen').value=parseFloat(appSettings.den||2).toFixed(2);
-  document.getElementById('lMedI').value=parseFloat(appSettings.medI||17).toFixed(2);
-  document.getElementById('lVis').value=parseFloat(appSettings.vis||0.5).toFixed(2);
+  document.getElementById('lDen').value=appSettings.den!=null&&appSettings.den>0?parseFloat(appSettings.den).toFixed(2):'';
+  document.getElementById('lMedI').value=appSettings.medI!=null&&appSettings.medI>0?parseFloat(appSettings.medI).toFixed(2):'';
+  document.getElementById('lVis').value=appSettings.vis!=null&&appSettings.vis>0?parseFloat(appSettings.vis).toFixed(2):'';
+  document.getElementById('lRetirePretax').value='';
+  document.getElementById('lRetireRoth').value='';
   document.getElementById('lPayType').value='regular';
   document.getElementById('lNote').value='';
   document.getElementById('lNoteField').style.display='none';
   document.getElementById('lPayType').onchange=function(){
     document.getElementById('lNoteField').style.display=this.value==='regular'?'none':'block';
   };
+  // Hide benefit rows for part-time users who don't get those benefits
+  ['lSickRow','lVacRow','lFltHolRow'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = isPartTime ? 'none' : '';
+  });
+  ['lSickPayRow','lVacPayRow','lFltHolPayRow'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = isPartTime ? 'none' : '';
+  });
+  // Always start on hours tab
+  switchLogTab('hours');
   document.getElementById('logModal').classList.add('open');
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -6622,27 +6699,33 @@ async function saveLog() {
   const medRaw=parseFloat(document.getElementById('lMed').value);
   const ss=isNaN(ssRaw)?parseFloat((_lFicaBase*0.062).toFixed(2)):ssRaw;
   const med=isNaN(medRaw)?parseFloat((_lFicaBase*0.0145).toFixed(2)):medRaw;
-  // Use exact paystub values if entered, otherwise use calculated
-  const regPayRaw=parseFloat(document.getElementById('lRegPay').value);
-  const otPayRaw=parseFloat(document.getElementById('lOTPay').value);
-  const grossRaw=parseFloat(document.getElementById('lGross').value);
-  // If individual pay amounts entered, recalc gross from those
-  const hasPayOverrides = (!isNaN(regPayRaw)&&regPayRaw>0) || (!isNaN(otPayRaw)&&otPayRaw>0);
-  let finalGross = gross;
-  if(!isNaN(grossRaw) && grossRaw > 0) {
-    finalGross = grossRaw;
-  } else if(hasPayOverrides) {
-    const fReg = !isNaN(regPayRaw)&&regPayRaw>0 ? regPayRaw : payRound(rateRound(rate)*reg);
-    const fOT  = !isNaN(otPayRaw)&&otPayRaw>0   ? otPayRaw  : payRound(rateRound(rate*1.5)*ot);
-    const _r=rateRound(rate);
-    finalGross = parseFloat((fReg+fOT+payRound(rateRound(rate*2)*dt)+payRound(_r*hol)+payRound(_r*sick)+payRound(_r*vac)+payRound(_r*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
-  }
+  // Read per-pay-type dollar overrides from the Pay $ tab
+  const pf_ = id => { const v=parseFloat(document.getElementById(id)?.value); return isNaN(v)||v<=0?null:v; };
+  const regPayRaw  = pf_('lRegPay');
+  const otPayRaw   = pf_('lOTPay');
+  const dtPayRaw   = pf_('lDTPay');
+  const holPayRaw  = pf_('lHolPay');
+  const sickPayRaw = pf_('lSickPay');
+  const vacPayRaw  = pf_('lVacPay');
+  const fltPayRaw  = pf_('lFltHolPay');
+  const grossRaw   = pf_('lGross');
+  // Build gross: explicit gross wins; otherwise sum pay-type overrides + calculated remainder
+  const _r=rateRound(rate);
+  const fReg  = regPayRaw  ?? payRound(_r*reg);
+  const fOT   = otPayRaw   ?? payRound(rateRound(rate*1.5)*ot);
+  const fDT   = dtPayRaw   ?? payRound(rateRound(rate*2)*dt);
+  const fHol  = holPayRaw  ?? payRound(_r*hol);
+  const fSick = sickPayRaw ?? payRound(_r*sick);
+  const fVac  = vacPayRaw  ?? payRound(_r*vac);
+  const fFlt  = fltPayRaw  ?? payRound(_r*fltHol);
+  const calcedGross = parseFloat((fReg+fOT+fDT+fHol+fSick+fVac+fFlt+payRound(premRate*premHrs)+addl).toFixed(2));
+  const finalGross = grossRaw ?? calcedGross;
   const netRaw=parseFloat(document.getElementById('lNet').value);
   const payType=document.getElementById('lPayType')?.value||'regular';
   const noteVal=(document.getElementById('lNote')?.value||'').trim();
   const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
-    regPay:(!isNaN(regPayRaw)&&regPayRaw>0)?regPayRaw:null,
-    otPay:(!isNaN(otPayRaw)&&otPayRaw>0)?otPayRaw:null,
+    regPay:regPayRaw,
+    otPay:otPayRaw,
     fed,ss,med,den,medI,vis,retire,retirePretax,retireRoth,net:isNaN(netRaw)?null:netRaw,
     payType:payType==='regular'?null:payType,
     note:noteVal||null,
@@ -6954,7 +7037,7 @@ function bulkCardHTML(i) {
       </div>
       <div class="bulk-cell" style="flex:1">
         <label>Rate $/hr</label>
-        <input type="number" id="bc-rate-${i}" step="0.01" min="0" placeholder="21.90" oninput="bulkCardPreview(${i})">
+        <input type="number" id="bc-rate-${i}" step="0.01" min="0" placeholder="0.00" oninput="bulkCardPreview(${i})">
       </div>
       <div class="bulk-cell" style="flex:1">
         <label>Reg Hrs</label>

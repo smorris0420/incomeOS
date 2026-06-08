@@ -33,9 +33,12 @@ export default async function handler(req, res) {
     if (!payload) return;
     const { data: users } = await supabase.from('users').select('id,username,email,display_name,role,active,created_at').order('created_at');
     const { data: rates } = await supabase.from('settings').select('user_id,value').eq('key','defaultRate');
+    const { data: empTypes } = await supabase.from('settings').select('user_id,value').eq('key','employmentType');
     const rateMap = {};
     (rates||[]).forEach(r => { try { rateMap[r.user_id] = JSON.parse(r.value); } catch {} });
-    return res.status(200).json((users||[]).map(u => ({...safeUser(u), defaultRate: rateMap[u.id] || null})));
+    const empMap = {};
+    (empTypes||[]).forEach(r => { try { empMap[r.user_id] = JSON.parse(r.value); } catch {} });
+    return res.status(200).json((users||[]).map(u => ({...safeUser(u), defaultRate: rateMap[u.id] || null, employmentType: empMap[u.id] || 'full_time'})));
   }
 
   if (req.method === 'POST') {
