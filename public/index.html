@@ -6679,17 +6679,17 @@ function openLogModal() {
     document.getElementById('lNoteField').style.display=this.value==='regular'?'none':'block';
   };
   // Show/hide benefit fields based on employment type
-  // Full-time:  Holiday ✓ | Sick/Care ✓ | Vacation ✓ | Float Holiday ✓ | PTO ✓
+  // Full-time:  Holiday ✓ | Sick/Care ✓ | Vacation ✓ | Float Holiday ✓ | PTO ✗
   // Part-time:  Holiday ✗ | Sick/Care ✗ | Vacation ✗ | Float Holiday ✗  | PTO ✓
   const ftOnlyRows    = ['lHolRow','lSickRow','lVacRow','lFltHolRow'];
   const ftOnlyPayRows = ['lHolPayRow','lSickPayRow','lVacPayRow','lFltHolPayRow'];
   ftOnlyRows.forEach(id    => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
   ftOnlyPayRows.forEach(id => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
-  // PTO always visible for all employment types
+  // PTO is part-time only
   const ptoRow    = document.getElementById('lPTORow');
   const ptoPayRow = document.getElementById('lPTOPayRow');
-  if(ptoRow)    ptoRow.style.display    = '';
-  if(ptoPayRow) ptoPayRow.style.display = '';
+  if(ptoRow)    ptoRow.style.display    = isPartTime ? '' : 'none';
+  if(ptoPayRow) ptoPayRow.style.display = isPartTime ? '' : 'none';
   // Always start on hours tab
   switchLogTab('hours');
   document.getElementById('logModal').classList.add('open');
