@@ -2,7 +2,6 @@ import { requireAuth } from './_auth.js';
 import { db } from './_db.js';
 
 function fromRow(r) {
-  // retire = pretax + roth (backward compat: old rows have only retire, no split)
   const retirePretax = r.retire_pretax != null ? parseFloat(r.retire_pretax) : null;
   const retireRoth   = r.retire_roth   != null ? parseFloat(r.retire_roth)   : null;
   const retire       = parseFloat(r.retire || 0);
@@ -27,6 +26,7 @@ function fromRow(r) {
     sick:   parseFloat(r.sick    || 0),
     vac:    parseFloat(r.vac     || 0),
     fltHol: parseFloat(r.flt_hol || 0),
+    pto:    parseFloat(r.pto     || 0),
     retire,
     retirePretax: retirePretax != null ? retirePretax : retire,
     retireRoth:   retireRoth   != null ? retireRoth   : 0,
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       id: s.id, user_id: targetUserId, date: s.date, period: s.period || null,
       rate: s.rate, reg: s.reg, ot: s.ot || 0, dt: s.dt || 0, hol: s.hol || 0,
       prem_hrs: s.premHrs || 0, prem_rate: s.premRate || 0, addl: s.addl || 0,
-      sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0,
+      sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0, pto: s.pto || 0,
       retire: s.retire || 0,
       retire_pretax: s.retirePretax ?? s.retire ?? 0,
       retire_roth:   s.retireRoth   ?? 0,
@@ -95,6 +95,7 @@ export default async function handler(req, res) {
       payRound(regRate * (s.sick || 0)) +
       payRound(regRate * (s.vac || 0)) +
       payRound(regRate * (s.flt_hol || 0)) +
+      payRound(regRate * (s.pto || 0)) +
       payRound((s.premHrs || 0) * (s.premRate || 0)) +
       (s.addl || 0)
     ).toFixed(2));
@@ -102,7 +103,7 @@ export default async function handler(req, res) {
       date: s.date, rate: s.rate, reg: s.reg,
       ot: s.ot || 0, dt: s.dt || 0, hol: s.hol || 0,
       prem_hrs: s.premHrs || 0, prem_rate: s.premRate || 0, addl: s.addl || 0,
-      sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0,
+      sick: s.sick || 0, vac: s.vac || 0, flt_hol: s.fltHol || 0, pto: s.pto || 0,
       retire: s.retire || 0,
       retire_pretax: s.retirePretax ?? s.retire ?? 0,
       retire_roth:   s.retireRoth   ?? 0,

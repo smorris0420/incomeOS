@@ -1223,6 +1223,7 @@ html{transition:background 300ms ease,color 300ms ease}
             <div class="input-row"><label>Sick / Care hours</label><div class="input-wrap"><input type="number" id="iSick" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Vacation hours</label><div class="input-wrap"><input type="number" id="iVac" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Float Holiday hours</label><div class="input-wrap"><input type="number" id="iFltHol" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
+            <div class="input-row"><label>PTO hours</label><div class="input-wrap"><input type="number" id="iPTO" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Shift premium ($/hr)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iPremRate" placeholder="0" step="0.01" min="0"></div></div>
             <div class="input-row"><label>Premium hours</label><div class="input-wrap"><input type="number" id="iPremHrs" placeholder="0" step="0.25" min="0" class="no-prefix"></div></div>
             <div class="input-row"><label>Additional pay</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="iAddl" placeholder="0" step="0.01"></div></div>
@@ -2177,10 +2178,11 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="form-field"><label>Regular hrs</label><input type="number" id="lReg" step="0.25" min="0" placeholder="0"></div>
           <div class="form-field"><label>OT hrs (1.5×)</label><input type="number" id="lOT" step="0.25" min="0" placeholder="0"></div>
           <div class="form-field"><label>Double time hrs (2×)</label><input type="number" id="lDT" step="0.25" min="0" placeholder="0"></div>
-          <div class="form-field"><label>Holiday hrs</label><input type="number" id="lHol" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field" id="lHolRow"><label>Holiday hrs</label><input type="number" id="lHol" step="0.25" min="0" placeholder="0"></div>
           <div class="form-field" id="lSickRow"><label>Sick / Care hrs</label><input type="number" id="lSick" step="0.25" min="0" placeholder="0"></div>
           <div class="form-field" id="lVacRow"><label>Vacation hrs</label><input type="number" id="lVac" step="0.25" min="0" placeholder="0"></div>
           <div class="form-field" id="lFltHolRow"><label>Float Holiday hrs</label><input type="number" id="lFltHol" step="0.25" min="0" placeholder="0"></div>
+          <div class="form-field" id="lPTORow"><label>PTO hrs</label><input type="number" id="lPTO" step="0.25" min="0" placeholder="0"></div>
         </div>
       </div>
       <div class="modal-section">
@@ -2207,10 +2209,11 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="form-field"><label>Regular pay ($)</label><input type="number" id="lRegPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field"><label>OT pay ($)</label><input type="number" id="lOTPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field"><label>Double time pay ($)</label><input type="number" id="lDTPay" step="0.01" min="0" placeholder="auto"></div>
-          <div class="form-field"><label>Holiday pay ($)</label><input type="number" id="lHolPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field" id="lHolPayRow"><label>Holiday pay ($)</label><input type="number" id="lHolPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field" id="lSickPayRow"><label>Sick pay ($)</label><input type="number" id="lSickPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field" id="lVacPayRow"><label>Vacation pay ($)</label><input type="number" id="lVacPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field" id="lFltHolPayRow"><label>Float Holiday pay ($)</label><input type="number" id="lFltHolPay" step="0.01" min="0" placeholder="auto"></div>
+          <div class="form-field" id="lPTOPayRow"><label>PTO pay ($)</label><input type="number" id="lPTOPay" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field"><label>Actual gross ($)</label><input type="number" id="lGross" step="0.01" min="0" placeholder="auto"></div>
           <div class="form-field"><label>Actual net ($)</label><input type="number" id="lNet" step="0.01" min="0" placeholder="auto"></div>
         </div>
@@ -2301,6 +2304,7 @@ html{transition:background 300ms ease,color 300ms ease}
           <div class="form-field"><label>Sick / Care hrs</label><input type="number" id="eSick" step="0.25" min="0"></div>
           <div class="form-field"><label>Vacation hrs</label><input type="number" id="eVac" step="0.25" min="0"></div>
           <div class="form-field"><label>Float Holiday hrs</label><input type="number" id="eFltHol" step="0.25" min="0"></div>
+          <div class="form-field"><label>PTO hrs</label><input type="number" id="ePTO" step="0.25" min="0"></div>
         </div>
       </div>
 
@@ -2788,6 +2792,7 @@ function fromRealtimeRow(r) {
     hol: parseFloat(r.hol),
     premHrs: parseFloat(r.prem_hrs||0), premRate: parseFloat(r.prem_rate||0),
     sick: parseFloat(r.sick||0), vac: parseFloat(r.vac||0), fltHol: parseFloat(r.flt_hol||0),
+    pto: parseFloat(r.pto||0), pto: parseFloat(r.pto||0),
     addl: parseFloat(r.addl||0),
     gross: parseFloat(r.gross), fed: parseFloat(r.fed),
     ss: parseFloat(r.ss), med: parseFloat(r.med),
@@ -2931,6 +2936,7 @@ function calc() {
   const sick=parseFloat(document.getElementById('iSick').value)||0;
   const vac=parseFloat(document.getElementById('iVac').value)||0;
   const fltHol=parseFloat(document.getElementById('iFltHol').value)||0;
+  const pto=parseFloat(document.getElementById('iPTO')?.value)||0;
   const premRate=parseFloat(document.getElementById('iPremRate').value)||0;
   const premHrs=parseFloat(document.getElementById('iPremHrs').value)||0;
   const addl=parseFloat(document.getElementById('iAddl').value)||0;
@@ -2939,9 +2945,9 @@ function calc() {
   const vis=parseFloat(document.getElementById('iVis').value)||0;
   const regRate=rateRound(rate), otRate=rateRound(rate*1.5), dtRate=rateRound(rate*2);
   const regPay=payRound(regRate*reg), otPay=payRound(otRate*ot), dtPay=payRound(dtRate*dt);
-  const holPay=payRound(regRate*hol), sickPay=payRound(regRate*sick), vacPay=payRound(regRate*vac), fltHolPay=payRound(regRate*fltHol);
+  const holPay=payRound(regRate*hol), sickPay=payRound(regRate*sick), vacPay=payRound(regRate*vac), fltHolPay=payRound(regRate*fltHol), ptoPay_=payRound(regRate*pto);
   const premPay=premRate*premHrs;
-  const gross=regPay+otPay+dtPay+holPay+sickPay+vacPay+fltHolPay+premPay+addl;
+  const gross=regPay+otPay+dtPay+holPay+sickPay+vacPay+fltHolPay+ptoPay_+premPay+addl;
   // Resolve pre-tax 401k: flat $ or % of gross — reduces federal taxable income
   const _pretaxRaw=parseFloat(document.getElementById('iRetirePretax').value)||0;
   const retirePretax = _retireMode.pretax==='pct' ? parseFloat(Math.max(0,gross*_pretaxRaw/100).toFixed(2)) : _pretaxRaw;
@@ -2981,7 +2987,7 @@ function calc() {
   document.getElementById('bNet').textContent=fmt(net);
   document.getElementById('calcRateLabel').textContent='$'+rate.toFixed(2)+'/hr';
   // Store for comparison modal
-  _lastCalcValues={rate,reg,ot,dt,hol,sick,vac,fltHol,den,medI,vis,gross,fed,ss,med,net,retirePretax,retireRoth};
+  _lastCalcValues={rate,reg,ot,dt,hol,sick,vac,fltHol,pto,den,medI,vis,gross,fed,ss,med,net,retirePretax,retireRoth};
   // Check if a reference match exists and show/update hint
   const _ref = gross>0 ? findPaycheckMatch(rate,reg,ot) : null;
   const hint = document.getElementById('compareHint');
@@ -3123,7 +3129,7 @@ function renderRefTable() {
     stubs.forEach(s => {
       if(Math.abs(parseFloat(s.rate)-fr)>0.005) return;
       if(s.payType&&s.payType!=='regular') return;
-      if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.premHrs||0)+(s.addl||0)>0) return;
+      if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0)+(s.premHrs||0)+(s.addl||0)>0) return;
       const k = parseFloat(s.reg).toFixed(2)+','+parseFloat(s.ot||0).toFixed(2)+','+parseFloat(s.dt||0).toFixed(2);
       if(seen.has(k)) return;
       if(!grp[k]) grp[k]={reg:parseFloat(s.reg),ot:parseFloat(s.ot||0),dt:parseFloat(s.dt||0),stubs:[]};
@@ -3425,7 +3431,7 @@ function findPaycheckMatch(rate, reg, ot) {
     if(Math.abs(parseFloat(s.reg)-regR)  > 0.01)  return false;
     if(Math.abs(parseFloat(s.ot||0)-otR) > 0.01)  return false;
     if(s.payType && s.payType !== 'regular') return false;
-    if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.premHrs||0)+(s.addl||0) > 0) return false;
+    if((s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0)+(s.premHrs||0)+(s.addl||0) > 0) return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date));
 
@@ -4083,7 +4089,7 @@ function buildHistory() {
     const ded=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0), net=s.net!=null?s.net:(s.gross-ded);
     const pct=(s.gross/maxG*100).toFixed(1);
     const d=new Date(s.date+'T12:00:00'), ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const totalHrs=s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0);
+    const totalHrs=s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0);
     let badges='';
     // Pay type badge first — most important
     if(s.payType&&s.payType!=='regular') badges+='<span class="badge badge-'+s.payType+'">'+s.payType.toUpperCase()+'</span> ';
@@ -4093,6 +4099,7 @@ function buildHistory() {
     if((s.sick||0)>0) badges+='<span class="badge" style="background:rgba(37,99,235,0.10);color:var(--green)">SICK</span> ';
     if((s.vac||0)>0) badges+='<span class="badge" style="background:rgba(37,99,235,0.10);color:var(--green)">VAC</span> ';
     if((s.fltHol||0)>0) badges+='<span class="badge badge-hol">FLTHOL</span> ';
+    if((s.pto||0)>0) badges+='<span class="badge" style="background:rgba(124,58,237,0.1);color:#7c3aed">PTO</span> ';
     if((s.premHrs||0)>0) badges+='<span class="badge" style="background:rgba(29,78,216,0.08);color:var(--blue)">PREM</span> ';
     if((s.addl||0)>0) badges+='<span class="badge" style="background:rgba(29,78,216,0.08);color:var(--blue)">+PAY</span>';
     // Note tooltip on stub item
@@ -4114,10 +4121,14 @@ function buildHistorySheet() {
   if(!sorted.length) { list.innerHTML='<div class="empty"><div style="font-size:32px;margin-bottom:8px">–</div><div>No paychecks logged yet</div></div>'; return; }
 
   // Check which optional columns are needed
-  const hasDT   = sorted.some(s=>(s.dt||0)>0);
-  const hasPrem = sorted.some(s=>(s.premHrs||0)>0);
-  const hasAddl = sorted.some(s=>(s.addl||0)>0);
-  const hasHol  = sorted.some(s=>(s.hol||0)>0);
+  const hasDT     = sorted.some(s=>(s.dt||0)>0);
+  const hasPrem   = sorted.some(s=>(s.premHrs||0)>0);
+  const hasAddl   = sorted.some(s=>(s.addl||0)>0);
+  const hasHol    = sorted.some(s=>(s.hol||0)>0);
+  const hasSick   = sorted.some(s=>(s.sick||0)>0);
+  const hasVac    = sorted.some(s=>(s.vac||0)>0);
+  const hasFltHol = sorted.some(s=>(s.fltHol||0)>0);
+  const hasPTO    = sorted.some(s=>(s.pto||0)>0);
   // Show Reg $ / OT $ columns only when at least one stub has stored override values
   const hasRegPay = sorted.some(s=>s.regPay!=null&&s.regPay>0);
   const hasOTPay  = sorted.some(s=>s.otPay!=null&&s.otPay>0);
@@ -4130,8 +4141,12 @@ function buildHistorySheet() {
     ${hasRegPay ? '<th class="num" style="color:var(--green)">Reg $</th>' : ''}
     <th class="num">OT Hrs</th>
     ${hasOTPay  ? '<th class="num" style="color:var(--amber)">OT $</th>' : ''}
-    ${hasDT   ? '<th class="num">DT Hrs</th>' : ''}
-    ${hasHol  ? '<th class="num">Hol Hrs</th>' : ''}
+    ${hasDT     ? '<th class="num">DT Hrs</th>' : ''}
+    ${hasHol    ? '<th class="num">Hol Hrs</th>' : ''}
+    ${hasSick   ? '<th class="num">Sick Hrs</th>' : ''}
+    ${hasVac    ? '<th class="num">Vac Hrs</th>' : ''}
+    ${hasFltHol ? '<th class="num">FltHol Hrs</th>' : ''}
+    ${hasPTO    ? '<th class="num">PTO Hrs</th>' : ''}
     ${hasPrem ? '<th class="num">Prem $/hr</th><th class="num">Prem Hrs</th>' : ''}
     ${hasAddl ? '<th class="num">Addl $</th>' : ''}
     <th class="num">Gross</th>
@@ -4168,8 +4183,12 @@ function buildHistorySheet() {
       ${hasRegPay ? `<td class="num">${fmt(dispReg)}</td>` : ''}
       <td class="num${(s.ot||0)>0?' amber':''}">${(s.ot||0)>0?fmtH(s.ot):'—'}</td>
       ${hasOTPay  ? `<td class="num amber">${dispOT!=null?fmt(dispOT):'—'}</td>` : ''}
-      ${hasDT   ? `<td class="num${(s.dt||0)>0?' red':''}">${(s.dt||0)>0?fmtH(s.dt):'—'}</td>` : ''}
-      ${hasHol  ? `<td class="num${(s.hol||0)>0?' blue':''}">${(s.hol||0)>0?fmtH(s.hol):'—'}</td>` : ''}
+      ${hasDT     ? `<td class="num${(s.dt||0)>0?' red':''}">${(s.dt||0)>0?fmtH(s.dt):'—'}</td>` : ''}
+      ${hasHol    ? `<td class="num${(s.hol||0)>0?' blue':''}">${(s.hol||0)>0?fmtH(s.hol):'—'}</td>` : ''}
+      ${hasSick   ? `<td class="num">${(s.sick||0)>0?fmtH(s.sick):'—'}</td>` : ''}
+      ${hasVac    ? `<td class="num">${(s.vac||0)>0?fmtH(s.vac):'—'}</td>` : ''}
+      ${hasFltHol ? `<td class="num">${(s.fltHol||0)>0?fmtH(s.fltHol):'—'}</td>` : ''}
+      ${hasPTO    ? `<td class="num">${(s.pto||0)>0?fmtH(s.pto):'—'}</td>` : ''}
       ${hasPrem ? `<td class="num${(s.premHrs||0)>0?' muted':''}">${(s.premHrs||0)>0?'$'+parseFloat(s.premRate||0).toFixed(2):'—'}</td><td class="num">${(s.premHrs||0)>0?fmtH(s.premHrs):'—'}</td>` : ''}
       ${hasAddl ? `<td class="num">${(s.addl||0)>0?fmt(s.addl):'—'}</td>` : ''}
       <td class="num">${fmt(s.gross)}</td>
@@ -4200,7 +4219,7 @@ function buildHistorySheet() {
     ${hasRegPay ? `<td class="num">${fmt(tReg)}</td>` : ''}
     <td></td>
     ${hasOTPay  ? `<td class="num amber">${fmt(tOT)}</td>` : ''}
-    ${"<td></td>".repeat((hasDT?1:0)+(hasHol?1:0)+(hasPrem?2:0)+(hasAddl?1:0))}
+    ${"<td></td>".repeat((hasDT?1:0)+(hasHol?1:0)+(hasSick?1:0)+(hasVac?1:0)+(hasFltHol?1:0)+(hasPTO?1:0)+(hasPrem?2:0)+(hasAddl?1:0))}
     <td class="num">${fmt(tGross)}</td>
     <td class="num red">${fmt(tFed)}</td>
     <td class="num red">${fmt(tSS)}</td>
@@ -4286,12 +4305,12 @@ function buildYTD() {
   const tDed   = tTax+tBen;
   const tReg   = filtered.reduce((a,s)=>a+((s.regPay!=null&&s.regPay>0)?s.regPay:payRound(rateRound(s.rate)*s.reg)),0);
   const tHol   = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*(s.hol||0)),0);
-  const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0))),0);
+  const tBenTime = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0))),0);
   const tPrem  = filtered.reduce((a,s)=>a+payRound((s.premHrs||0)*(s.premRate||0)),0);
   const tAddl  = filtered.reduce((a,s)=>a+(s.addl||0),0);
   const tDTHrs = filtered.reduce((a,s)=>a+(s.dt||0),0);
   const tHolHrs= filtered.reduce((a,s)=>a+(s.hol||0),0);
-  const tBenHrs= filtered.reduce((a,s)=>a+(s.sick||0)+(s.vac||0)+(s.fltHol||0),0);
+  const tBenHrs= filtered.reduce((a,s)=>a+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0),0);
   const tDental  = filtered.reduce((a,s)=>a+s.den,0);
   const tMedical = filtered.reduce((a,s)=>a+s.medI,0);
   const tVision  = filtered.reduce((a,s)=>a+s.vis,0);
@@ -4301,7 +4320,7 @@ function buildYTD() {
     return a+payRound(rateRound(s.rate*1.5)*(s.ot||0));
   },0);
   const tDT = filtered.reduce((a,s)=>a+payRound(rateRound(s.rate*2)*(s.dt||0)),0);
-  const tHrs   = filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0),0);
+  const tHrs   = filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0),0);
   const tOTHrs = filtered.reduce((a,s)=>a+(s.ot||0),0);
   const tRegHrs= filtered.reduce((a,s)=>a+s.reg,0);
   const nets   = filtered.map(s=>{ const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0); return s.net!=null?s.net:(s.gross-d); });
@@ -4681,13 +4700,13 @@ function buildYTD() {
       const otP  = s.otPay!=null  ? s.otPay  : (s.ot ? payRound(rateRound(s.rate*1.5)*(s.ot||0)) : 0);
       const dtP  = payRound(rateRound(s.rate*2)*(s.dt||0));
       const holP = payRound(rateRound(s.rate)*(s.hol||0));
-      const benP = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)));
+      const benP = payRound(rateRound(s.rate)*((s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0)));
       const d    = new Date(s.date+'T12:00:00');
       const dateStr = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
       const taxPct  = s.gross>0?(tax/s.gross*100).toFixed(0):'0';
       const keepPct = s.gross>0?(net/s.gross*100).toFixed(0):'0';
       const hasOT=(s.ot||0)!==0, hasDT=(s.dt||0)>0, hasHol=(s.hol||0)>0;
-      const hasBen=(s.sick||0)+(s.vac||0)+(s.fltHol||0)>0;
+      const hasBen=(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0)>0;
       // Bar segments: reg | ot | deductions (proportional to gross)
       const barReg = s.gross>0?Math.max(0,regP/s.gross*100).toFixed(1):0;
       const barOT  = s.gross>0?Math.max(0,Math.max(0,otP)/s.gross*100).toFixed(1):0;
@@ -5000,7 +5019,7 @@ function computeDashData(yr) {
   const tRegPay=filtered.reduce((a,s)=>a+((s.regPay!=null&&s.regPay>0)?s.regPay:payRound(rateRound(s.rate)*s.reg)),0);
   const tDTPay=filtered.reduce((a,s)=>a+payRound(rateRound(s.rate*2)*(s.dt||0)),0);
   const tHolPay=filtered.reduce((a,s)=>a+payRound(rateRound(s.rate)*(s.hol||0)),0);
-  const tHrs=filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0),0);
+  const tHrs=filtered.reduce((a,s)=>a+s.reg+(s.ot||0)+(s.dt||0)+(s.hol||0)+(s.sick||0)+(s.vac||0)+(s.fltHol||0)+(s.pto||0),0);
   const nets=filtered.map(s=>{const d=s.fed+s.ss+s.med+s.den+s.medI+s.vis+(s.retire||0);return parseFloat((s.net!=null?s.net:(s.gross-d)).toFixed(2));});
   const tNet=nets.reduce((a,v)=>a+v,0);
   const n=filtered.length, avgG=tG/n, avgNet=tNet/n;
@@ -6630,6 +6649,7 @@ function openLogModal() {
   document.getElementById('lSick').value='';
   document.getElementById('lVac').value='';
   document.getElementById('lFltHol').value='';
+  document.getElementById('lPTO').value='';
   document.getElementById('lPremRate').value='';
   document.getElementById('lPremHrs').value='';
   document.getElementById('lAddl').value='';
@@ -6640,6 +6660,8 @@ function openLogModal() {
   document.getElementById('lSickPay').value='';
   document.getElementById('lVacPay').value='';
   document.getElementById('lFltHolPay').value='';
+  document.getElementById('lPTO').value='';
+  document.getElementById('lPTOPay').value='';
   document.getElementById('lGross').value='';
   document.getElementById('lNet').value='';
   document.getElementById('lFed').value='';
@@ -6656,15 +6678,18 @@ function openLogModal() {
   document.getElementById('lPayType').onchange=function(){
     document.getElementById('lNoteField').style.display=this.value==='regular'?'none':'block';
   };
-  // Hide benefit rows for part-time users who don't get those benefits
-  ['lSickRow','lVacRow','lFltHolRow'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = isPartTime ? 'none' : '';
-  });
-  ['lSickPayRow','lVacPayRow','lFltHolPayRow'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = isPartTime ? 'none' : '';
-  });
+  // Show/hide benefit fields based on employment type
+  // Full-time:  Holiday ✓ | Sick/Care ✓ | Vacation ✓ | Float Holiday ✓ | PTO ✓
+  // Part-time:  Holiday ✗ | Sick/Care ✗ | Vacation ✗ | Float Holiday ✗  | PTO ✓
+  const ftOnlyRows    = ['lHolRow','lSickRow','lVacRow','lFltHolRow'];
+  const ftOnlyPayRows = ['lHolPayRow','lSickPayRow','lVacPayRow','lFltHolPayRow'];
+  ftOnlyRows.forEach(id    => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
+  ftOnlyPayRows.forEach(id => { const el=document.getElementById(id);    if(el) el.style.display=isPartTime?'none':''; });
+  // PTO always visible for all employment types
+  const ptoRow    = document.getElementById('lPTORow');
+  const ptoPayRow = document.getElementById('lPTOPayRow');
+  if(ptoRow)    ptoRow.style.display    = '';
+  if(ptoPayRow) ptoPayRow.style.display = '';
   // Always start on hours tab
   switchLogTab('hours');
   document.getElementById('logModal').classList.add('open');
@@ -6680,6 +6705,8 @@ async function saveLog() {
   const sick=parseFloat(document.getElementById('lSick').value)||0;
   const vac=parseFloat(document.getElementById('lVac').value)||0;
   const fltHol=parseFloat(document.getElementById('lFltHol').value)||0;
+  const pto=parseFloat(document.getElementById('lPTO').value)||0;
+  const pto=parseFloat(document.getElementById('lPTO').value)||0;
   const premRate=parseFloat(document.getElementById('lPremRate').value)||0;
   const premHrs=parseFloat(document.getElementById('lPremHrs').value)||0;
   const addl=parseFloat(document.getElementById('lAddl').value)||0;
@@ -6690,7 +6717,7 @@ async function saveLog() {
   const retireRoth=parseFloat(document.getElementById('lRetireRoth').value)||0;
   const retire=retirePretax+retireRoth;
   const _regR=rateRound(rate),_otR=rateRound(rate*1.5),_dtR=rateRound(rate*2);
-  const gross=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
+  const gross=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(_regR*pto)+payRound(premRate*premHrs)+addl).toFixed(2));
   // Pre-tax 401k reduces fed taxable; Roth does not. Neither reduces SS/Medicare wages.
   const _lFicaBase=Math.max(0,gross-den-medI-vis);
   const _lTaxable=Math.max(0,gross-den-medI-vis-retirePretax);
@@ -6708,6 +6735,7 @@ async function saveLog() {
   const sickPayRaw = pf_('lSickPay');
   const vacPayRaw  = pf_('lVacPay');
   const fltPayRaw  = pf_('lFltHolPay');
+  const ptoPayRaw  = pf_('lPTOPay');
   const grossRaw   = pf_('lGross');
   // Build gross: explicit gross wins; otherwise sum pay-type overrides + calculated remainder
   const _r=rateRound(rate);
@@ -6718,12 +6746,13 @@ async function saveLog() {
   const fSick = sickPayRaw ?? payRound(_r*sick);
   const fVac  = vacPayRaw  ?? payRound(_r*vac);
   const fFlt  = fltPayRaw  ?? payRound(_r*fltHol);
-  const calcedGross = parseFloat((fReg+fOT+fDT+fHol+fSick+fVac+fFlt+payRound(premRate*premHrs)+addl).toFixed(2));
+  const fPTO  = ptoPayRaw  ?? payRound(_r*pto);
+  const calcedGross = parseFloat((fReg+fOT+fDT+fHol+fSick+fVac+fFlt+fPTO+payRound(premRate*premHrs)+addl).toFixed(2));
   const finalGross = grossRaw ?? calcedGross;
   const netRaw=parseFloat(document.getElementById('lNet').value);
   const payType=document.getElementById('lPayType')?.value||'regular';
   const noteVal=(document.getElementById('lNote')?.value||'').trim();
-  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
+  const stub={id:uid(),date:document.getElementById('lDate').value,rate,reg,ot,dt,hol,sick,vac,fltHol,pto,premRate,premHrs,addl,gross:finalGross,
     regPay:regPayRaw,
     otPay:otPayRaw,
     fed,ss,med,den,medI,vis,retire,retirePretax,retireRoth,net:isNaN(netRaw)?null:netRaw,
@@ -6775,6 +6804,7 @@ function renderReadView(s) {
   const sickPay = payRound(_rr*(s.sick||0));
   const vacPay  = payRound(_rr*(s.vac||0));
   const fltPay  = payRound(_rr*(s.fltHol||0));
+  const ptoPay  = payRound(_rr*(s.pto||0));
   const premPay = payRound((s.premRate||0)*(s.premHrs||0));
   const addlPay = s.addl||0;
 
@@ -6785,11 +6815,11 @@ function renderReadView(s) {
     showOT = s.otPay;
     // DT is remainder of gross after reg + OT + everything else
     showDT = (s.dt||0)>0
-      ? Math.max(0, parseFloat((s.gross - regPay - showOT - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)))
+      ? Math.max(0, parseFloat((s.gross - regPay - showOT - holPay - sickPay - vacPay - fltPay - ptoPay - premPay - addlPay).toFixed(2)))
       : 0;
   } else {
     // No stored OT — derive both from gross remainder
-    const otdtPay = Math.max(0, parseFloat((s.gross - regPay - holPay - sickPay - vacPay - fltPay - premPay - addlPay).toFixed(2)));
+    const otdtPay = Math.max(0, parseFloat((s.gross - regPay - holPay - sickPay - vacPay - fltPay - ptoPay - premPay - addlPay).toFixed(2)));
     const calcOT = payRound(_otR*(s.ot||0)), calcDT = payRound(_dtR*(s.dt||0));
     const calcOTDT = calcOT + calcDT;
     const otPay = calcOTDT > 0 ? payRound(otdtPay * (calcOT / calcOTDT)) : 0;
@@ -6806,6 +6836,7 @@ function renderReadView(s) {
     ${(s.sick||0)>0?`<div class="card-row"><span class="card-label">Sick / Care (${fmtH(s.sick)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(sickPay)}</span></div>`:''}
     ${(s.vac||0)>0?`<div class="card-row"><span class="card-label">Vacation (${fmtH(s.vac)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(vacPay)}</span></div>`:''}
     ${(s.fltHol||0)>0?`<div class="card-row"><span class="card-label">Float Holiday (${fmtH(s.fltHol)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(fltPay)}</span></div>`:''}
+    ${(s.pto||0)>0?`<div class="card-row"><span class="card-label">PTO (${fmtH(s.pto)}h @ $${_rr.toFixed(4)}/hr)</span><span class="card-value">${fmt(ptoPay)}</span></div>`:''}
     ${(s.premHrs||0)>0?`<div class="card-row"><span class="card-label">Shift premium ($${parseFloat(s.premRate||0).toFixed(2)}/hr × ${fmtH(s.premHrs)}h)</span><span class="card-value">${fmt(premPay)}</span></div>`:''}
     ${(s.addl||0)>0?`<div class="card-row"><span class="card-label">Additional pay</span><span class="card-value">${fmt(addlPay)}</span></div>`:''}
     <div class="card-row"><span class="card-label">Gross pay</span><span class="card-value">${fmt(s.gross)}</span></div>
@@ -6847,6 +6878,8 @@ function toggleEditMode() {
     document.getElementById('eSick').value=s.sick||0;
     document.getElementById('eVac').value=s.vac||0;
     document.getElementById('eFltHol').value=s.fltHol||0;
+    document.getElementById('ePTO').value=s.pto||0;
+    document.getElementById('ePTO').value=s.pto||0;
     document.getElementById('ePremRate').value=s.premRate||0;
     document.getElementById('ePremHrs').value=s.premHrs||0;
     document.getElementById('eAddl').value=s.addl||0;
@@ -6896,6 +6929,8 @@ async function saveEdit() {
     sick:parseFloat(document.getElementById('eSick').value)||0,
     vac:parseFloat(document.getElementById('eVac').value)||0,
     fltHol:parseFloat(document.getElementById('eFltHol').value)||0,
+    pto:parseFloat(document.getElementById('ePTO').value)||0,
+    pto:parseFloat(document.getElementById('ePTO').value)||0,
     premRate:parseFloat(document.getElementById('ePremRate').value)||0,
     premHrs:parseFloat(document.getElementById('ePremHrs').value)||0,
     addl:parseFloat(document.getElementById('eAddl').value)||0,
@@ -6923,7 +6958,7 @@ async function saveEdit() {
   const _calcGross=parseFloat((
     _eRegPay+_eOTPay+
     payRound(_eDtRate*updated.dt)+payRound(_eRegR*updated.hol)+
-    payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+
+    payRound(_eRegR*(updated.sick||0))+payRound(_eRegR*(updated.vac||0))+payRound(_eRegR*(updated.fltHol||0))+payRound(_eRegR*(updated.pto||0))+
     payRound((updated.premRate||0)*(updated.premHrs||0))+(updated.addl||0)
   ).toFixed(2));
   // Priority: explicit gross change > pay overrides calc > stored gross
@@ -7003,13 +7038,14 @@ function bulkCardPreview(i) {
   const sick=parseFloat(document.getElementById('bc-sick-'+i)?.value)||0;
   const vac=parseFloat(document.getElementById('bc-vac-'+i)?.value)||0;
   const fltHol=parseFloat(document.getElementById('bc-flthol-'+i)?.value)||0;
+  const pto=parseFloat(document.getElementById('bc-pto-'+i)?.value)||0;
   const premRate=parseFloat(document.getElementById('bc-premr-'+i)?.value)||0;
   const premHrs=parseFloat(document.getElementById('bc-premh-'+i)?.value)||0;
   const addl=parseFloat(document.getElementById('bc-addl-'+i)?.value)||0;
   const grossOver=parseFloat(document.getElementById('bc-gross-'+i)?.value);
   if(rate) {
     const _regR=rateRound(rate),_otR=rateRound(rate*1.5),_dtR=rateRound(rate*2);
-    const calc=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
+    const calc=parseFloat((payRound(_regR*reg)+payRound(_otR*ot)+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(_regR*pto)+payRound(premRate*premHrs)+addl).toFixed(2));
     const display = !isNaN(grossOver)&&grossOver>0 ? grossOver : calc;
     const el = document.getElementById('bc-preview-'+i);
     if(el) el.textContent = fmt(display);
@@ -7146,6 +7182,10 @@ function bulkCardHTML(i) {
           <input type="number" id="bc-flthol-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
         </div>
         <div class="bulk-cell" style="flex:1">
+          <label>PTO Hrs</label>
+          <input type="number" id="bc-pto-${i}" step="0.25" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
+        </div>
+        <div class="bulk-cell" style="flex:1">
           <label>Prem $/hr</label>
           <input type="number" id="bc-premr-${i}" step="0.01" min="0" placeholder="0" oninput="bulkCardPreview(${i})">
         </div>
@@ -7222,6 +7262,7 @@ async function bulkSave() {
     const sick=parseFloat(document.getElementById('bc-sick-'+i)?.value)||0;
     const vac=parseFloat(document.getElementById('bc-vac-'+i)?.value)||0;
     const fltHol=parseFloat(document.getElementById('bc-flthol-'+i)?.value)||0;
+    const pto=parseFloat(document.getElementById('bc-pto-'+i)?.value)||0;
     const premRate=parseFloat(document.getElementById('bc-premr-'+i)?.value)||0;
     const premHrs=parseFloat(document.getElementById('bc-premh-'+i)?.value)||0;
     const addl=parseFloat(document.getElementById('bc-addl-'+i)?.value)||0;
@@ -7232,7 +7273,7 @@ async function bulkSave() {
     const _hasOTOvr  = !isNaN(otPayOvr)  && otPayOvr  > 0;
     const _regPay = _hasRegOvr ? regPayOvr : payRound(_regR*reg);
     const _otPay  = _hasOTOvr  ? otPayOvr  : payRound(_otR*ot);
-    const gross=parseFloat((_regPay+_otPay+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(premRate*premHrs)+addl).toFixed(2));
+    const gross=parseFloat((_regPay+_otPay+payRound(_dtR*dt)+payRound(_regR*hol)+payRound(_regR*sick)+payRound(_regR*vac)+payRound(_regR*fltHol)+payRound(_regR*pto)+payRound(premRate*premHrs)+addl).toFixed(2));
     const fedRaw=parseFloat(document.getElementById('bc-fed-'+i)?.value);
     const ssRaw=parseFloat(document.getElementById('bc-ss-'+i)?.value);
     const medRaw=parseFloat(document.getElementById('bc-med-'+i)?.value);
@@ -7259,7 +7300,7 @@ async function bulkSave() {
     const grossRaw=parseFloat(document.getElementById('bc-gross-'+i)?.value);
     const finalGross=(!isNaN(grossRaw)&&grossRaw>0)?grossRaw:gross;
     const netRaw=parseFloat(document.getElementById('bc-net-'+i)?.value);
-    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,premRate,premHrs,addl,gross:finalGross,
+    toSave.push({id:uid(),date,rate,reg,ot,dt,hol,sick,vac,fltHol,pto,premRate,premHrs,addl,gross:finalGross,
       regPay:_hasRegOvr?regPayOvr:null,
       otPay:_hasOTOvr?otPayOvr:null,
       fed,ss,med,den,medI,vis,retire:retireVal,retirePretax,retireRoth,net:isNaN(netRaw)?null:netRaw,seeded:false});
