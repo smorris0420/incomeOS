@@ -1,24 +1,18 @@
--- Run this in your Supabase SQL editor (project: ohzclmscpkxizdxtweps)
--- Creates the shift_schedules table for the Planner page
-
-create table if not exists shift_schedules (
-  id          text        primary key,
-  user_id     uuid        not null references auth.users(id) on delete cascade,
-  name        text        not null,
-  days        jsonb       not null default '[]',   -- array of 7 {start, end, brk} objects
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
-);
-
--- Index for fast per-user lookups
-create index if not exists shift_schedules_user_id_idx
-  on shift_schedules (user_id, updated_at desc);
-
--- Row-level security: each user sees only their own schedules
-alter table shift_schedules enable row level security;
-
-drop policy if exists "shift_schedules_own" on shift_schedules;
-create policy "shift_schedules_own" on shift_schedules
-  for all
-  using  (user_id = auth.uid())
-  with check (user_id = auth.uid());
+{
+  "name": "incomeos",
+  "version": "4.0.0",
+  "description": "IncomeOS \u2014 Personal income and paycheck tracker",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.3.0",
+    "@simplewebauthn/server": "^10.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  }
+}
