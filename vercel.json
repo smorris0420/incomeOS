@@ -1,0 +1,29 @@
+{
+  "rewrites": [
+    { "source": "/api/users/me",              "destination": "/api/users" },
+    { "source": "/api/passkeys/challenge",    "destination": "/api/passkeys?action=challenge" },
+    { "source": "/api/passkeys/register",     "destination": "/api/passkeys?action=register" },
+    { "source": "/api/passkeys/authenticate", "destination": "/api/passkeys?action=authenticate" },
+    { "source": "/api/setup",                 "destination": "/api/admin?action=setup" },
+    { "source": "/api/seed",                  "destination": "/api/admin?action=seed" },
+    { "source": "/api/(.*)",                  "destination": "/api/$1" },
+    { "source": "/(.*)",                      "destination": "/public/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Service-Worker-Allowed", "value": "/" },
+        { "key": "Cache-Control",          "value": "no-cache" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin",  "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
+  ]
+}
